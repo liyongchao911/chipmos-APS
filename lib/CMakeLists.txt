@@ -1,0 +1,5 @@
+set(LIB_SRC *.cpp *.cu)
+add_library(lib STATIC ${LIB_SRC})
+target_compile_features(lib PUBLIC cxx_std_11)
+set_target_properties(lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
