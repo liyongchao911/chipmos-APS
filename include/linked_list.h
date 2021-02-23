@@ -1,0 +1,24 @@
+#ifndef __LINKED_LIST_H__
+#define __LINKED_LIST_H__
+
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+
+class LinkedList{
+friend class TestLinkedList;
+private:
+	LinkedList * next;
+	LinkedList * last;
+	int number;
+public:
+	__host__ LinkedList();
+	__host__ LinkedList(int number);
+	__device__ __host__ LinkedList * getNext();
+	__device__ __host__ LinkedList * getLast();
+	__device__ __host__ void setNext(LinkedList *);
+	__device__ __host__ void setLast(LinkedList *);
+	__device__ __host__ int getNumber();
+};
+__global__ void vectorAddInt(int * a, int *b, int *c, unsigned int num_elements);
+
+#endif
