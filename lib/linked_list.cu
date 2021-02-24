@@ -36,3 +36,7 @@ __global__ void vectorAddInt(int * a, int *b, int *c, unsigned int num_elements)
 		c[idx] = a[idx] + b[idx];
 	}
 }
+
+LinkedList::~LinkedList(){
+
+}

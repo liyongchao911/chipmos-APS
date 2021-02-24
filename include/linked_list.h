@@ -17,7 +17,8 @@ public:
 	__device__ __host__ LinkedList * getPrev();
 	__device__ __host__ void setNext(LinkedList *);
 	__device__ __host__ void setPrev(LinkedList *);
-	__device__ __host__ int getNumber();
+	virtual __device__ __host__ int getNumber();
+	virtual ~LinkedList();
 };
 __global__ void vectorAddInt(int * a, int *b, int *c, unsigned int num_elements);
 
