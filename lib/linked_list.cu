@@ -2,28 +2,28 @@
 
 __host__ LinkedList::LinkedList(){
 	this->number = 0;
-	this->next = this->last = nullptr;
+	this->next = this->prev = nullptr;
 }
 
 __host__ LinkedList::LinkedList(int number){
 	this->number = number;
-	this->next = this->last = nullptr;
+	this->next = this->prev = nullptr;
 }
 
 __device__ __host__ LinkedList * LinkedList::getNext(){
 	return this->next;
 }
 
-__device__ __host__ LinkedList * LinkedList::getLast(){
-	return this->last;
+__device__ __host__ LinkedList * LinkedList::getPrev(){
+	return this->prev;
 }
 
 __device__ __host__ void LinkedList::setNext(LinkedList * next){
 	this->next = next;
 }
 
-__device__ __host__ void LinkedList::setLast(LinkedList * last){
-	this->last = last;
+__device__ __host__ void LinkedList::setPrev(LinkedList * last){
+	this->prev = last;
 }
 
 __device__ int LinkedList::getNumber(){

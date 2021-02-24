@@ -9,18 +9,23 @@ class TestLinkedList : public testing::Test{
 protected:
 	LinkedList * ls;
 	TestLinkedList();
+	~TestLinkedList();
 	LinkedList * testSetNextHost(LinkedList * next);
-	LinkedList * testSetLastHost(LinkedList * last);
+	LinkedList * testSetPrevHost(LinkedList * last);
 	LinkedList * testGetNextHost();
-	LinkedList * testGetLastHost();
+	LinkedList * testGetPrevHost();
 };
 
 TestLinkedList::TestLinkedList(){
 	ls = new LinkedList();	
 }
 
-LinkedList * TestLinkedList::testGetLastHost(){
-	return ls->getLast();
+TestLinkedList::~TestLinkedList(){
+	delete ls;
+}
+
+LinkedList * TestLinkedList::testGetPrevHost(){
+	return ls->getPrev();
 }
 
 LinkedList * TestLinkedList::testGetNextHost(){
@@ -32,9 +37,9 @@ LinkedList * TestLinkedList::testSetNextHost(LinkedList * next){
 	return ls->next;
 }
 
-LinkedList * TestLinkedList::testSetLastHost(LinkedList * last){
-	ls->setLast(last);
-	return ls->last;
+LinkedList * TestLinkedList::testSetPrevHost(LinkedList * last){
+	ls->setPrev(last);
+	return ls->prev;
 }
 
 
@@ -47,7 +52,7 @@ TEST_F(TestLinkedList, test_set_next_host){
 
 TEST_F(TestLinkedList, test_set_last_host){
 	LinkedList * test2 = new LinkedList();
-	EXPECT_EQ(testSetLastHost(test2), test2);
+	EXPECT_EQ(testSetPrevHost(test2), test2);
 	delete test2;
 }
 
@@ -59,8 +64,8 @@ TEST_F(TestLinkedList, test_get_next_host){
 }
 TEST_F(TestLinkedList, test_get_last_host){
 	LinkedList * test = new LinkedList();
-	ls->setLast(test);
-	EXPECT_EQ(this->testGetLastHost(), test);
+	ls->setPrev(test);
+	EXPECT_EQ(this->testGetPrevHost(), test);
 	delete test;
 }
 
@@ -153,7 +158,7 @@ TEST_F(TestLinkedList, test_set_next_device){
 __global__ void testSetLast(LinkedList ** current, LinkedList ** next, unsigned int numElements){
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id < numElements){
-		current[id]->setLast(next[id]);
+		current[id]->setPrev(next[id]);
 	}
 }
 

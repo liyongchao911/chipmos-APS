@@ -8,15 +8,15 @@ class LinkedList{
 friend class TestLinkedList;
 private:
 	LinkedList * next;
-	LinkedList * last;
+	LinkedList * prev;
 	int number;
 public:
 	__host__ LinkedList();
 	__host__ LinkedList(int number);
 	__device__ __host__ LinkedList * getNext();
-	__device__ __host__ LinkedList * getLast();
+	__device__ __host__ LinkedList * getPrev();
 	__device__ __host__ void setNext(LinkedList *);
-	__device__ __host__ void setLast(LinkedList *);
+	__device__ __host__ void setPrev(LinkedList *);
 	__device__ __host__ int getNumber();
 };
 __global__ void vectorAddInt(int * a, int *b, int *c, unsigned int num_elements);
