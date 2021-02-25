@@ -1,3 +1,9 @@
+/** 
+ * @file linked_list.h
+ * @brief linked list definition
+ * @author Eugene Lin
+ * @date 2021.2.23
+ */
 #ifndef __LINKED_LIST_H__
 #define __LINKED_LIST_H__
 
