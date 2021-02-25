@@ -5,6 +5,22 @@
 #include <include/linked_list.h>
 #include <gtest/gtest.h>
 
+class LinkedListChild : public LinkedList{
+private:
+	double value;
+public:
+	LinkedListChild() : LinkedList(){
+		value = 0;
+	}
+	LinkedListChild(double val):LinkedList(){
+		value = val;	
+	}
+
+	virtual __device__ __host__ double getValue(){
+		return value;
+	}
+};
+
 class TestLinkedList : public testing::Test{
 protected:
 	LinkedList * ls;
@@ -17,7 +33,7 @@ protected:
 };
 
 TestLinkedList::TestLinkedList(){
-	ls = new LinkedList();	
+	ls = new LinkedListChild();	
 }
 
 TestLinkedList::~TestLinkedList(){
@@ -45,25 +61,25 @@ LinkedList * TestLinkedList::testSetPrevHost(LinkedList * last){
 
 
 TEST_F(TestLinkedList, test_set_next_host){
-	LinkedList * test1 = new LinkedList();
+	LinkedList * test1 = new LinkedListChild();
 	EXPECT_EQ(testSetNextHost(test1), test1);
 	delete test1;
 }
 
 TEST_F(TestLinkedList, test_set_last_host){
-	LinkedList * test2 = new LinkedList();
+	LinkedList * test2 = new LinkedListChild();
 	EXPECT_EQ(testSetPrevHost(test2), test2);
 	delete test2;
 }
 
 TEST_F(TestLinkedList, test_get_next_host){
-	LinkedList * test = new LinkedList();
+	LinkedList * test = new LinkedListChild();
 	ls->setNext(test);
 	EXPECT_EQ(this->testGetNextHost(), test);
 	delete test;
 }
 TEST_F(TestLinkedList, test_get_last_host){
-	LinkedList * test = new LinkedList();
+	LinkedList * test = new LinkedListChild();
 	ls->setPrev(test);
 	EXPECT_EQ(this->testGetPrevHost(), test);
 	delete test;
@@ -100,8 +116,8 @@ TEST_F(TestLinkedList, test_set_next_device){
 	
 	// initialize host array
 	for(unsigned int i = 0; i < amount; ++i){
-		host_current[i] = new LinkedList(i);
-		host_next[i] = new LinkedList(i * 2);	
+		host_current[i] = new LinkedListChild(i);
+		host_next[i] = new LinkedListChild(i * 2);	
 	}
 
 
@@ -186,8 +202,8 @@ TEST_F(TestLinkedList, test_set_last_device){
 	
 	// initialize host array
 	for(unsigned int i = 0; i < amount; ++i){
-		host_current[i] = new LinkedList(i);
-		host_last[i] = new LinkedList(i * 2);	
+		host_current[i] = new LinkedListChild(i);
+		host_last[i] = new LinkedListChild(i * 2);	
 	}
 
 
