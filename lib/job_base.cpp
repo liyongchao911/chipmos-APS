@@ -36,8 +36,4 @@ __device__ __host__ double ProcessTime::getProcessTime(){
 
 }
 
-class Account { 
-private:
-    string id; 
 
-};
