@@ -26,11 +26,11 @@ __device__ __host__ void JobBase::setProcessTime(ProcessTime **){
 
 // getter
 __device__ __host__ double JobBase::getMsGene(){
-    return this->ms_gene;
+    return *(this->ms_gene);
 }
 
 __device__ __host__ double JobBase::getOsSeqGene(){
-    return this->os_seq_gene;
+    return *(this->os_seq_gene);
 }
 
 __device__ __host__ unsigned int JobBase::getMachineNo(){
@@ -51,5 +51,6 @@ __device__ __host__ double JobBase::getEndTime(){
 
 // operation
 __device__ __host__ unsigned int JobBase::machineSelection(){
-
+    //calculate which number of machine that corresponds to partition
+    return this->machine_no;
 }
