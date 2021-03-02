@@ -1,22 +1,8 @@
 
-#include "job_base.h"
-#include<string>
+#include <include/job_base.h>
+#include <string>
 
 using namespace std;
-
-
-class ProcessTime{
-private:
-	unsigned int machine_no;
-	double process_time;
-public:
-	ProcessTime(unsigned int machine_no, double process_time);
-
-	__device__ __host__ void setProcessTime(double time);	
-	__device__ __host__ unsigned int getMachineNo();
-	__device__ __host__ double getProcessTime();
-};
-
 
 
 ProcessTime::ProcessTime(unsigned int machine_no, double process_time){
@@ -25,15 +11,15 @@ ProcessTime::ProcessTime(unsigned int machine_no, double process_time){
 }
 
 __device__ __host__ void ProcessTime::setProcessTime(double time){
-
+	this->process_time = time;
 }
 
 __device__ __host__ unsigned int ProcessTime::getMachineNo(){
-return machine_no;
+    return machine_no;
 }
 
 __device__ __host__ double ProcessTime::getProcessTime(){
-
+    return process_time;
 }
 
 
