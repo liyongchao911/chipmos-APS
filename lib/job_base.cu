@@ -6,6 +6,7 @@ JobBase::JobBase(){
 }
 
 __device__ __host__ void JobBase::init(){
+    this->partition = 0;
     this->arriv_t = 0;
     this->start_time = 0;
     this->end_time = 0;
@@ -51,6 +52,10 @@ __device__ __host__ double JobBase::getEndTime(){
 
 // operation
 __device__ __host__ unsigned int JobBase::machineSelection(){
-    //calculate which number of machine that corresponds to partition
-    return this->machine_no;
+    //calculate which number of machine(from 1 to n) that corresponds to partition
+    unsigned int count = 0;
+    while((this->partition * count) < *(this->os_seq_gene)){
+        count++;
+    }
+    return count;
 }
