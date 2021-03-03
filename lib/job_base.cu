@@ -2,7 +2,7 @@
 
 // constructor and initialization
 JobBase::JobBase(){
-
+    partition = 1 / size_of_process_time;
 }
 
 __device__ __host__ void JobBase::init(){
@@ -21,8 +21,16 @@ __device__ __host__ void JobBase::setOsSeqGenePointer(double * os_seq_gene){
     this->os_seq_gene = os_seq_gene;
 }
 
-__device__ __host__ void JobBase::setProcessTime(ProcessTime **){
+__device__ __host__ void JobBase::setProcessTime(ProcessTime **ptime){
+    this->process_time = ptime;
+}
 
+__device__ __host__ void setArrivT(double arriv_time){
+    this->arriv_t = arriv_time;
+}
+
+__device__ __host__ void setStartTime(double start_time){
+    this->start_time = start_time;
 }
 
 // getter
