@@ -24,6 +24,9 @@ public:
 	virtual __device__ __host__ double getValue()=0;
 	virtual ~LinkedList();
 };
+
+__device__ __host__ LinkedList * linkedListMergeSort(LinkedList *);
+
 __global__ void vectorAddInt(int * a, int *b, int *c, unsigned int num_elements);
 
 #endif

@@ -22,7 +22,7 @@ public:
 };
 
 
-class JobBase : protected LinkedList{
+class JobBase : public LinkedList{
 protected:
 	// genes point to chromosome's gene
 	// use double const * type to prevent set the wrong value on gene
