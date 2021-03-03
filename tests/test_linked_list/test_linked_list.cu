@@ -3,7 +3,9 @@
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
 #include <include/linked_list.h>
+#include <vector>
 #include <gtest/gtest.h>
+#define amount 5000
 
 class LinkedListChild : public LinkedList{
 private:
@@ -23,67 +25,126 @@ public:
 
 class TestLinkedList : public testing::Test{
 protected:
-	LinkedList * ls;
-	TestLinkedList();
-	~TestLinkedList();
-	LinkedList * testSetNextHost(LinkedList * next);
-	LinkedList * testSetPrevHost(LinkedList * last);
-	LinkedList * testGetNextHost();
-	LinkedList * testGetPrevHost();
+	LinkedList * ls_current;
+	LinkedList * ls_next;
+	LinkedList * ls_prev;
+
+	LinkedList ** ls_host_current;
+	LinkedList ** ls_host_next;
+	LinkedList ** ls_host_prev;
+	
+	LinkedList ** device_current_addresses;
+	LinkedList ** device_next_addresses;
+	LinkedList ** device_prev_addresses;
+
+	LinkedList ** ls_device_current;
+	LinkedList ** ls_device_next;
+	LinkedList ** ls_device_prev;
+	void SetUp() override;
+	void TearDown() override;
+	void copyArrayOfLinkedList(LinkedList **, LinkedList **);
 };
 
-TestLinkedList::TestLinkedList(){
-	ls = new LinkedListChild();	
+void TestLinkedList::SetUp() {
+
+	ls_current = new LinkedListChild();	
+	ls_next = new LinkedListChild();
+	ls_prev = new LinkedListChild();
+	
+	// initialize ls_host_*
+	size_t sizeof_linked_list = sizeof(LinkedList);
+	// size_t sizeof_linked_list_p = sizeof(LinkedList *);
+	size_t sizeof_array_of_pointer = sizeof(LinkedList*) * amount;
+
+	// host memory allocation
+	ls_host_current = (LinkedList **)malloc(sizeof_array_of_pointer);
+	ls_host_next = (LinkedList **)malloc(sizeof_array_of_pointer);
+	ls_host_prev = (LinkedList **)malloc(sizeof_array_of_pointer);
+
+	device_next_addresses = (LinkedList **)malloc(sizeof_array_of_pointer);
+	device_current_addresses = (LinkedList **)malloc(sizeof_array_of_pointer);
+	device_prev_addresses = (LinkedList **)malloc(sizeof_array_of_pointer);
+
+	// device memory allocation
+	cudaMalloc((void **)&ls_device_current, sizeof_array_of_pointer);
+	cudaMalloc((void**)&ls_device_next, sizeof_array_of_pointer);
+	cudaMalloc((void**)&ls_device_prev, sizeof_array_of_pointer);
+
+	// initializae host array
+	for(unsigned int i = 0 ;i < amount; ++i){
+		ls_host_current[i] = new LinkedListChild(i);
+		ls_host_next[i] = new LinkedListChild(i*2);
+		ls_host_prev[i] = new LinkedListChild(i*4);
+	}
+
+	//initilizae device array
+	copyArrayOfLinkedList(device_current_addresses, ls_host_current);
+	copyArrayOfLinkedList(device_next_addresses, ls_host_next);
+	copyArrayOfLinkedList(device_prev_addresses, ls_host_prev);
+	// LinkedList * device_temp_ls;
+	// for(unsigned int i = 0; i < amount; ++i){
+	// 	ASSERT_EQ(cudaMalloc((void**)&device_temp_ls, sizeof_linked_list), CUDA_SUCCESS);
+	// 	ASSERT_EQ(cudaMemcpy(device_temp_ls, ls_host_current[i], sizeof_linked_list, cudaMemcpyHostToDevice), CUDA_SUCCESS);
+	// 	device_current_addresses[i] = device_temp_ls;
+	// }
+
+	// copy content from host to device
+	ASSERT_EQ(cudaMemcpy(ls_device_current, device_current_addresses, sizeof_array_of_pointer, cudaMemcpyHostToDevice), CUDA_SUCCESS);
+	ASSERT_EQ(cudaMemcpy(ls_device_next, device_next_addresses, sizeof_array_of_pointer, cudaMemcpyHostToDevice), CUDA_SUCCESS);
+	ASSERT_EQ(cudaMemcpy(ls_device_prev, device_prev_addresses, sizeof_array_of_pointer, cudaMemcpyHostToDevice), CUDA_SUCCESS);
+
 }
 
-TestLinkedList::~TestLinkedList(){
-	delete ls;
-}
-
-LinkedList * TestLinkedList::testGetPrevHost(){
-	return ls->getPrev();
-}
-
-LinkedList * TestLinkedList::testGetNextHost(){
-	return ls->getNext();
-}
-
-LinkedList * TestLinkedList::testSetNextHost(LinkedList * next){
-	ls->setNext(next);
-	return ls->next;
-}
-
-LinkedList * TestLinkedList::testSetPrevHost(LinkedList * last){
-	ls->setPrev(last);
-	return ls->prev;
+void TestLinkedList::copyArrayOfLinkedList(LinkedList ** device_address, LinkedList ** src){
+	LinkedList * device_temp_ls;
+	size_t size = sizeof(LinkedList);
+	for(unsigned int i = 0; i < amount; ++i){
+		ASSERT_EQ(cudaMalloc((void**)&device_temp_ls, size), CUDA_SUCCESS);
+		ASSERT_EQ(cudaMemcpy(device_temp_ls, src[i], size, cudaMemcpyHostToDevice), CUDA_SUCCESS);
+		device_address[i] = device_temp_ls;
+	}
 }
 
 
+void TestLinkedList::TearDown(){
+	delete ls_current;
+	delete ls_next;
+	delete ls_prev;
+
+	for(unsigned int i = 0; i < amount; ++i){
+		// free host object
+		delete ls_host_current[i];
+		delete ls_host_next[i];
+		delete ls_host_prev[i];
+
+		// free device object
+		ASSERT_EQ(cudaFree(device_current_addresses[i]), CUDA_SUCCESS);
+		ASSERT_EQ(cudaFree(device_next_addresses[i]), CUDA_SUCCESS);
+		ASSERT_EQ(cudaFree(device_prev_addresses[i]), CUDA_SUCCESS);
+	}
+	
+	// free array
+	delete [] ls_host_current;
+	delete [] ls_host_next;
+	delete [] ls_host_prev;
+	
+	// free device array
+	ASSERT_EQ(cudaFree(ls_device_current), CUDA_SUCCESS);
+	ASSERT_EQ(cudaFree(ls_device_next), CUDA_SUCCESS);
+	ASSERT_EQ(cudaFree(ls_device_prev), CUDA_SUCCESS);
+
+}
 
 TEST_F(TestLinkedList, test_set_next_host){
-	LinkedList * test1 = new LinkedListChild();
-	EXPECT_EQ(testSetNextHost(test1), test1);
-	delete test1;
+	ls_current->setNext(ls_next);
+	EXPECT_EQ(ls_current->getNext(), ls_next);
 }
 
-TEST_F(TestLinkedList, test_set_last_host){
-	LinkedList * test2 = new LinkedListChild();
-	EXPECT_EQ(testSetPrevHost(test2), test2);
-	delete test2;
+TEST_F(TestLinkedList, test_set_prev_host){
+	ls_current->setPrev(ls_prev);
+	EXPECT_EQ(ls_current->getPrev(), ls_prev);
 }
 
-TEST_F(TestLinkedList, test_get_next_host){
-	LinkedList * test = new LinkedListChild();
-	ls->setNext(test);
-	EXPECT_EQ(this->testGetNextHost(), test);
-	delete test;
-}
-TEST_F(TestLinkedList, test_get_last_host){
-	LinkedList * test = new LinkedListChild();
-	ls->setPrev(test);
-	EXPECT_EQ(this->testGetPrevHost(), test);
-	delete test;
-}
 
 __global__ void testSetNext(LinkedList ** current, LinkedList ** next, unsigned int numElements){
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
@@ -93,168 +154,42 @@ __global__ void testSetNext(LinkedList ** current, LinkedList ** next, unsigned 
 }
 
 TEST_F(TestLinkedList, test_set_next_device){
-	unsigned int amount = 5000;
-
-	LinkedList ** host_current;
-	LinkedList ** host_next;
-	LinkedList ** device_current;
-	LinkedList ** device_next;
-	LinkedList ** device_current_addresses;
-	LinkedList ** device_next_addresses;
-
-	size_t sizeof_linked_list = sizeof(LinkedList);
-	size_t sizeof_linked_list_p = sizeof(LinkedList *);
-	
-	// host memory allocation
-	host_current = (LinkedList **)malloc(sizeof_linked_list_p * amount);	
-	host_next = (LinkedList **)malloc(sizeof_linked_list_p * amount);
-	device_current_addresses = (LinkedList **)malloc(sizeof_linked_list_p * amount);
-	device_next_addresses = (LinkedList **)malloc(sizeof_linked_list_p * amount);
-	// device memory allocation
-	cudaMalloc((void **)&device_current, sizeof_linked_list_p * amount);
-	cudaMalloc((void **)&device_next, sizeof_linked_list_p * amount);
-	
-	// initialize host array
-	for(unsigned int i = 0; i < amount; ++i){
-		host_current[i] = new LinkedListChild(i);
-		host_next[i] = new LinkedListChild(i * 2);	
-	}
-
-
-	// initialize device array
-	LinkedList * device_temp_ls;
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaMalloc((void**)&device_temp_ls, sizeof_linked_list), CUDA_SUCCESS);
-		ASSERT_EQ(cudaMemcpy(device_temp_ls, host_current[i], sizeof_linked_list, cudaMemcpyHostToDevice), CUDA_SUCCESS);
-		device_current_addresses[i] = device_temp_ls;
-	}
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaMalloc((void**)&device_temp_ls, sizeof_linked_list), CUDA_SUCCESS);
-		ASSERT_EQ(cudaMemcpy(device_temp_ls, host_next[i], sizeof_linked_list, cudaMemcpyHostToDevice), CUDA_SUCCESS);
-		device_next_addresses[i] = device_temp_ls;
-	}
-	ASSERT_EQ(cudaMemcpy(device_current, device_current_addresses, sizeof_linked_list_p * amount, cudaMemcpyHostToDevice), CUDA_SUCCESS);
-	ASSERT_EQ(cudaMemcpy(device_next, device_next_addresses, sizeof_linked_list_p * amount, cudaMemcpyHostToDevice), CUDA_SUCCESS);
-
 
 	// computing
-	testSetNext<<<20, 256>>>(device_current, device_next, amount);
-
+	testSetNext<<<20, 256>>>(ls_device_current,ls_device_next, amount);
 
 	// copy the array content from device to host
 	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaMemcpy(host_current[i], device_current_addresses[i], sizeof_linked_list, cudaMemcpyDeviceToHost), CUDA_SUCCESS);
-	}
-		// testing
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(host_current[i]->getNext(), device_next_addresses[i]);
+		ASSERT_EQ(cudaMemcpy(ls_host_current[i], device_current_addresses[i], sizeof(LinkedList), cudaMemcpyDeviceToHost), CUDA_SUCCESS);
 	}
 
-	// free host memory
+	// testing
 	for(unsigned int i = 0; i < amount; ++i){
-		delete host_current[i];
-		delete host_next[i];
+		ASSERT_EQ(ls_host_current[i]->getNext(), device_next_addresses[i]);
 	}
-	delete[] host_current;
-	delete[] host_next;
 
-	// free device memory
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaFree(device_current_addresses[i]), CUDA_SUCCESS);
-		ASSERT_EQ(cudaFree(device_next_addresses[i]), CUDA_SUCCESS);
-	}
-	delete[] device_next_addresses;
-	delete[] device_current_addresses;
-
-	ASSERT_EQ(cudaFree(device_current), CUDA_SUCCESS);
-	ASSERT_EQ(cudaFree(device_next), CUDA_SUCCESS);
-	
 }
 
-__global__ void testSetLast(LinkedList ** current, LinkedList ** next, unsigned int numElements){
+__global__ void testSetPrev(LinkedList ** current, LinkedList ** prev, unsigned int numElements){
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id < numElements){
-		current[id]->setPrev(next[id]);
+		current[id]->setPrev(prev[id]);
 	}
 }
 
-TEST_F(TestLinkedList, test_set_last_device){
-	unsigned int amount = 5000;
-
-	LinkedList ** host_current;
-	LinkedList ** host_last;
-	LinkedList ** device_current;
-	LinkedList ** device_last;
-	LinkedList ** device_current_addresses;
-	LinkedList ** device_last_addresses;
-
-	size_t sizeof_linked_list = sizeof(LinkedList);
-	size_t sizeof_linked_list_p = sizeof(LinkedList *);
-	
-	// host memory allocation
-	host_current = (LinkedList **)malloc(sizeof_linked_list_p * amount);	
-	host_last = (LinkedList **)malloc(sizeof_linked_list_p * amount);
-	device_current_addresses = (LinkedList **)malloc(sizeof_linked_list_p * amount);
-	device_last_addresses = (LinkedList **)malloc(sizeof_linked_list_p * amount);
-	// device memory allocation
-	cudaMalloc((void **)&device_current, sizeof_linked_list_p * amount);
-	cudaMalloc((void **)&device_last, sizeof_linked_list_p * amount);
-	
-	// initialize host array
-	for(unsigned int i = 0; i < amount; ++i){
-		host_current[i] = new LinkedListChild(i);
-		host_last[i] = new LinkedListChild(i * 2);	
-	}
-
-
-	// initialize device array
-	// current
-	LinkedList * device_temp_ls;
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaMalloc((void**)&device_temp_ls, sizeof_linked_list), CUDA_SUCCESS);
-		ASSERT_EQ(cudaMemcpy(device_temp_ls, host_current[i], sizeof_linked_list, cudaMemcpyHostToDevice), CUDA_SUCCESS);
-		device_current_addresses[i] = device_temp_ls;
-	}
-	// last
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaMalloc((void**)&device_temp_ls, sizeof_linked_list), CUDA_SUCCESS);
-		ASSERT_EQ(cudaMemcpy(device_temp_ls, host_last[i], sizeof_linked_list, cudaMemcpyHostToDevice), CUDA_SUCCESS);
-		device_last_addresses[i] = device_temp_ls;
-	}
-	ASSERT_EQ(cudaMemcpy(device_current, device_current_addresses, sizeof_linked_list_p * amount, cudaMemcpyHostToDevice), CUDA_SUCCESS);
-	ASSERT_EQ(cudaMemcpy(device_last, device_last_addresses, sizeof_linked_list_p * amount, cudaMemcpyHostToDevice), CUDA_SUCCESS);
-
-
+TEST_F(TestLinkedList, test_set_prev_device){
 	// computing
-	testSetNext<<<20, 256>>>(device_current, device_last, amount);
-
+	testSetPrev<<<20, 256>>>(ls_device_current, ls_device_prev, amount);
 
 	// copy the array content from device to host
 	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaMemcpy(host_current[i], device_current_addresses[i], sizeof_linked_list, cudaMemcpyDeviceToHost), CUDA_SUCCESS);
-	}
-		// testing
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(host_current[i]->getNext(), device_last_addresses[i]);
+		ASSERT_EQ(cudaMemcpy(ls_host_current[i], device_current_addresses[i], sizeof(LinkedList), cudaMemcpyDeviceToHost), CUDA_SUCCESS);
 	}
 
-	// free host memory
+	// testing
 	for(unsigned int i = 0; i < amount; ++i){
-		delete host_current[i];
-		delete host_last[i];
+		ASSERT_EQ(ls_host_current[i]->getPrev(), device_prev_addresses[i])<<"At index : "<< i << std::endl;
 	}
-	delete[] host_current;
-	delete[] host_last;
 
-	// free device memory
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaFree(device_current_addresses[i]), CUDA_SUCCESS);
-		ASSERT_EQ(cudaFree(device_last_addresses[i]), CUDA_SUCCESS);
-	}
-	delete[] device_last_addresses;
-	delete[] device_current_addresses;
-
-	ASSERT_EQ(cudaFree(device_current), CUDA_SUCCESS);
-	ASSERT_EQ(cudaFree(device_last), CUDA_SUCCESS);
-	
 }
+
