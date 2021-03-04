@@ -53,7 +53,9 @@ public:
 	__device__ __host__ void setMsGenePointer(double * ms_gene);
 	__device__ __host__ void setOsSeqGenePointer(double * os_seq_gene);
 	__device__ __host__ void setProcessTime(ProcessTime **);
-	
+	__device__ __host__ void setArrivT(double);
+    __device__ __host__ void setStartTime(double);
+
 	// getter
 	__device__ __host__ double getMsGene();
 	__device__ __host__ double getOsSeqGene();
