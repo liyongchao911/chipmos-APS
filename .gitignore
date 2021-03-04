@@ -34,4 +34,5 @@
 build/
 lab/
 docs/
+.vscode/
 .ycm_extra_conf.py

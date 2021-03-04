@@ -22,13 +22,13 @@ public:
 };
 
 
-class JobBase : protected LinkedList{
+class JobBase : public LinkedList{
 protected:
 	// genes point to chromosome's gene
 	// use double const * type to prevent set the wrong value on gene
 	double const * ms_gene;
 	double const * os_seq_gene;
-
+	
 	// partition is the partition value of roulette.
 	// for example : size of can run tools is 10, partition is 1/10
 	double partition; 
