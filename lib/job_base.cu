@@ -2,12 +2,11 @@
 
 // constructor and initialization
 JobBase::JobBase(){
-    partition = 1 / size_of_process_time;
+    init();
+    partition = 1.0 / (double)size_of_process_time;
 }
 
 __device__ __host__ void JobBase::init(){
-    this->partition = 0;
-    this->arriv_t = 0;
     this->start_time = 0;
     this->end_time = 0;
 }
@@ -63,7 +62,7 @@ __device__ __host__ unsigned int JobBase::machineSelection(){
     //calculate which number of machine(from 1 to n) that corresponds to partition
     unsigned int count = 0;
     if(*os_seq_gene == 0)
-	count = 1;
+	    count = 1;
     while((this->partition * count) < *os_seq_gene){
         count++;
     }    
