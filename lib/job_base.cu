@@ -61,9 +61,9 @@ __device__ __host__ double JobBase::getEndTime(){
 __device__ __host__ unsigned int JobBase::machineSelection(){
     //calculate which number of machine(from 1 to n) that corresponds to partition
     unsigned int count = 0;
-    if(*os_seq_gene == 0)
+    if(*ms_gene == 0)
 	    count = 1;
-    while((this->partition * count) < *os_seq_gene){
+    while((this->partition * count) < *ms_gene){
         count++;
     }    
     return count;
