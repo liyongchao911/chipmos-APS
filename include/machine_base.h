@@ -12,7 +12,6 @@ protected:
 	unsigned int machine_no;
 	unsigned int size_of_jobs;
 
-	__device__ __host__ virtual void sortJobAlgorithm(JobBase *);
 public:
 			
 	MachineBase(unsigned int machine_no);

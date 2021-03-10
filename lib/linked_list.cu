@@ -23,14 +23,35 @@ __device__ __host__ void LinkedList::setPrev(LinkedList * prev){
 __device__ __host__ LinkedList * mergeLinkedList(LinkedList * l1, LinkedList * l2){
 	if(!l2) return l1;
 	if(!l1) return l2;
+	
+	LinkedList * result, *result_iter;
 
 	if(l1->getValue() < l2->getValue()) {
-		l1->setNext(mergeLinkedList(l1->getNext(), l2));
-		return l1;
+		result = l1;
+		l1 = l1->getNext();	
 	} else {
-		l2->setNext(mergeLinkedList(l1, l2->getNext()));
-		return l2;
+		result = l2;
+		l2 = l2->getNext();
 	}
+	
+	result_iter = result;
+
+	while(l1 && l2) {
+		if(l1->getValue() < l2->getValue()){
+			result_iter->setNext(l1);
+			l1 = l1->getNext();
+		} else{
+			result_iter->setNext(l2);
+			l2 = l2->getNext();
+		}
+		result_iter = result_iter->getNext();
+	}
+
+	if(l1) result_iter->setNext(l1);
+	else if(l2) result_iter->setNext(l2);
+
+	return result;
+
 }
 
 
