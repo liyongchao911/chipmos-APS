@@ -3,7 +3,7 @@
 // constructor and initialization
 JobBase::JobBase(){
     init();
-    partition = 1.0 / (double)size_of_process_time;
+    //partition = 1.0 / (double)size_of_process_time;
 }
 
 __device__ __host__ void JobBase::init(){
@@ -20,9 +20,11 @@ __device__ __host__ void JobBase::setOsSeqGenePointer(double * os_seq_gene){
     this->os_seq_gene = os_seq_gene;
 }
 
-__device__ __host__ void JobBase::setProcessTime(ProcessTime **ptime){
+__device__ __host__ void JobBase::setProcessTime(ProcessTime **ptime, unsigned int size_of_process_time){
     this->process_time = ptime;
-
+    this->size_of_process_time = size_of_process_time;
+    this->partition = 1.0 / (double)size_of_process_time;
+}
 
 __device__ __host__ void JobBase::setArrivT(double arriv_time){
     this->arriv_t = arriv_time;
@@ -61,10 +63,13 @@ __device__ __host__ double JobBase::getEndTime(){
 __device__ __host__ unsigned int JobBase::machineSelection(){
     //calculate which number of machine(from 1 to n) that corresponds to partition
     unsigned int count = 0;
+    double cal_partition = 0.0;
     if(*ms_gene == 0)
 	    count = 1;
-    while((this->partition * count) < *ms_gene){
+    while(cal_partition < *ms_gene){
+        cal_partition += this->partition;
         count++;
     }    
     return count;
 }
+

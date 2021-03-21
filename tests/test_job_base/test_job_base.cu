@@ -5,7 +5,27 @@
 #include <include/job_base.h>
 #include <vector>
 #include <gtest/gtest.h>
+#include <iostream>
+#include <fstream>
 #define amount 5000
+
+using namespace std;
+
+class JobBaseChild : public JobBase{
+private:
+	double value;
+public:
+	JobBaseChild() : JobBase(){
+		value = 0;
+	}
+	JobBaseChild(double val):JobBase(){
+		value = val;	
+	}
+
+	virtual __device__ __host__ double getValue(){
+		return value;
+	}
+};
 
 
 class TestJobBase : public testing::Test{
@@ -14,30 +34,38 @@ protected:
 	JobBase ** jb_host;
 	JobBase ** device_jb_addresses;
 	JobBase ** jb_device;
+	unsigned int * result_device;
+	unsigned int * result_host;
+	double arrayOfMsGene[5000];
+	unsigned int arrayOfSizePt[5000], arrayOfMcNum[5000];
 	void SetUp() override;
 	void TearDown() override;
 	void copyArrayOfJobBase(JobBase **, JobBase **);
+	void setMsGeneData();
 };
 
 void TestJobBase::SetUp() {
-	jb = new JobBase();
 	// initialize jb_host_*
-	size_t sizeof_job_base = sizeof(JobBase);
 	size_t sizeof_array_of_pointer = sizeof(JobBase*) * amount;
+	size_t sizeof_array_of_result = sizeof(unsigned int) * amount;
 
 	// host memory allocation
 	jb_host = (JobBase **)malloc(sizeof_array_of_pointer);
 	device_jb_addresses = (JobBase **)malloc(sizeof_array_of_pointer);
+	result_host = (unsigned int *)malloc(sizeof_array_of_result);
 
 	// device memory allocation
 	cudaMalloc((void **)&jb_device, sizeof_array_of_pointer);
+	cudaMalloc((void **)&result_device, sizeof_array_of_result);
 
+	setMsGeneData();
 	// initializae host array
 	for(unsigned int i = 0 ;i < amount; ++i){
-		jb_host[i] = new JobBase(i);
+		jb_host[i] = new JobBaseChild(i);
+		jb_host[i]->setMsGenePointer(&arrayOfMsGene[i]);
+		jb_host[i]->setProcessTime(NULL, arrayOfSizePt[i]);
 	}
-
-	//initilizae device array
+	//initilize device array
 	copyArrayOfJobBase(device_jb_addresses, jb_host);
 
 	// copy content from host to device
@@ -56,44 +84,59 @@ void TestJobBase::copyArrayOfJobBase(JobBase ** device_address, JobBase ** src){
 
 
 void TestJobBase::TearDown(){
-	delete jb;
+	delete result_host;
 
 	for(unsigned int i = 0; i < amount; ++i){
 		// free host object
 		delete jb_host[i];
-
-		// free device object
-		ASSERT_EQ(cudaFree(device_job_addresses[i]), CUDA_SUCCESS);
 	}
 	
 	// free array
 	delete [] jb_host;
-	
+	delete [] device_jb_addresses;
 	// free device array
 	ASSERT_EQ(cudaFree(jb_device), CUDA_SUCCESS);
-
+	ASSERT_EQ(cudaFree(result_device), CUDA_SUCCESS);
 }
 
-__global__ void testMachineSelection(JobBase ** jb, unsigned int numElements){
+void TestJobBase::setMsGeneData(){
+    ifstream file;
+    file.open("/home/shani/Parallel-Genetic-Algorithm/tests/test_job_base/ms_data.txt", ios::in);
+    if (file){
+		for(unsigned int i = 0; i < 5000; ++i){
+			file >> arrayOfMsGene[i] >> arrayOfSizePt[i] >> arrayOfMcNum[i];
+		}
+        
+    }else {
+        cout << "Unable to open file\n";
+    }
+    file.close();
+}
+
+__global__ void testMachineSelection(JobBase ** jb, unsigned int * result, double * msgene_device, unsigned int numElements){
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id < numElements){
-		jb[id]->machineSelection();
+		jb[id]->setMsGenePointer(&(msgene_device[id]));
+		result[id] = jb[id]->machineSelection();
 	}
 }
 
 TEST_F(TestJobBase, test_machine_selection_device){
-
+	// copy the array content from host to device
+	double * msgene_device;
+	size_t size_arr = sizeof(double) * amount;
+	ASSERT_EQ(cudaMalloc((void**)&msgene_device, size_arr), CUDA_SUCCESS);
+	ASSERT_EQ(cudaMemcpy(msgene_device, arrayOfMsGene, size_arr, cudaMemcpyHostToDevice), CUDA_SUCCESS);
 	// computing
-	testMachineSelection<<<20, 256>>>(jb_device, amount);
-
+	testMachineSelection<<<20, 256>>>(jb_device, result_device, msgene_device, amount);
 	// copy the array content from device to host
-	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaMemcpy(jb_host[i], device_jb_addresses[i], sizeof(JobBase), cudaMemcpyDeviceToHost), CUDA_SUCCESS);
-	}
-
+	size_t size = sizeof(unsigned int) * amount;
+	ASSERT_EQ(cudaMemcpy(result_host, result_device, size, cudaMemcpyDeviceToHost), CUDA_SUCCESS);
+	
 	// testing
 	for(unsigned int i = 0; i < amount; ++i){
-		ASSERT_EQ(jb_host[i]->machineSelection(), 1);
+		ASSERT_EQ(result_host[i], arrayOfMcNum[i]);
 	}
 
 }
+
