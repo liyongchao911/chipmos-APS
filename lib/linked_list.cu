@@ -1,6 +1,13 @@
 #include <include/linked_list.h>
+#include <stdio.h>
+#undef DEBUG
+#define show(list) \
+	for(LinkedList *iter = list; iter; iter = iter->getNext()) { \
+		printf("%.2f ", iter->getValue()); \
+	} \
+	printf("\n"); \
 
-__host__ LinkedList::LinkedList(){
+__device__ __host__ LinkedList::LinkedList(){
 	this->next = this->prev = nullptr;
 }
 
@@ -29,10 +36,10 @@ __device__ __host__ LinkedList * mergeLinkedList(LinkedList * l1, LinkedList * l
 	// set the first element of result
 	if(l1->getValue() < l2->getValue()) {
 		result = l1;
-		l1 = l1->getNext();	
+		l1 = l1->next;	
 	} else {
 		result = l2;
-		l2 = l2->getNext();
+		l2 = l2->next;
 	}
 	
 	result_iter = result;
@@ -40,18 +47,18 @@ __device__ __host__ LinkedList * mergeLinkedList(LinkedList * l1, LinkedList * l
 	// merge the linked list
 	while(l1 && l2) {
 		if(l1->getValue() < l2->getValue()){
-			result_iter->setNext(l1); // connect to next element
-			l1 = l1->getNext(); // l1 move to next element
+			result_iter->next = l1; // connect to next element
+			l1 = l1->next; // l1 move to next element
 		} else{
-			result_iter->setNext(l2);
-			l2 = l2->getNext(); // l2 move to next element
+			result_iter->next=  l2;
+			l2 = l2->next; // l2 move to next element
 		}
-		result_iter = result_iter->getNext(); // point to next element
+		result_iter = result_iter->next; // point to next element
 	}
 	
 	// if l1 is not empty, connect to result
-	if(l1) result_iter->setNext(l1);
-	else if(l2) result_iter->setNext(l2);
+	if(l1) result_iter->next = l1;
+	else if(l2) result_iter->next = l2;
 
 	return result;
 
@@ -59,27 +66,36 @@ __device__ __host__ LinkedList * mergeLinkedList(LinkedList * l1, LinkedList * l
 
 
 __device__ __host__ LinkedList * linkedListMergeSort(LinkedList * head){
-	if(!head && !head->getNext()) return head;
-
-	LinkedList *fast = head->getNext();
-	LinkedList *slow = head;
-	
-	// get the middle of linked list
-	// divide the linked list
-	while(fast && fast->getNext()){
-		slow = slow->getNext();
-		fast = fast->getNext()->getNext();
+	if(!head || !head->next) {
+		return head;
+	}else{
+		LinkedList *fast = head->next;
+		LinkedList *slow = head;
+		
+		// get the middle of linked list
+		// divide the linked list
+		while(fast && fast->next){
+			slow = slow->next;
+			fast = fast->next->next;
+		}
+		// now, get two lists.
+		fast = slow->next;
+		slow->next = NULL;
+#ifdef DEBUG	
+		printf("Head : ");
+		show(head);
+		printf("Fast : ");
+		show(fast);
+#endif
+		LinkedList *lhs = linkedListMergeSort(head);
+#ifdef DEBUG
+		printf("lhs finish!\n");
+#endif
+		LinkedList *rhs = linkedListMergeSort(fast);
+		
+		// merge the linked list
+		return mergeLinkedList(lhs, rhs);	
 	}
-	// now, get two lists.
-	fast = slow->getNext();
-	slow->setNext(NULL);
-	
-
-	LinkedList *lhs = linkedListMergeSort(head);
-	LinkedList *rhs = linkedListMergeSort(slow);
-	
-	// merge the linked list
-	return mergeLinkedList(lhs, rhs);	
 
 }
 

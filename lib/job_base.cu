@@ -24,11 +24,11 @@ __device__ __host__ void JobBase::setProcessTime(ProcessTime **ptime){
     this->process_time = ptime;
 }
 
-__device__ __host__ void setArrivT(double arriv_time){
+__device__ __host__ void JobBase::setArrivT(double arriv_time){
     this->arriv_t = arriv_time;
 }
 
-__device__ __host__ void setStartTime(double start_time){
+__device__ __host__ void JobBase::setStartTime(double start_time){
     this->start_time = start_time;
 }
 

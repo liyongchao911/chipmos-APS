@@ -10,19 +10,36 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 
+class LinkedList;
 
 /** @class LinkedList
  *	@brief Class for linked list data structure.
  */
+
+/**	@brief merge sort of LinkedList 
+ * 	@return LinkedList* return the head of sorted list
+ *
+ * 	@param head head of a linked list
+ */
+__device__ __host__ LinkedList * linkedListMergeSort(LinkedList *head);
+
+/**
+ *
+ */
+__device__ __host__ LinkedList * mergeLinkedList(LinkedList * l1, LinkedList * l2);
+
+
 class LinkedList{
 friend class TestLinkedList;
+	friend LinkedList * linkedListMergeSort(LinkedList*);
+	friend LinkedList * mergeLinkedList(LinkedList*, LinkedList*);
 private:
 	LinkedList * next;
 	LinkedList * prev;
 public:
 	/** @brief Construct LinkedList object 
 	 */
-	__host__ LinkedList();
+	__device__ __host__ LinkedList();
 
 	
 	/** @brief Get the next LinkedList element
@@ -68,15 +85,8 @@ public:
 	
 	/**	@brief	Destruct the object
 	 */
-	virtual ~LinkedList();
+	virtual __device__ __host__ ~LinkedList();
 };
-
-/**	@brief merge sort of LinkedList 
- * 	@return LinkedList* return the head of sorted list
- *
- * 	@param head head of a linked list
- */
-__device__ __host__ LinkedList * linkedListMergeSort(LinkedList *head);
 
 // __global__ void vectorAddInt(int * a, int *b, int *c, unsigned int num_elements);
 

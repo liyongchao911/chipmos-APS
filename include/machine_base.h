@@ -6,6 +6,7 @@
 #include <include/job_base.h>
 
 class MachineBase{
+	friend class TestMachineBase;
 protected:
 	JobBase * root;
 	JobBase * tail;
