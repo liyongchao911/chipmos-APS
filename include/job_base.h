@@ -23,6 +23,7 @@ public:
 
 
 class JobBase : public LinkedList{
+friend class TestJobBase;
 protected:
 	// genes point to chromosome's gene
 	// use double const * type to prevent set the wrong value on gene
@@ -52,7 +53,7 @@ public:
 	// setter
 	__device__ __host__ void setMsGenePointer(double * ms_gene);
 	__device__ __host__ void setOsSeqGenePointer(double * os_seq_gene);
-	__device__ __host__ void setProcessTime(ProcessTime **);
+	__device__ __host__ void setProcessTime(ProcessTime **, unsigned int size_of_process_time);
 	__device__ __host__ void setArrivT(double);
     __device__ __host__ void setStartTime(double);
 
