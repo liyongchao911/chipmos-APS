@@ -6,13 +6,13 @@
 #include <include/job_base.h>
 
 class MachineBase{
+	friend class TestMachineBase;
 protected:
 	JobBase * root;
 	JobBase * tail;
 	unsigned int machine_no;
 	unsigned int size_of_jobs;
 
-	__device__ __host__ virtual void sortJobAlgorithm(JobBase *);
 public:
 			
 	MachineBase(unsigned int machine_no);
