@@ -1,35 +1,23 @@
 #ifndef __TEST_LINKED_LIST_H__
 #define __TEST_LINKED_LIST_H__
 
-#include <cstring>
-#include <cuda.h>
-#include <cuda_runtime.h>
 #include <include/linked_list.h>
-#include <vector>
-#include <gtest/gtest.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-class LinkedListChild : public LinkedList{
-private:
+typedef struct LinkedListItem LinkedListItem;
+struct LinkedListItem {
+	LinkedListElement ele;
 	double value;
-public:
-	__device__ __host__ LinkedListChild() : LinkedList(){
-		value = 0;
-	}
-	__device__ __host__ LinkedListChild(double val):LinkedList(){
-		value = val;	
-	}
-
-	__device__ __host__ void reset(){
-		value = 0;
-	}
-
-	__device__ __host__ void setValue(double val){
-		value = val;
-	}
-
-	virtual __device__ __host__ double getValue(){
-		return value;
-	}
 };
+
+__device__ __host__ double linkedListItemGetValue(void *_self);
+
+LinkedListItem * newLinkedListItem(double val);
+
+
+void LinkedListItemAdd( LinkedListItem ** list, LinkedListItem *item);
+
+int cmpint(const void *a, const void *b);
 
 #endif

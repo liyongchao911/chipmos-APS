@@ -2,44 +2,64 @@
 #include "include/linked_list.h"
 #include <include/machine_base.h>
 
-MachineBase::MachineBase(unsigned int machine_no):machine_no(machine_no)
-{
-	this->init();
+
+__device__ __host__ void reset(void *_self){
+	MachineBase * self = (MachineBase *)_self;
+	self->size_of_jobs = 0;
+	self->root = self->tail = NULL;
 }
 
-__device__ __host__ void MachineBase::init()
-{
-	size_of_jobs = 0;
-	root = tail = NULL;
-}
 
-__device__ __host__ void MachineBase::addJob(JobBase * job)
+
+__device__ __host__ void addJob(void *_self, JobBase * job)
 {
-	if (size_of_jobs == 0) {
-		tail = root = job;	
+	MachineBase *self =  (MachineBase *)_self;
+
+	if (self->size_of_jobs == 0) {
+		self->tail = self->root = job;	
 	} else {
-		tail->setNext(job); // add into the list
-		job->setPrev(tail); // connect to prev
-		tail = job;	// move the tail
+		self->tail->ele->setNext(self->tail->ele, job->ele); // add into the list
+		job->ele->setPrev(job->ele, self->tail->ele); // connect to prev
+		self->tail = job;	// move the tail
 	}
-	++size_of_jobs;
+	++self->size_of_jobs;
 }
 
-__device__ __host__ unsigned int MachineBase::getSizeOfJobs()
+__device__ __host__ unsigned int getSizeOfJobs(void *_self)
 {
-	return size_of_jobs;
+	MachineBase *self = (MachineBase*)_self;
+	return self->size_of_jobs;
 }
 
-__device__ __host__ void MachineBase::sortJob()
+__device__ __host__ void sortJob(void *_self)
 {
-	JobBase * job_iter = NULL;
-	root = (JobBase *)linkedListMergeSort(root);
-	job_iter = root;
-	if(job_iter)
-	while(job_iter->getNext()){
-		job_iter = (JobBase*)job_iter->getNext();
+	MachineBase *self = (MachineBase *)_self;
+	LinkedListElement * ele = NULL;
+	self->root->ele = linkedListMergeSort(self->root->ele);
+	ele = self->root->ele;
+	while(ele && ele->next){
+		ele = (LinkedListElement*)ele->next;
 	}
-	this->tail = job_iter;
+	self->tail = (JobBase *)ele->pDerivedObject;
 	
 }
 
+__device__ __host__ void init(void *_self){
+	MachineBase * self = (MachineBase *)_self;
+	self->reset = reset;
+	self->addJob = addJob;
+	self->sortJob = sortJob;
+	self->getSizeOfJobs = getSizeOfJobs;
+	self->getSizeOfJobs = NULL;
+
+	self->reset(self);
+}
+
+MachineBase * newMachineBase(unsigned int machine_no){
+	MachineBase * mb = (MachineBase*)malloc(sizeof(MachineBase));
+	mb->machine_no = machine_no;
+	mb->init = init;
+
+	mb->init(mb);	
+	return mb;
+}
