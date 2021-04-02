@@ -20,7 +20,6 @@ typedef struct JobBase JobBase;
 JobBase * newJobBase();
 
 struct JobBase{
-	LinkedListElement * ele;
 	void * ptr_derived_object;
 
 	// genes point to chromosome's gene
@@ -65,7 +64,22 @@ struct JobBase{
 
 	// operation
 	unsigned int (*machineSelection)(void *self);
-
 };
+
+__device__ __host__ void initJobBase(void *self);
+__device__ __host__ void resetJobBase(void *self);
+__device__ __host__ void setMsGenePointer(void *self, double *ms_gene);
+__device__ __host__ void setOsSeqGenePointer(void *self, double *os_seq_gene);
+__device__ __host__ void setProcessTime(void *self, ProcessTime ** pt, unsigned int size_of_process_time);
+__device__ __host__ void setArrivT(void *self, double arrivT);
+__device__ __host__ void setStartTime(double startTime);
+__device__ __host__ double getMsGene(void *self);
+__device__ __host__ double getOsSeqGene(void *self);
+__device__ __host__ double getArrivT(void *self);
+__device__ __host__ double getStartTime(void *self);
+__device__ __host__ double getEndTime(void *self);
+__device__ __host__ unsigned int getMachineNo(void *self);
+
+
 
 #endif

@@ -1,29 +1,12 @@
 #include "include/linked_list.h"
 #include <include/job_base.h>
 
-// void init(void *self);
-// void reset(void *self);
-// 
-// void setMsGenePointer(void *self, double *ms_gene);
-// void setOsSeqGenePointer(void *self, double *os_seq_gene);
-// void setProcessTime(void *self, ProcessTime ** pt, unsigned int size_of_process_time);
-// void setArrivT(void *self, double arrivT);
-// void setStartTime(double startTime);
-// 
-// double getMsGene(void *self);
-// double getOsSeqGene(void *self);
-// double getArrivT(void *self);
-// double getStartTime(void *self);
-// double getEndTime(void *self);
-// unsigned int getMachineNo(void *self);
-// 
-
 
 
 
 // constructor and initialization
 
-void resetJobBase(void *_self){
+__device__ __host__ void resetJobBase(void *_self){
 	JobBase *self = (JobBase*)_self;
 	self->start_time = 0;
 	self->end_time = 0;
@@ -99,6 +82,7 @@ __device__ __host__ unsigned int machineSelection(void *_self){
     unsigned int count = 0;
     double cal_partition = 0.0;
 	double ms_gene = self->getMsGene(self);
+
 	double partition = self->partition;
     if(ms_gene == 0)
 	    count = 1;
@@ -135,9 +119,9 @@ __device__ __host__ void initJobBase(void *_self){
 JobBase * newJobBase(){
 	JobBase *jb = (JobBase*)malloc(sizeof(JobBase));
 
-	jb->ele = newLinkedListElement();
-	jb->ele->pDerivedObject = jb;
-	jb->ele->getValue = getOsSeqGene; // virtual ^_^
+	// jb->ele = newLinkedListElement();
+	// jb->ele->pDerivedObject = jb;
+	// jb->ele->getValue = getOsSeqGene; // virtual ^_^
 
 	jb->init = initJobBase;
 

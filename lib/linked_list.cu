@@ -4,7 +4,7 @@
 #include <stdio.h>
 // #define DEBUG
 #define show(list) 													\
-	for(LinkedListElement *iter = list; iter; iter = iter->next) {    \
+   for(LinkedListElement *iter = list; iter; iter = iter->next) {    \
 		printf("%.2f ", iter->getValue(iter));  						\
 	}  																\
 	printf("\n"); 													\
