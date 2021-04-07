@@ -3,7 +3,7 @@
 __device__ __host__ double linkedListItemGetValue(void *_self){
 	LinkedListElement * ele = (LinkedListElement*)_self;
 	if(ele){
-		LinkedListItem *item = (LinkedListItem *)ele->pDerivedObject;
+		LinkedListItem *item = (LinkedListItem *)ele->ptr_derived_object;
 		return item->value;
 	}
 	return 0;
@@ -16,7 +16,7 @@ LinkedListItem * newLinkedListItem(double val){
 	initList(&(item->ele));
 	item->ele.setNext = __listEleSetNext;
 	item->ele.setPrev = __listEleSetPrev;
-	item->ele.pDerivedObject = item;
+	item->ele.ptr_derived_object = item;
 	item->ele.getValue = linkedListItemGetValue;
 	item->value = val;
 	return item;
@@ -35,6 +35,3 @@ void LinkedListItemAdd( LinkedListItem ** list, LinkedListItem *item){
 	}
 }
 
-int cmpint(const void *a, const void *b){
-	return *(int*)a > *(int*)b;
-}

@@ -44,7 +44,7 @@ struct LinkedListElement{
 	
 	LinkedListElement * next;
 	LinkedListElement * prev;
-	void * pDerivedObject;
+	void * ptr_derived_object;
 	
 	void (*init)(void *self);
 	void (*reset)(void *self);

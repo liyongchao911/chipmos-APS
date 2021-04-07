@@ -36,7 +36,7 @@ LinkedListElement * newLinkedListElement(){
 	LinkedListElement * ele = (LinkedListElement*)malloc(sizeof(LinkedListElement));
 	if(!ele)
 		return ele;
-	ele->pDerivedObject = NULL;
+	ele->ptr_derived_object = NULL;
 	ele->init = initList;
 	ele->init(ele);
 	return ele;

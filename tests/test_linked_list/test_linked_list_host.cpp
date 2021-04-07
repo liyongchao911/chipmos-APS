@@ -6,12 +6,11 @@
 #include <texture_types.h>
 #include <iostream>
 #include "test_linked_list.h"
+#include <tests/def.h>
 
 #define amount 5000
 
 using namespace std;
-
-
 
 
 
@@ -45,7 +44,7 @@ void TestLinkedListHost::SetUp(){
 			count ++;
 		}
 	}
-	printf("count = %d\n", count);
+	PRINTF("Amount of Linked list is %d\n", count);
 }
 
 void TestLinkedListHost::TearDown(){
@@ -102,14 +101,14 @@ TEST_F(TestLinkedListHost, test_set_prev_on_host){
 	}
 }
 
-TEST_F(TestLinkedListHost, test_sort_linked_list){
+TEST_F(TestLinkedListHost, test_sort_linked_list_on_host){
 	LinkedListElement * iter;
 	// LinkedListElement test;
 	for(int i = 0; i < amount; ++i){
 		qsort(values[i], sizes[i], sizeof(int), cmpint);
 		if(sizes[i] != 0){
 			iter = linkedListMergeSort(&(eles_arr[i]->ele));
-			eles_arr[i] = (LinkedListItem *)iter->pDerivedObject;
+			eles_arr[i] = (LinkedListItem *)iter->ptr_derived_object;
 			iter = &eles_arr[i]->ele;
 			// printf("Value : ");
 			for(int j = 0; j < sizes[i]; ++j){

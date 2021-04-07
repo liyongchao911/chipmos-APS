@@ -15,7 +15,7 @@
 using namespace std;
 
 
-class TestJobBase : public testing::Test{
+class TestJobBaseDevice : public testing::Test{
 protected:
 	// Job * jb;
 	Job ** jb_host;
@@ -32,7 +32,7 @@ protected:
 	void setMsGeneData();
 };
 
-void TestJobBase::SetUp() {
+void TestJobBaseDevice::SetUp() {
 	// initialize jb_host_*
 	size_t sizeof_array_of_pointer = sizeof(Job*) * amount;
 	size_t sizeof_array_of_result = sizeof(unsigned int) * amount;
@@ -61,7 +61,7 @@ void TestJobBase::SetUp() {
 	ASSERT_EQ(cudaMemcpy(jb_device, device_jb_addresses, sizeof_array_of_pointer, cudaMemcpyHostToDevice), CUDA_SUCCESS);
 }
 
-void TestJobBase::copyArrayOfJobBase(Job** device_address, Job** src){
+void TestJobBaseDevice::copyArrayOfJobBase(Job** device_address, Job** src){
 	Job * device_temp_jb;
 	size_t size = sizeof(Job);
 	for(unsigned int i = 0; i < amount; ++i){
@@ -72,7 +72,7 @@ void TestJobBase::copyArrayOfJobBase(Job** device_address, Job** src){
 }
 
 
-void TestJobBase::TearDown(){
+void TestJobBaseDevice::TearDown(){
 	// delete result_host;
 
 	// for(unsigned int i = 0; i < amount; ++i){
@@ -88,7 +88,7 @@ void TestJobBase::TearDown(){
 	// ASSERT_EQ(cudaFree(result_device), CUDA_SUCCESS);
 }
 
-void TestJobBase::setMsGeneData(){
+void TestJobBaseDevice::setMsGeneData(){
     ifstream file;
     file.open("./ms_data.txt", ios::in);
     if (file){
@@ -113,7 +113,7 @@ __global__ void testMachineSelection(Job ** jb, unsigned int * result, double * 
 }
 
 
-TEST_F(TestJobBase, test_machine_selection_host){
+TEST_F(TestJobBaseDevice, test_machine_selection_host){
 	for(int i = 0; i < amount; ++i){
 		jb_host[i]->base.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
 		ASSERT_EQ(jb_host[i]->base.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
@@ -122,7 +122,7 @@ TEST_F(TestJobBase, test_machine_selection_host){
 
 
 
-TEST_F(TestJobBase, test_machine_selection_device){
+TEST_F(TestJobBaseDevice, test_machine_selection_device){
 	// copy the array content from host to device
 	double * msgene_device;
 	size_t size_arr = sizeof(double) * amount;

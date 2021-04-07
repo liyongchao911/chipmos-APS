@@ -8,6 +8,7 @@
 #include <regex.h>
 #include <texture_types.h>
 #include <time.h>
+#include <tests/def.h>
 
 #define amount 5000
 
@@ -62,7 +63,7 @@ void TestLinkedListDevice::advanceSetup(){
 
 	ASSERT_EQ(cudaMalloc((void**)&items, sizeof(LinkedListItem**)*amount), cudaSuccess);
 	ASSERT_EQ(cudaMemcpy(items, items_array_of_array, sizeof(LinkedListItem**)*amount, cudaMemcpyHostToDevice), cudaSuccess);
-	printf("count = %d\n", count);
+	PRINTF("Amount of testing elements is %d\n", count);
 }
 
 
@@ -75,7 +76,7 @@ __global__ void sortingSetUp(LinkedListItem ***items,  int *sizes, int **values)
 			items[idx][i]->ele.getValue = linkedListItemGetValue;
 			items[idx][i]->ele.setNext = __listEleSetNext;
 			items[idx][i]->ele.setPrev = __listEleSetPrev;
-			items[idx][i]->ele.pDerivedObject = items[idx][i];
+			items[idx][i]->ele.ptr_derived_object = items[idx][i];
 			items[idx][i]->value = values[idx][i];
 		}
 
@@ -91,7 +92,7 @@ __global__ void sorting(LinkedListItem ***items, int **values, int am){
  	if(idx < am){
 		LinkedListElement *iter;
  		iter = linkedListMergeSort(&(items[idx][0]->ele));
-		items[idx][0] = (LinkedListItem*)iter->pDerivedObject;
+		items[idx][0] = (LinkedListItem*)iter->ptr_derived_object;
 		iter = &(items[idx][0]->ele);
 
 		for(int i = 0; iter ; ++i){
@@ -116,7 +117,7 @@ void TestLinkedListDevice::SetUp(){
 }
 
 
-TEST_F(TestLinkedListDevice, test_sort_linked_list){
+TEST_F(TestLinkedListDevice, test_sort_linked_list_on_device){
 
 	/**********ALLOCAT result array***********/
 	advanceSetup();
@@ -154,7 +155,7 @@ TEST_F(TestLinkedListDevice, test_sort_linked_list){
 	sorting<<<200, 256>>>(items, result_arr_device, amount);
 	cudaDeviceSynchronize();
 	clock_t t2 = clock();
-	printf("Time elapse : %.3fs\n", (t2 - t1) / (double)CLOCKS_PER_SEC);
+	PRINTF("Time elapse : %.3fs\n", (t2 - t1) / (double)CLOCKS_PER_SEC);
 
 	ASSERT_EQ(cudaMemcpy(result_arr, result_arr_device, sizeof(int*)*amount, cudaMemcpyDeviceToHost), cudaSuccess);
 	for(int i = 0; i < amount; ++i){

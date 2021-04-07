@@ -2,6 +2,7 @@
 #define __TEST_LINKED_LIST_H__
 
 #include <include/linked_list.h>
+#include <include/common.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -18,6 +19,5 @@ LinkedListItem * newLinkedListItem(double val);
 
 void LinkedListItemAdd( LinkedListItem ** list, LinkedListItem *item);
 
-int cmpint(const void *a, const void *b);
 
 #endif

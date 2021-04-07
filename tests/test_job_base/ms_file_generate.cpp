@@ -31,7 +31,7 @@ int main(int argc, const char *argv[]){
         for(int i = 0; i < atoi(argv[1]); ++i){
             double ms_gene = generate();
             unsigned int size_process_time = rand() % 1000 + 1;
-			fprintf(file, "%.8f %u %u\n", ms_gene, size_process_time, machineSelection(ms_gene, size_process_time));
+			fprintf(file, "%.12f %u %u\n", ms_gene, size_process_time, machineSelection(ms_gene, size_process_time));
             // file << ms_gene << " " << size_process_time << " " << machineSelection(ms_gene, size_process_time) << "\n";
         }
     }else {
