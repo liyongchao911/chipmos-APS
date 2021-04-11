@@ -38,3 +38,4 @@ docs/
 .ycm_extra_conf.py
 *.swp
 *.tmp
+.DS_Store
