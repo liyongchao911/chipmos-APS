@@ -36,9 +36,9 @@ __device__ __host__ void addJob(void *_self, void *_job){
 	self->__addJob(self, &job->ele);
 }
 
-__device__ __host__ void sortJob(void *_self){
+__device__ __host__ void sortJob(void *_self, LinkedListElementOperation *ops){
 	Machine *self = (Machine*)_self;
-	self->base.__sortJob(&self->base);	
+	self->base.__sortJob(&self->base, ops);	
 }
 
 __device__ __host__ void initMachine(void *_self){

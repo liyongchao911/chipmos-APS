@@ -10,8 +10,16 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 
+#define LINKED_LIST_OPS() LinkedListElementOperation{ 				    \
+	.setNext = __listEleSetNext, 										\
+	.setPrev = __listEleSetPrev, 										\
+} 																		\
+
+
 
 typedef struct LinkedListElement LinkedListElement;
+
+typedef struct LinkedListElementOperation LinkedListElementOperation;
 
 
 __device__ __host__ void __listEleSetNext(void *_self, LinkedListElement *_next);
@@ -29,16 +37,15 @@ __device__ __host__ void initList(void *_self);
  *
  * 	@param head head of a linked list
  */
-__device__ __host__ LinkedListElement * linkedListMergeSort(LinkedListElement *head);
+__device__ __host__ LinkedListElement * linkedListMergeSort(LinkedListElement *head, LinkedListElementOperation *ops);
 
 /**
  *
  */
-__device__ __host__ LinkedListElement * mergeLinkedList(LinkedListElement * l1, LinkedListElement * l2);
+__device__ __host__ LinkedListElement * mergeLinkedList(LinkedListElement * l1, LinkedListElement * l2, LinkedListElementOperation *ops);
 
 
 LinkedListElement * newLinkedListElement();
-
 
 struct LinkedListElement{
 	
@@ -46,17 +53,18 @@ struct LinkedListElement{
 	LinkedListElement * prev;
 	void * ptr_derived_object;
 	
-	void (*init)(void *self);
-	void (*reset)(void *self);
-	void (*setNext)(void *self, LinkedListElement *next);
-	void (*setPrev)(void *self, LinkedListElement *prev);
-	
-
 	/**	@brief Get the value
 	 * 	@detail getValue is an
 	 * 	@return value the value of LinkedList
 	 */
-	double (*getValue)(void *self); // virtual ^_^
+	double (*getValue)(void *self);
+};
+
+struct LinkedListElementOperation{
+	void (*init)(void *self);
+	void (*reset)(void *self);
+	void (*setNext)(void *self, LinkedListElement *next);
+	void (*setPrev)(void *self, LinkedListElement *prev);
 };
 
 

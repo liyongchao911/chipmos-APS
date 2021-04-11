@@ -13,22 +13,24 @@ __device__ __host__ void resetMachineBase(void *_self){
 __device__ __host__ void __addJob(void *_self, LinkedListElement * job)
 {
 	MachineBase *self =  (MachineBase *)_self;
-	
-
+	LinkedListElementOperation ops = LINKED_LIST_OPS();
 	if (self->size_of_jobs == 0) {
 		self->tail = self->root = job;
 	} else {
-		self->tail->setNext(self->tail, job); // add into the list
+		ops.setNext(self->tail, job);	
+		// self->tail->setNext(self->tail, job); // add into the list
 		self->tail = job;	// move the tail
 	}
 	++self->size_of_jobs;
 }
 
-__device__ __host__ void __sortJob(void *_self)
+__device__ __host__ void __sortJob(void *_self, LinkedListElementOperation *ops)
 {
 	MachineBase *self = (MachineBase *)_self;
 	LinkedListElement * ele = NULL;
-	self->root = linkedListMergeSort(self->root);
+	// LINKED_LIST_OPS();
+	// LinkedListElementOperation ops = LINKED_LIST_OPS();
+	self->root = linkedListMergeSort(self->root, ops);
 	ele = self->root;
 	while(ele && ele->next){
 		ele = (LinkedListElement*)ele->next;

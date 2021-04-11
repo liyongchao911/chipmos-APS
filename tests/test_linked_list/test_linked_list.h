@@ -17,7 +17,7 @@ __device__ __host__ double linkedListItemGetValue(void *_self);
 LinkedListItem * newLinkedListItem(double val);
 
 
-void LinkedListItemAdd( LinkedListItem ** list, LinkedListItem *item);
+void LinkedListItemAdd( LinkedListItem ** list, LinkedListItem *item, LinkedListElementOperation ops);
 
 
 #endif
