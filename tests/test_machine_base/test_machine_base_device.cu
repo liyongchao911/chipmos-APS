@@ -6,12 +6,13 @@
 #include <include/machine_base.h>
 #include <include/job_base.h>
 #include <include/common.h>
+#include <tests/def.h>
 
 #include "test_machine_base.h"
 
 #define amount 5000
 
-class TestMachineBase : public testing::Test{
+class TestMachineBaseDevice : public testing::Test{
 public:
 	int *values[amount];
 	int **result_deivce;
@@ -27,25 +28,26 @@ public:
 
 	unsigned int sizes[amount];
 	unsigned int *sizes_device;
+	int count;
 	void SetUp();
 	// void TearDown();
 };
 
-void TestMachineBase::SetUp(){
+void TestMachineBaseDevice::SetUp(){
 	Job * job_device_tmp;
 	Job * job_tmp;
 	Job ** job_device_arr;
 	job_device_addresses = (Job ***)malloc(sizeof(Job**)*amount);
 	job_device_array_addresses = (Job***)malloc(sizeof(Job**)*amount);
 
-
+	count = 0;
 	for(int i = 0; i < amount; ++i){
-		sizes[i] = rand() % 100 + 1; // 
-
+		sizes[i] = rand() % 500 + 800; // 
+		count += sizes[i];
 		job_device_addresses[i] = (Job **)malloc(sizeof(Job	*)*sizes[i]);
 		values[i] = (int*)malloc(sizeof(int)*sizes[i]);
 		for(unsigned int j = 0; j < sizes[i]; ++j){
-			values[i][j] = rand() % 100;
+			values[i][j] = rand() % 10000;
 			job_tmp = newJob(values[i][j]);
 			cudaMalloc((void**)&job_device_tmp, sizeof(Job));
 			cudaMemcpy(job_device_tmp, job_tmp, sizeof(Job), cudaMemcpyHostToDevice);
@@ -118,7 +120,8 @@ __global__ void addJobsKernel(Machine ** machines, Job *** jobs, unsigned int *s
 	}
 }
 
-TEST_F(TestMachineBase, test_machine_base_add_job){
+TEST_F(TestMachineBaseDevice, test_machine_base_add_job){
+	PRINTF("Amount of jobs is %d\n", count);
 	initJobsKernel<<<20, 256>>>(jobs_device, sizes_device, amount);	
 	initMachinesKernel<<<20, 256>>>(machines_device, amount);
 	addJobsKernel<<<20, 256>>>(machines_device, jobs_device, sizes_device, result_deivce,  amount);
@@ -136,16 +139,10 @@ TEST_F(TestMachineBase, test_machine_base_add_job){
 	}
 }
 
-__global__ void sortJobsKernel(Machine ** machines, Job *** jobs, unsigned int *sizes, int **result, int am){
+__global__ void sortJobsKernel(Machine ** machines, Job *** jobs, unsigned int *sizes, int **result, LinkedListElementOperation *ops, int am){
 	int idx = threadIdx.x + blockIdx.x * blockDim.x;
 	if(idx < am){
-		for(int i = 0; i < sizes[idx]; ++i){
-			__addJob(&machines[idx]->base, &jobs[idx][i]->ele);
-		}
-		
-
-		machines[idx]->base.sortJob(&machines[idx]->base);
-
+		machines[idx]->base.sortJob(&machines[idx]->base, ops);
 		LinkedListElement *ele;
 		ele = machines[idx]->base.root;
 		for(unsigned int i = 0; i < sizes[idx] ; ++i){
@@ -156,10 +153,35 @@ __global__ void sortJobsKernel(Machine ** machines, Job *** jobs, unsigned int *
 	}
 }
 
-TEST_F(TestMachineBase, test_machine_base_sort_job){
+__global__ void sortingSetup(Machine ** machines, Job *** jobs, unsigned int *sizes, int am){
+	int idx = threadIdx.x + blockIdx.x * blockDim.x;
+	if(idx < am){
+		for(int i = 0; i < sizes[idx]; ++i){
+			__addJob(&machines[idx]->base, &jobs[idx][i]->ele);
+		}
+	}
+}
+__global__ void initOps(LinkedListElementOperation *ops){
+	ops->setNext = __listEleSetNext;
+	ops->setPrev = __listEleSetPrev;
+}
+
+TEST_F(TestMachineBaseDevice, test_machine_base_sort_job){
+	PRINTF("Amount of jobs is %d\n", count);
+
+	ASSERT_EQ(cudaDeviceSetLimit(cudaLimitStackSize, 8192), cudaSuccess);
+	size_t stack_size;
+	ASSERT_EQ(cudaDeviceGetLimit(&stack_size, cudaLimitStackSize), cudaSuccess);
+	PRINTF("Set device stack size to %lu bytes\n", stack_size);
+	
+	LinkedListElementOperation *ops;
+	cudaMalloc((void**)&ops, sizeof(LinkedListElementOperation));
+	initOps<<<1, 1>>>(ops);
+
 	initJobsKernel<<<20, 256>>>(jobs_device, sizes_device, amount);	
 	initMachinesKernel<<<20, 256>>>(machines_device, amount);
-	sortJobsKernel<<<20, 256>>>(machines_device, jobs_device, sizes_device, result_deivce,  amount);
+	sortingSetup<<<20, 256>>>(machines_device, jobs_device, sizes_device, amount);
+	sortJobsKernel<<<20, 256>>>(machines_device, jobs_device, sizes_device, result_deivce, ops,  amount);
 	
 	int *result_tmp;
 	int ** arr = (int**)malloc(sizeof(int*)*amount);

@@ -59,9 +59,11 @@ TEST_F(TestMachineBaseHost, test_machine_base_host_sort_job){
 		}
 	}
 
+	
+	LinkedListElementOperation ops = LINKED_LIST_OPS();
 	for(int i = 0; i < amount; ++i){
 		qsort(values[i], sizes[i], sizeof(int), cmpint);
-		machines[i]->base.sortJob(&machines[i]->base);
+		machines[i]->base.sortJob(&machines[i]->base, &ops);
 	}
 
 	LinkedListElement *ele;
