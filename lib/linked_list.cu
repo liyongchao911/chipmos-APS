@@ -25,11 +25,7 @@ __device__ __host__ void __listEleSetPrev(void *_self, LinkedListElement *_prev)
 __device__ __host__ void initList(void *_self){
 	LinkedListElement *self	= (LinkedListElement *)_self;
 	self->next = self->prev = NULL;
-	// self->reset = NULL;
 	self->getValue = NULL;
-	// self->setNext = __listEleSetNext;
-	// self->setPrev = __listEleSetPrev;
-
 }
 
 LinkedListElement * newLinkedListElement(){
@@ -37,8 +33,7 @@ LinkedListElement * newLinkedListElement(){
 	if(!ele)
 		return ele;
 	ele->ptr_derived_object = NULL;
-	// ele->init = initList;
-	// ele->init(ele);
+    ele->next = ele->prev = NULL;
 	return ele;
 }
 
