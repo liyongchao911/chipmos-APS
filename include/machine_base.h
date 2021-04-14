@@ -1,30 +1,39 @@
 #ifndef __MACHINE_BASE_H__
 #define __MACHINE_BASE_H__
 
+#include "include/linked_list.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <include/job_base.h>
 
-class MachineBase{
-	friend class TestMachineBase;
-protected:
-	JobBase * root;
-	JobBase * tail;
+typedef struct MachineBase MachineBase;
+
+MachineBase * newMachineBase(unsigned int machine_no);
+
+struct MachineBase{
+	LinkedListElement * root;
+	LinkedListElement * tail;
 	unsigned int machine_no;
 	unsigned int size_of_jobs;
-
-public:
-			
-	MachineBase(unsigned int machine_no);
-	__device__ __host__ void init();
+	unsigned int avaliable_time;
 	
-	__device__ __host__ void addJob(JobBase *);
-	__device__ __host__ void sortJob();
-	__device__ __host__ unsigned int getSizeOfJobs();
-	
-	__device__ __host__ virtual double getQuality()=0;
+	void (*init)(void *self);
+	void (*reset)(void *self);
 
+	void (*addJob)(void *self, void *job);
+	void (*sortJob)(void *self, LinkedListElementOperation *ops);
+
+	void (*__addJob)(void *self, LinkedListElement*);
+	void (*__sortJob)(void *self, LinkedListElementOperation *ops);
+	unsigned int (*getSizeOfJobs)(void *self);
+	void (*getQuality)(void *self);
 };
 
+__device__ __host__ void resetMachineBase(void *_self);
+__device__ __host__ unsigned int getSizeOfJobs(void* _self);
+
+__device__ __host__ void initMachineBase(void *_self);
+__device__ __host__ void __addJob(void *_self, LinkedListElement *);
+__device__ __host__ void __sortJob(void *_self, LinkedListElementOperation *ops);
 
 #endif

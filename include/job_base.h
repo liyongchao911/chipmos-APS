@@ -9,22 +9,19 @@
  * @brief Store process time and its corresponding machine number.
  *
  */
-class ProcessTime{
-private:
+typedef struct ProcessTime ProcessTime;
+
+struct ProcessTime{
 	unsigned int machine_no;
 	double process_time;
-public:
-	ProcessTime(unsigned int machine_no, double process_time);
-
-	__device__ __host__ void setProcessTime(double time);	
-	__device__ __host__ unsigned int getMachineNo();
-	__device__ __host__ double getProcessTime();
 };
 
+typedef struct JobBase JobBase;
+JobBase * newJobBase();
 
-class JobBase : public LinkedList{
-friend class TestJobBase;
-protected:
+struct JobBase{
+	void * ptr_derived_object;
+
 	// genes point to chromosome's gene
 	// use double const * type to prevent set the wrong value on gene
 	double const * ms_gene;
@@ -45,30 +42,44 @@ protected:
 	double arriv_t;
 	double start_time;
 	double end_time;
-public:
+
 	// constructor and initialization
-	JobBase();
-	__device__ __host__ void init();
+	void (*init)(void *self);
+	void (*reset)(void *self);
 	
 	// setter
-	__device__ __host__ void setMsGenePointer(double * ms_gene);
-	__device__ __host__ void setOsSeqGenePointer(double * os_seq_gene);
-	__device__ __host__ void setProcessTime(ProcessTime **, unsigned int size_of_process_time);
-	__device__ __host__ void setArrivT(double);
-    __device__ __host__ void setStartTime(double);
+	void (*setMsGenePointer)(void *self, double * ms_gene);
+	void (*setOsSeqGenePointer)(void *self, double *os_seq_gene);
+	void (*setProcessTime)(void *self, ProcessTime **, unsigned int size_of_process_time);
+	void (*setArrivT)(void *self, double arrivT);
+	void (*setStartTime)(void *self, double startTime);
 
 	// getter
-	__device__ __host__ double getMsGene();
-	__device__ __host__ double getOsSeqGene();
-	__device__ __host__ unsigned int getMachineNo();
-	__device__ __host__ double getArrivT();
-	__device__ __host__ double getStartTime();
-	__device__ __host__ double getEndTime();
-	
-	
-	// operation
-	__device__ __host__ unsigned int machineSelection();
+	double (*getMsGene)(void *self);
+	double (*getOsSeqGene)(void *self);
+	double (*getArrivT)(void *self);
+	double (*getStartTime)(void *self);
+	double (*getEndTime)(void *self);
+	unsigned int (*getMachineNo)(void *self);
 
+	// operation
+	unsigned int (*machineSelection)(void *self);
 };
+
+__device__ __host__ void initJobBase(void *self);
+__device__ __host__ void resetJobBase(void *self);
+__device__ __host__ void setMsGenePointer(void *self, double *ms_gene);
+__device__ __host__ void setOsSeqGenePointer(void *self, double *os_seq_gene);
+__device__ __host__ void setProcessTime(void *self, ProcessTime ** pt, unsigned int size_of_process_time);
+__device__ __host__ void setArrivT(void *self, double arrivT);
+__device__ __host__ void setStartTime(double startTime);
+__device__ __host__ double getMsGene(void *self);
+__device__ __host__ double getOsSeqGene(void *self);
+__device__ __host__ double getArrivT(void *self);
+__device__ __host__ double getStartTime(void *self);
+__device__ __host__ double getEndTime(void *self);
+__device__ __host__ unsigned int getMachineNo(void *self);
+
+
 
 #endif

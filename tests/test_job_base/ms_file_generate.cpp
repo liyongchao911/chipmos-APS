@@ -22,19 +22,22 @@ unsigned int machineSelection(double ms_gene, unsigned int size_process_time){
     return count;
 }
 
-int main(){
+int main(int argc, const char *argv[]){
     srand(time(NULL));
-    ofstream file;
-    file.open("ms_data.txt", ios::out | ios::trunc | ios::binary);
+    // ofstream file;
+	FILE * file = fopen("ms_data.txt", "w");
+    // file.open("ms_data.txt", ios::out | ios::trunc | ios::binary);
     if (file){
-        for(int i = 0; i < 5000; ++i){
+        for(int i = 0; i < atoi(argv[1]); ++i){
             double ms_gene = generate();
-            unsigned int size_process_time = rand() % 20 + 1;
-            file << ms_gene << " " << size_process_time << " " << machineSelection(ms_gene, size_process_time) << "\n";
+            unsigned int size_process_time = rand() % 1000 + 1;
+			fprintf(file, "%.12f %u %u\n", ms_gene, size_process_time, machineSelection(ms_gene, size_process_time));
+            // file << ms_gene << " " << size_process_time << " " << machineSelection(ms_gene, size_process_time) << "\n";
         }
     }else {
         cout << "Unable to open file";
     }
-    file.close();
+    // file.close();
+	fclose(file);
     return 0;
 }
