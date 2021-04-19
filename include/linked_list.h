@@ -10,15 +10,18 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 
+#ifndef LINKED_LIST_OPS
+
 /**
  * @def LINKED_LIST_OPS
  * @brief LINKED_LIST_OPS will create default list_operations_t.
  * in which, the field setNext point to __listEleSetNext and the field setPrev point to __listEleSetPrev
  */
-#define LINKED_LIST_OPS() list_operations_t{   \
+#define LINKED_LIST_OPS list_operations_t{   \
 	.setNext = __listEleSetNext,                        \
 	.setPrev = __listEleSetPrev,                        \
-}                                                       \
+}
+#endif
 
 
 

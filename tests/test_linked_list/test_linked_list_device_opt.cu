@@ -127,7 +127,7 @@ __global__ void initLinkedListOpsKernel(list_operations_t * op){
 __global__ void sortingSetupKernel(list_item_t **items, int **values, int *sizes, unsigned int offset, int am){
 	int idx = threadIdx.x + blockIdx.x * blockDim.x + offset;
 	if(idx < am){
-		list_operations_t ops = LINKED_LIST_OPS();
+		list_operations_t ops = LINKED_LIST_OPS;
 		for(int i = 0; i < sizes[idx]; ++i){
 			items[idx][i].value = values[idx][i];
 			initList(&items[idx][i].ele);		

@@ -40,7 +40,7 @@ void TestLinkedListHost::SetUp(){
 		sizes[i] = nums;
 		for(int j = 0; j < nums; ++j){
 			val = rand() % 1024;
-            list_item_add(&eles_arr[i], new_list_item(val), LINKED_LIST_OPS());
+            list_item_add(&eles_arr[i], new_list_item(val), LINKED_LIST_OPS);
 			values[i][j] = val;
 			count ++;
 		}
@@ -75,7 +75,7 @@ void TestLinkedListHost::TearDown(){
 
 // Test 
 TEST_F(TestLinkedListHost, test_set_next_on_host){
-	list_operations_t ops = LINKED_LIST_OPS();
+	list_operations_t ops = LINKED_LIST_OPS;
 	for(int i = 0, range = amount - 1; i < range; ++i){
 		ops.setNext(eles[i], eles[i+1]);
 		// eles[i]->setNext(eles[i], eles[i + 1]);
@@ -91,7 +91,7 @@ TEST_F(TestLinkedListHost, test_set_next_on_host){
 }
 
 TEST_F(TestLinkedListHost, test_set_prev_on_host){
-	list_operations_t ops = LINKED_LIST_OPS();
+	list_operations_t ops = LINKED_LIST_OPS;
 	for(int i = 1; i < amount; ++i){
 		ops.setPrev(eles[i], eles[i-1]);
 		// eles[i]->setPrev(eles[i], eles[i - 1]);
@@ -108,7 +108,7 @@ TEST_F(TestLinkedListHost, test_set_prev_on_host){
 
 TEST_F(TestLinkedListHost, test_sort_linked_list_on_host){
 	list_ele_t * iter;
-	list_operations_t ops = LINKED_LIST_OPS();
+	list_operations_t ops = LINKED_LIST_OPS;
 	// list_ele_t test;
 	for(int i = 0; i < amount; ++i){
 		qsort(values[i], sizes[i], sizeof(int), cmpint);

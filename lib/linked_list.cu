@@ -44,7 +44,9 @@ __device__ __host__ list_ele_t * mergeLinkedList(list_ele_t * l1, list_ele_t * l
 	list_ele_t * result, *result_iter;
 	
 	// set the first element of result
-	if(l1->getValue(l1) < l2->getValue(l2)) {
+	double val1 = l1->getValue(l1);
+	double val2 = l2->getValue(l2);
+	if(val1 < val2) {
 		result = l1;
 		l1 = l1->next;
 	} else {

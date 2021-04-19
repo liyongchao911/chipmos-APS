@@ -18,7 +18,7 @@ int main(int argc, const char *argv[]){
 		value[i] = rand() % 100;
 	}
 
-	list_operations_t ops = LINKED_LIST_OPS();
+	list_operations_t ops = LINKED_LIST_OPS;
 	
 	list_ele_t  *head = NULL;
 	list_item_t *prev;

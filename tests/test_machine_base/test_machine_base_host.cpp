@@ -50,9 +50,10 @@ void TestMachineBaseHost::SetUp(){
 }
 
 TEST_F(TestMachineBaseHost, test_machine_base_host_add_job){
+	machine_base_operations_t mbops = MACHINE_BASE_OPS;
 	for(int i = 0; i < amount; ++i){
 		for(int j = 0; j < sizes[i]; ++j){
-			machines[i]->base.addJob(&machines[i]->base, jobs[i][j]);
+			mbops.addJob(&machines[i]->base, &jobs[i][j]->ele);
 		}
 	}
 	
@@ -67,18 +68,19 @@ TEST_F(TestMachineBaseHost, test_machine_base_host_add_job){
 }
 
 TEST_F(TestMachineBaseHost, test_machine_base_host_sort_job){
+
+	list_operations_t ops = LINKED_LIST_OPS;
+	machine_base_operations_t mbops = MACHINE_BASE_OPS;
 	for(int i = 0; i < amount; ++i){
 		for(int j = 0; j < sizes[i]; ++j){
-			machines[i]->base.addJob(&machines[i]->base, jobs[i][j]);
+			mbops.addJob(&machines[i]->base, &jobs[i][j]->ele);
 		}
 	}
 
 	
-	list_operations_t ops = LINKED_LIST_OPS();
 	for(int i = 0; i < amount; ++i){
 		qsort(values[i], sizes[i], sizeof(int), cmpint);
-		// ASSERT_EQ(machines[i]->base.__sortJob, __sortJob);
-		machines[i]->base.sortJob(machines[i], &ops);
+		mbops.sortJob(&machines[i]->base, &ops);
 	}
 
 	list_ele_t *ele;

@@ -156,7 +156,7 @@ __global__ void sortingSetUp(list_item_t ***items,  int *sizes, int **values){
 	if(idx < amount){
 		// first initial all items;
 		// connect to device function
-		list_operations_t ops = LINKED_LIST_OPS();
+		list_operations_t ops = LINKED_LIST_OPS;
 		for(int i = 0; i < sizes[idx]; ++i){
 			items[idx][i]->ele.getValue = linkedListItemGetValue;
 			// items[idx][i]->ele.setNext = __listEleSetNext;

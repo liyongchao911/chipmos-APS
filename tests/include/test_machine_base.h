@@ -10,6 +10,18 @@
 #include <include/common.h>
 #include <cuda.h>
 
+#ifdef MACHINE_BASE_OPS
+#undef MACHINE_BASE_OPS
+#endif
+
+#define MACHINE_BASE_OPS machine_base_operations_t{\
+	.init = initMachine, \
+    .reset = resetMachineBase,\
+	.addJob = __addJob,\
+	.sortJob = __sortJob,\
+	.getSizeOfJobs = getSizeOfJobs\
+}
+
 struct job_t{
 	job_base_t base;
 	list_ele_t ele;
@@ -24,10 +36,6 @@ struct Machine{
 __device__ __host__ double machineSortJobs(void * self);
 
 __device__ __host__ double jobGetValue(void *);
-
-__device__ __host__ void addJob(void *_self, void * job);
-
-__device__ __host__ void sortJob(void *_self);
 
 __device__ __host__ void initMachine(void *self);
 

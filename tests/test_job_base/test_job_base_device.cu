@@ -73,19 +73,6 @@ void TestJobBaseDevice::copyArrayOfJobBase(job_t** device_address, job_t** src){
 
 
 void TestJobBaseDevice::TearDown(){
-	// delete result_host;
-
-	// for(unsigned int i = 0; i < amount; ++i){
-	// 	// free host object
-	// 	delete jb_host[i];
-	// }
-	// 
-	// // free array
-	// delete [] jb_host;
-	// delete [] device_jb_addresses;
-	// // free device array
-	// ASSERT_EQ(cudaFree(jb_device), CUDA_SUCCESS);
-	// ASSERT_EQ(cudaFree(result_device), CUDA_SUCCESS);
 }
 
 void TestJobBaseDevice::setMsGeneData(){
@@ -104,19 +91,26 @@ void TestJobBaseDevice::setMsGeneData(){
 
 __global__ void testMachineSelection(job_t ** jb, unsigned int * result, double * msgene_device, unsigned int numElements){
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
+	job_base_operations_t jbops = JOB_BASE_OPS;
 	if(id < numElements){
-		jb[id]->base.init = initJobBase;
-		jb[id]->base.init(&jb[id]->base);
-		jb[id]->base.setMsGenePointer(&jb[id]->base, &(msgene_device[id]));
-		result[id] = jb[id]->base.machineSelection(&jb[id]->base);
+		//jb[id]->base.init = initJobBase;
+		//jb[id]->base.init(&jb[id]->base);
+		initJobBase(&jb[id]->base);
+		jbops.setMsGenePointer(&jb[id]->base, &(msgene_device[id]));
+		result[id] = jbops.machineSelection(&jb[id]->base);
+		// jb[id]->base.setMsGenePointer(&jb[id]->base, &(msgene_device[id]));
+		// result[id] = jb[id]->base.machineSelection(&jb[id]->base);
 	}
 }
 
 
 TEST_F(TestJobBaseDevice, test_machine_selection_host){
+	job_base_operations_t jbops = JOB_BASE_OPS;
 	for(int i = 0; i < amount; ++i){
-		jb_host[i]->base.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
-		ASSERT_EQ(jb_host[i]->base.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
+		jbops.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
+		ASSERT_EQ(jbops.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
+		// jb_host[i]->base.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
+		// ASSERT_EQ(jb_host[i]->base.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
 	}	
 }
 

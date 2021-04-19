@@ -1,7 +1,10 @@
+#include "include/job_base.h"
 #include "include/linked_list.h"
+#include "include/machine_base.h"
 #include <cstdlib>
 #include <gtest/gtest.h>
 
+#include <include/job_base.h>
 #include <include/chromosome_base.h>
 #include <tests/include/test_chromosome_base.h>
 #include <tests/include/test_machine_base.h>
@@ -29,6 +32,7 @@ void TestChromosomeBaseHost::random_shuffle(chromosome_base_t * chromosome){
 }
 
 void TestChromosomeBaseHost::SetUp(){
+	job_base_operations_t jbops = JOB_BASE_OPS;
 	srand(time(NULL));
 	machines = (Machine*)malloc(sizeof(Machine)*MACHINE_AMOUNT);
 	for(int i = 0; i < MACHINE_AMOUNT; ++i){
@@ -40,7 +44,7 @@ void TestChromosomeBaseHost::SetUp(){
 	for(int i = 0; i < JOB_AMOUNT; ++i){
 		initJob(&jobs[i]);
 		jobs[i].base.job_no = i;
-		jobs[i].base.setProcessTime(&jobs[i].base, NULL, rand() % 100 + (MACHINE_AMOUNT >> 1));
+		jbops.setProcessTime(&jobs[i].base, NULL, rand() % 100 + (MACHINE_AMOUNT >> 1));
 	}
 	
 	chromosomes = (Chromosome*)malloc(sizeof(Chromosome) * (CHROMOSOME_AMOUNT << 1));
@@ -68,7 +72,9 @@ void TestChromosomeBaseHost::TearDown(){
 
 TEST_F(TestChromosomeBaseHost, test_machine_selection_and_sorting){
 	int machine_no;
-	list_operations_t ops = LINKED_LIST_OPS();
+	list_operations_t ops = LINKED_LIST_OPS;
+	machine_base_operations_t mbops = MACHINE_BASE_OPS;
+	job_base_operations_t jbops = JOB_BASE_OPS;
 	for(int i = 0; i < GENERATIONS; ++i){
 		// evaluate the fitness value of each chromosome
 #ifdef DEBUG
@@ -82,14 +88,15 @@ TEST_F(TestChromosomeBaseHost, test_machine_selection_and_sorting){
 			for(int k = 0; k < JOB_AMOUNT; ++k){
 				// printf("j = %d, k = %d\n",j, k);
 				// link chromosome and jobs
-				jobs[k].base.setMsGenePointer(&jobs[k].base, chromosomes[j].base.ms_genes + k);
-				jobs[k].base.setOsSeqGenePointer(&jobs[k].base, chromosomes[j].base.os_genes + k);
+				jbops.setMsGenePointer(&jobs[k].base, chromosomes[j].base.ms_genes + k);
+				jbops.setOsSeqGenePointer(&jobs[k].base, chromosomes[j].base.os_genes + k);
 				
 				// machine selection part1
-				machine_no = jobs[k].base.machine_no = jobs[k].base.machineSelection(&jobs[k].base);
+				machine_no = jobs[k].base.machine_no = jbops.machineSelection(&jobs[k].base);
 				
 				// machine selection part2
-				machines[machine_no].base.addJob(&machines[machine_no].base, &jobs[k]);
+				// machines[machine_no].base.addJob(&machines[machine_no].base, &jobs[k]);
+				mbops.addJob(&machines[machine_no].base, &jobs[k].ele);
 			}
 
 			// sorting
@@ -97,8 +104,10 @@ TEST_F(TestChromosomeBaseHost, test_machine_selection_and_sorting){
 			printf("%d\tSorting...\n",j);	
 #endif
 			for(int k = 0; k < MACHINE_AMOUNT; ++k){
-				machines[k].base.sortJob(&machines[k], &ops);
-				machines[k].base.reset(&machines[k].base);
+				mbops.sortJob(&machines[k].base, &ops);
+				mbops.reset(&machines[k].base);
+				// machines[k].base.sortJob(&machines[k], &ops);
+				// machines[k].base.reset(&machines[k].base);
 			}
 			random_shuffle(&chromosomes[j].base);
 		}
