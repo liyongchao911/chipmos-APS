@@ -18,9 +18,9 @@ int main(int argc, const char *argv[]){
 		value[i] = rand() % 100;
 	}
 
-	LinkedListElementOperation ops = LINKED_LIST_OPS();
+	list_operations_t ops = LINKED_LIST_OPS();
 	
-	LinkedListElement  *head = NULL;
+	list_ele_t  *head = NULL;
 	list_item_t *prev;
 	for(int i = 0; i < amount; ++i){
 		prev = new_list_item(value[i]);
@@ -28,7 +28,7 @@ int main(int argc, const char *argv[]){
 		head = &prev->ele;
 	}
 
-	LinkedListElement *iter = head;
+	list_ele_t *iter = head;
 	printf("Unsorted : ");
 	showList(iter, head);
 	

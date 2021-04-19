@@ -3,7 +3,7 @@
 typedef struct list_item list_item_t;
 
 struct list_item{
-	LinkedListElement ele;
+	list_ele_t ele;
 	double val;
 };
 
