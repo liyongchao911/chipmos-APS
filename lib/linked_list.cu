@@ -12,14 +12,14 @@
 __device__ __host__ void __listEleSetNext(void *_self, list_ele_t *_next){
 	list_ele_t * self = (list_ele_t *)_self;
 	self->next = _next;
-	_next->prev = self;
+	if(_next) _next->prev = self;
 }
 
 
 __device__ __host__ void __listEleSetPrev(void *_self, list_ele_t *_prev){
 	list_ele_t *self = (list_ele_t*)_self;
 	self->prev = _prev;
-	_prev->next = self;
+	if(_prev) _prev->next = self;
 }
 
 __device__ __host__ void initList(void *_self){
@@ -58,15 +58,15 @@ __device__ __host__ list_ele_t * mergeLinkedList(list_ele_t * l1, list_ele_t * l
 	while(l1 && l2) {
 		if(l1->getValue(l1) < l2->getValue(l2)){
 			// result_iter->next = l1; // connect to next element
-			__listEleSetNext(result_iter, l1);
-			// ops.setNext(result_iter, l1);
+			// __listEleSetNext(result_iter, l1);
+			ops->setNext(result_iter, l1);
 			// result_iter->setNext(result_iter, l1);
 			l1 = l1->next; // l1 move to next element
 		} else{
 			// result_iter->next = l2;
-			// ops.setNext(result_iter, l2);
+			ops->setNext(result_iter, l2);
 			// result_iter->setNext(result_iter, l2);
-			__listEleSetNext(result_iter, l2);
+			// __listEleSetNext(result_iter, l2);
 			l2 = l2->next; // l2 move to next element
 		}
 		result_iter = result_iter->next; // point to next element
