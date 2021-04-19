@@ -8,11 +8,11 @@
 #include <regex.h>
 #include <texture_types.h>
 #include <time.h>
-#include <tests/def.h>
+#include <tests/include/def.h>
 
 #define amount 100000
 
-#include "test_linked_list.h"
+#include <tests/include/test_linked_list.h>
 
 class TestLinkedListDevice : public testing::Test{
 public:
@@ -24,9 +24,9 @@ public:
 	int **values_arr;
 	int **values_arr_device;
 
-	LinkedListItem ***item_address_on_device;
-	LinkedListItem *** items_array_of_array;
-	LinkedListItem ***items;
+	list_item_t ***item_address_on_device;
+	list_item_t *** items_array_of_array;
+	list_item_t ***items;
 
 	size_t usage;
 
@@ -47,39 +47,39 @@ void TestLinkedListDevice::SetUp(){
 
 
 void TestLinkedListDevice::advanceSetup(){
-	item_address_on_device = (LinkedListItem ***)malloc(sizeof(LinkedListItem**)*amount);	
+	item_address_on_device = (list_item_t ***)malloc(sizeof(list_item_t**)*amount);
 
-	LinkedListItem *item_device;
+	list_item_t *item_device;
 	int count = 0;
 	usage = 0;
 	for(int i = 0; i < amount; ++i){
 		sizes[i] = rand() % 100 + 50;
 		values[i] = (int*)malloc(sizeof(int)*sizes[i]);
 		count += sizes[i];
-		item_address_on_device[i] = (LinkedListItem **)malloc(sizeof(LinkedListItem*)*sizes[i]);
+		item_address_on_device[i] = (list_item_t **)malloc(sizeof(list_item_t*)*sizes[i]);
 		for(int j = 0; j < sizes[i]; ++j){
 			values[i][j] = rand() % 1024;
-			ASSERT_EQ(cudaMalloc((void**)&item_device, sizeof(LinkedListItem)), cudaSuccess);
+			ASSERT_EQ(cudaMalloc((void**)&item_device, sizeof(list_item_t)), cudaSuccess);
 			item_address_on_device[i][j] = item_device;
 		}
 	}
 	
-	usage += count*sizeof(LinkedListItem);
+	usage += count*sizeof(list_item_t);
 	
-	LinkedListItem ** items_array;
-	items_array_of_array = (LinkedListItem ***)malloc(sizeof(LinkedListItem **)*amount);
+	list_item_t ** items_array;
+	items_array_of_array = (list_item_t ***)malloc(sizeof(list_item_t **)*amount);
 	for(int i = 0; i < amount; ++i){
-		ASSERT_EQ(cudaMalloc((void**)&items_array, sizeof(LinkedListItem*)*sizes[i]), cudaSuccess);
-		ASSERT_EQ(cudaMemcpy(items_array, item_address_on_device[i], sizeof(LinkedListItem*)*sizes[i], cudaMemcpyHostToDevice), cudaSuccess);
+		ASSERT_EQ(cudaMalloc((void**)&items_array, sizeof(list_item_t*)*sizes[i]), cudaSuccess);
+		ASSERT_EQ(cudaMemcpy(items_array, item_address_on_device[i], sizeof(list_item_t*)*sizes[i], cudaMemcpyHostToDevice), cudaSuccess);
 		items_array_of_array[i] = items_array;
 
-		usage += sizeof(LinkedListItem*)*sizes[i];
+		usage += sizeof(list_item_t*)*sizes[i];
 	}
 
-	ASSERT_EQ(cudaMalloc((void**)&items, sizeof(LinkedListItem**)*amount), cudaSuccess);
-	ASSERT_EQ(cudaMemcpy(items, items_array_of_array, sizeof(LinkedListItem**)*amount, cudaMemcpyHostToDevice), cudaSuccess);
+	ASSERT_EQ(cudaMalloc((void**)&items, sizeof(list_item_t**)*amount), cudaSuccess);
+	ASSERT_EQ(cudaMemcpy(items, items_array_of_array, sizeof(list_item_t**)*amount, cudaMemcpyHostToDevice), cudaSuccess);
 
-	usage += sizeof(LinkedListItem**)*amount;
+	usage += sizeof(list_item_t**)*amount;
 	PRINTF("Amount of testing elements is %d\n", count);
 	PRINTF("Average amount of elements handled by a thread is %.2f\n", count / (double)amount);
 
@@ -146,17 +146,17 @@ void TestLinkedListDevice::TearDown(){
 	
 }
 
-__global__ void initLinkedListOps(LinkedListElementOperation *ops){
+__global__ void initLinkedListOps(list_operations_t *ops){
 	ops->setNext = __listEleSetNext;
 	ops->setPrev = __listEleSetPrev;
 }
 
-__global__ void sortingSetUp(LinkedListItem ***items,  int *sizes, int **values){
+__global__ void sortingSetUp(list_item_t ***items,  int *sizes, int **values){
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 	if(idx < amount){
 		// first initial all items;
 		// connect to device function
-		LinkedListElementOperation ops = LINKED_LIST_OPS();
+		list_operations_t ops = LINKED_LIST_OPS();
 		for(int i = 0; i < sizes[idx]; ++i){
 			items[idx][i]->ele.getValue = linkedListItemGetValue;
 			// items[idx][i]->ele.setNext = __listEleSetNext;
@@ -173,12 +173,12 @@ __global__ void sortingSetUp(LinkedListItem ***items,  int *sizes, int **values)
 	}
 }
 
-__global__ void sorting(LinkedListItem ***items, int **values, LinkedListElementOperation *ops, int am){
+__global__ void sorting(list_item_t ***items, int **values, list_operations_t *ops, int am){
  	int idx = threadIdx.x + blockIdx.x * blockDim.x;
  	if(idx < am){
-		LinkedListElement *iter;
+		list_ele_t *iter;
  		iter = linkedListMergeSort(&(items[idx][0]->ele), ops);
-		items[idx][0] = (LinkedListItem*)iter->ptr_derived_object;
+		items[idx][0] = (list_item_t*)iter->ptr_derived_object;
 		iter = &(items[idx][0]->ele);
 
 		for(int i = 0; iter ; ++i){
@@ -195,8 +195,8 @@ TEST_F(TestLinkedListDevice, test_sort_linked_list_on_device){
 	/**********ALLOCAT result array***********/
 	advanceSetup();
 	/********INIT OPS**********************************/
-	LinkedListElementOperation *ops_device;
-	ASSERT_EQ(cudaMalloc((void**)&ops_device, sizeof(LinkedListElementOperation)), cudaSuccess);
+	list_operations_t *ops_device;
+	ASSERT_EQ(cudaMalloc((void**)&ops_device, sizeof(list_operations_t)), cudaSuccess);
 	initLinkedListOps<<<1,1>>>(ops_device);
 	
 

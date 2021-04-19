@@ -3,12 +3,12 @@
 
 #include <include/job_base.h>
 
-typedef struct Job Job;
+typedef struct job_t Job;
 
-struct Job{
-	JobBase base;
+struct job_t{
+	job_base_t base;
 };
 
-Job * newJob(int sizeof_pt);
+job_t * newJob(int sizeof_pt);
 
 #endif

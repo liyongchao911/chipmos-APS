@@ -9,27 +9,27 @@
 	}  																\
 	printf("\n"); 													\
 
-__device__ __host__ void __listEleSetNext(void *_self, LinkedListElement *_next){
-	LinkedListElement * self = (LinkedListElement *)_self;	
+__device__ __host__ void __listEleSetNext(void *_self, list_ele_t *_next){
+	list_ele_t * self = (list_ele_t *)_self;
 	self->next = _next;
 	_next->prev = self;
 }
 
 
-__device__ __host__ void __listEleSetPrev(void *_self, LinkedListElement *_prev){
-	LinkedListElement *self = (LinkedListElement*)_self;
+__device__ __host__ void __listEleSetPrev(void *_self, list_ele_t *_prev){
+	list_ele_t *self = (list_ele_t*)_self;
 	self->prev = _prev;
 	_prev->next = self;
 }
 
 __device__ __host__ void initList(void *_self){
-	LinkedListElement *self	= (LinkedListElement *)_self;
+	list_ele_t *self	= (list_ele_t *)_self;
 	self->next = self->prev = NULL;
 	self->getValue = NULL;
 }
 
-LinkedListElement * newLinkedListElement(){
-	LinkedListElement * ele = (LinkedListElement*)malloc(sizeof(LinkedListElement));
+list_ele_t * newLinkedListElement(){
+	list_ele_t * ele = (list_ele_t*)malloc(sizeof(list_ele_t));
 	if(!ele)
 		return ele;
 	ele->ptr_derived_object = NULL;
@@ -37,11 +37,11 @@ LinkedListElement * newLinkedListElement(){
 	return ele;
 }
 
-__device__ __host__ LinkedListElement * mergeLinkedList(LinkedListElement * l1, LinkedListElement * l2, LinkedListElementOperation *ops){
+__device__ __host__ list_ele_t * mergeLinkedList(list_ele_t * l1, list_ele_t * l2, list_operations_t *ops){
 	if(!l2) return l1;
 	if(!l1) return l2;
 
-	LinkedListElement * result, *result_iter;
+	list_ele_t * result, *result_iter;
 	
 	// set the first element of result
 	if(l1->getValue(l1) < l2->getValue(l2)) {
@@ -84,22 +84,22 @@ __device__ __host__ LinkedListElement * mergeLinkedList(LinkedListElement * l1, 
 }
 
 
-__device__ __host__  LinkedListElement * linkedListMergeSort(LinkedListElement * head, LinkedListElementOperation *ops){
+__device__ __host__  list_ele_t * linkedListMergeSort(list_ele_t * head, list_operations_t *ops){
 	if(!head || !head->next) {
 		return head;
 	}else{
 		
-		LinkedListElement *fast = (LinkedListElement*)head->next;
-		LinkedListElement *slow = head;
+		list_ele_t *fast = (list_ele_t*)head->next;
+		list_ele_t *slow = head;
 		
 		// get the middle of linked list
 		// divide the linked list
 		while(fast && fast->next){
-			slow = (LinkedListElement*)slow->next;
-			fast = (LinkedListElement*)((LinkedListElement*)fast->next)->next;
+			slow = (list_ele_t*)slow->next;
+			fast = (list_ele_t*)((list_ele_t*)fast->next)->next;
 		}
 		// now, get two lists.
-		fast = (LinkedListElement*)slow->next;
+		fast = (list_ele_t*)slow->next;
 		fast->prev = NULL;
 		slow->next = NULL;
 #ifdef DEBUG	
@@ -108,15 +108,15 @@ __device__ __host__  LinkedListElement * linkedListMergeSort(LinkedListElement *
 		printf("Fast : ");
 		show(fast);
 #endif
-		LinkedListElement *lhs = linkedListMergeSort(head, ops);
+		list_ele_t *lhs = linkedListMergeSort(head, ops);
 #ifdef DEBUG
 		printf("lhs finish!\n");
 #endif
-		LinkedListElement *rhs = linkedListMergeSort(fast, ops);
+		list_ele_t *rhs = linkedListMergeSort(fast, ops);
 		
 		// merge the linked list
 #ifdef DEBUG
-		LinkedListElement *result = mergeLinkedList(lhs, rhs, ops);
+		list_ele_t *result = mergeLinkedList(lhs, rhs, ops);
 		printf("Merge Result : ");
 		show(result);
 		return result;

@@ -6,9 +6,9 @@
 #include <include/machine_base.h>
 #include <include/job_base.h>
 #include <include/common.h>
-#include <tests/def.h>
+#include <tests/include/def.h>
 
-#include "test_machine_base.h"
+#include <tests/include/test_machine_base.h>
 
 #define amount 5000
 

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-int JOB_AMOUNT = 20000;
-int MACHINE_AMOUNT = 1000;
+int JOB_AMOUNT = 50000;
+int MACHINE_AMOUNT = 10000;
 int CHROMOSOME_AMOUNT = 100;
 int GENERATIONS = 100;
 

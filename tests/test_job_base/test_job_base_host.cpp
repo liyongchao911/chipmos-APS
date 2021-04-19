@@ -1,14 +1,14 @@
 #include <include/job_base.h>
 #include <gtest/gtest.h>
 
-#include "test_job_base.h"
+#include <tests/include/test_job_base.h>
 
 
 class TestJobBase : public testing::Test {
 protected:
 	const double *testSetMsGenePointer(double * ms_gene);
 	const double *testSetOsSeqGenePointer(double * os_seq_gene);
-	ProcessTime** testSetProcessTime(ProcessTime **process_timetime);
+	process_time_t* testSetProcessTime(process_time_t *process_timetime);
 	double testSetArrivT(double arriv_time);
 	double testSetStartTime(double start_time);
 	double testGetMsGene();
@@ -21,8 +21,8 @@ protected:
 	void SetUp() override;
     
 public:
-	// JobBase jb;
-    	Job *j;
+	// job_base_t jb;
+    	job_t *j;
 };
 
 void TestJobBase::SetUp(){
@@ -39,7 +39,7 @@ const double *TestJobBase::testSetOsSeqGenePointer(double* os_seq_gene){
 	j->base.setOsSeqGenePointer(&j->base, os_seq_gene);
 	return j->base.os_seq_gene;
 }
-ProcessTime** TestJobBase::testSetProcessTime(ProcessTime **ptime){
+process_time_t* TestJobBase::testSetProcessTime(process_time_t *ptime){
 	// j.setProcessTime(ptime);
 	j->base.setProcessTime(&j->base, ptime, 0);
 	return j->base.process_time;
@@ -77,7 +77,7 @@ double *y;
 const double *a;
 const double *b;
 double qq = 5;
-ProcessTime ** z;
+process_time_t * z;
 TEST_F(TestJobBase, test_JobBase_setMsGenePointer){
     EXPECT_EQ(testSetMsGenePointer(x), x);
     EXPECT_EQ(testSetMsGenePointer(y), y);

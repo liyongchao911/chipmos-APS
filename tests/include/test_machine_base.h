@@ -10,14 +10,15 @@
 #include <include/common.h>
 #include <cuda.h>
 
-struct Job{
-	JobBase base;
-	LinkedListElement ele;
+struct job_t{
+	job_base_t base;
+	list_ele_t ele;
 	double val;
 };
 
 struct Machine{
-	MachineBase base;
+	unsigned int machine_no;
+	machine_base_t base;
 };
 
 __device__ __host__ double machineSortJobs(void * self);
@@ -30,9 +31,9 @@ __device__ __host__ void sortJob(void *_self);
 
 __device__ __host__ void initMachine(void *self);
 
-__device__ __host__ void initJob(Job * _self);
+__device__ __host__ void initJob(job_t * _self);
 
-Job * newJob(double val);
+job_t * newJob(double val);
 
 Machine *newMachine();
 

@@ -6,18 +6,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef struct LinkedListItem LinkedListItem;
-struct LinkedListItem {
-	LinkedListElement ele;
+typedef struct list_item_t list_item_t;
+struct list_item_t {
+	list_ele_t ele;
 	double value;
 };
 
 __device__ __host__ double linkedListItemGetValue(void *_self);
 
-LinkedListItem * newLinkedListItem(double val);
+list_item_t * new_list_item(double val);
 
 
-void LinkedListItemAdd( LinkedListItem ** list, LinkedListItem *item, LinkedListElementOperation ops);
+void list_item_add(list_item_t **list, list_item_t *item, list_operations_t ops);
 
 
 #endif
