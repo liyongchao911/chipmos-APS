@@ -4,10 +4,10 @@
 #include <driver_types.h>
 #include <gtest/gtest.h>
 #include <assert.h>
-#include <tests/def.h>
+#include <tests/include/def.h>
 
-#include "include/linked_list.h"
-#include "test_linked_list.h"
+#include <include/linked_list.h>
+#include <tests/include/test_linked_list.h>
 
 
 #ifdef STATISTIC
@@ -23,9 +23,9 @@ public:
 	int **values_device;
 	int **values_arr_device;
 	
-	LinkedListItem ** item_address_on_device;
+	list_item_t ** item_address_on_device;
 
-	LinkedListItem ** items;
+	list_item_t ** items;
 
 	int *sizes;
 	int *sizes_device;
@@ -50,10 +50,10 @@ void TestLinkedListDeviceOpt::SetUp(){
 	err = cudaMalloc((void**)&sizes_device, sizeof(int)*amount);// alloc sizes_device
 	assert(err == cudaSuccess);
 	
-	err = cudaMallocHost((void**)&item_address_on_device, sizeof(LinkedListItem*)*amount); // init address_on_device;
+	err = cudaMallocHost((void**)&item_address_on_device, sizeof(list_item_t*)*amount); // init address_on_device;
 	assert(err == cudaSuccess);
 
-	err = cudaMalloc((void**)&items, sizeof(LinkedListItem*)*amount); // alloc items
+	err = cudaMalloc((void**)&items, sizeof(list_item_t*)*amount); // alloc items
 	assert(err == cudaSuccess);
 
 	err = cudaMalloc((void**)&values_device, sizeof(int*)*amount); // alloc values_device
@@ -62,11 +62,11 @@ void TestLinkedListDeviceOpt::SetUp(){
 	err = cudaMallocHost((void**)&values_arr_device, sizeof(int*)*amount); // alloc values_arr_device on host
 	assert(err == cudaSuccess);
 
-	LinkedListItem *tmp;
+	list_item_t *tmp;
 	for(int i = 0; i < amount; ++i){
 		sizes[i] = rand() % 100+50;
 
-		err = cudaMalloc((void**)&tmp, sizeof(LinkedListItem)*sizes[i]); // alloc instance
+		err = cudaMalloc((void**)&tmp, sizeof(list_item_t)*sizes[i]); // alloc instance
 		assert(err == cudaSuccess);
 
 		item_address_on_device[i] = tmp;
@@ -79,7 +79,7 @@ void TestLinkedListDeviceOpt::SetUp(){
 		count += sizes[i];
 	}
 
-	err = cudaMemcpy(items, item_address_on_device, sizeof(LinkedListItem*)*amount, cudaMemcpyHostToDevice); // cpy items ptr value
+	err = cudaMemcpy(items, item_address_on_device, sizeof(list_item_t*)*amount, cudaMemcpyHostToDevice); // cpy items ptr value
 	assert(err == cudaSuccess);
 
 	int *values_tmp;
@@ -118,16 +118,16 @@ void TestLinkedListDeviceOpt::TearDown(){
 	cudaFree(items);
 }
 
-__global__ void initLinkedListOpsKernel(LinkedListElementOperation * op){
+__global__ void initLinkedListOpsKernel(list_operations_t * op){
 	op->setNext = __listEleSetNext;
 	op->setPrev = __listEleSetPrev;
 	op->init = initList;
 }
 
-__global__ void sortingSetupKernel(LinkedListItem **items, int **values, int *sizes, unsigned int offset, int am){
+__global__ void sortingSetupKernel(list_item_t **items, int **values, int *sizes, unsigned int offset, int am){
 	int idx = threadIdx.x + blockIdx.x * blockDim.x + offset;
 	if(idx < am){
-		LinkedListElementOperation ops = LINKED_LIST_OPS();
+		list_operations_t ops = LINKED_LIST_OPS;
 		for(int i = 0; i < sizes[idx]; ++i){
 			items[idx][i].value = values[idx][i];
 			initList(&items[idx][i].ele);		
@@ -141,10 +141,10 @@ __global__ void sortingSetupKernel(LinkedListItem **items, int **values, int *si
 	}
 }
 
-__global__ void sorting(LinkedListItem **items, int **values, LinkedListElementOperation *ops,unsigned int offset, int am){
+__global__ void sorting(list_item_t **items, int **values, list_operations_t *ops, unsigned int offset, int am){
 	int idx = threadIdx.x + blockIdx.x * blockDim.x + offset;
 	if(idx < am){
-		LinkedListElement *iter;
+		list_ele_t *iter;
 		iter = linkedListMergeSort(&items[idx][0].ele, ops);
 
 		for(int i = 0; iter; ++i){
@@ -172,8 +172,8 @@ TEST_F(TestLinkedListDeviceOpt, test_sort_linked_list_on_device_opt){
 
 
 	/********INIT OPS**********************************/
-	LinkedListElementOperation *ops_device;
-	ASSERT_EQ(cudaMalloc((void**)&ops_device, sizeof(LinkedListElementOperation)), cudaSuccess);
+	list_operations_t *ops_device;
+	ASSERT_EQ(cudaMalloc((void**)&ops_device, sizeof(list_operations_t)), cudaSuccess);
 	initLinkedListOpsKernel<<<1, 1>>>(ops_device);
 
 	clock_t t1 = clock();

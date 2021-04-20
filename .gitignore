@@ -39,3 +39,5 @@ docs/
 *.swp
 *.tmp
 .DS_Store
+.idea/
+cmake-build-debug/

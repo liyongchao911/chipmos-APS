@@ -1,31 +1,28 @@
 #include "include/linked_list.h"
 #include <include/job_base.h>
+#include <numeric>
 
 
 
 
 // constructor and initialization
 
-__device__ __host__ void resetJobBase(void *_self){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ void resetJobBase(job_base_t *self){
 	self->start_time = 0;
 	self->end_time = 0;
 }
 
 
 // setter
-__device__ __host__ void setMsGenePointer(void *_self, double * ms_gene){
-	JobBase *self = (JobBase *)_self;
+__device__ __host__ void setMsGenePointer(job_base_t *self, double * ms_gene){
 	self->ms_gene = ms_gene;
 }
 
-__device__ __host__ void setOsSeqGenePointer(void *_self, double * os_seq_gene){
-	JobBase *self = (JobBase *)_self;
+__device__ __host__ void setOsSeqGenePointer(job_base_t *self, double * os_seq_gene){
 	self->os_seq_gene = os_seq_gene;
 }
 
-__device__ __host__ void setProcessTime(void *_self, ProcessTime **ptime, unsigned int size_of_process_time){
-	JobBase *self = (JobBase *)_self; 
+__device__ __host__ void setProcessTime(job_base_t *self, process_time_t *ptime, unsigned int size_of_process_time){
 	self->process_time = ptime;
 
 	if(size_of_process_time != 0){
@@ -34,97 +31,63 @@ __device__ __host__ void setProcessTime(void *_self, ProcessTime **ptime, unsign
 	}
 }
 
-__device__ __host__ void setArrivT(void *_self, double arriv_time){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ void setArrivT(job_base_t *self, double arriv_time){
     self->arriv_t = arriv_time;
 }
 
-__device__ __host__ void setStartTime(void *_self, double start_time){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ void setStartTime(job_base_t *self, double start_time){
     self->start_time = start_time;
+	if(self->process_time){
+		self->end_time = self->start_time + self->process_time[self->machine_no].process_time;	
+	}
 }
 
 // getter
-__device__ __host__ double getMsGene(void *_self){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ double getMsGene(job_base_t *self){
 	return *(self->ms_gene);
 }
 
-__device__ __host__ double getOsSeqGene(void *_self){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ double getOsSeqGene(job_base_t *self){
     return *(self->os_seq_gene);
 }
 
-__device__ __host__ unsigned int getMachineNo(void *_self){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ unsigned int getMachineNo(job_base_t *self){
     return self->machine_no;
 }
 
-__device__ __host__ double getArrivT(void *_self){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ double getArrivT(job_base_t *self){
     return self->arriv_t;
 }
 
-__device__ __host__ double getStartTime(void *_self){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ double getStartTime(job_base_t *self){
     return self->start_time;
 }
 
-__device__ __host__ double getEndTime(void *_self){
-	JobBase *self = (JobBase*)_self;
+__device__ __host__ double getEndTime(job_base_t *self){
     return self->end_time;
 }
 
 // operation
-__device__ __host__ unsigned int machineSelection(void *_self){
+__device__ __host__ unsigned int machineSelection(job_base_t *self){
     //calculate which number of machine(from 1 to n) that corresponds to partition
-	JobBase *self = (JobBase *)_self;
-    unsigned int count = 0;
-    double cal_partition = 0.0;
-	double ms_gene = self->getMsGene(self);
-
-	double partition = self->partition;
-    if(ms_gene == 0)
-	    count = 1;
-    while(cal_partition < ms_gene){
-        cal_partition += partition;
-        count++;
-    }    
-    return count;
+	
+	double ms_gene = getMsGene(self);
+	unsigned int val = ms_gene / self->partition + 0.0001;
+	if(self->process_time){
+		self->machine_no = self->process_time[val].machine_no;
+	}
+	return val;
 }
 
 __device__ __host__ void initJobBase(void *_self){
-	JobBase * self = (JobBase *)_self;
+	job_base_t * self = (job_base_t *)_self;
 	self->ms_gene = self->os_seq_gene = NULL;
-	self->reset = resetJobBase;
-	self->setMsGenePointer = setMsGenePointer;
-	self->setOsSeqGenePointer = setOsSeqGenePointer;
-	self->setProcessTime = setProcessTime;
-	self->setArrivT = setArrivT;
-	self->setStartTime = setStartTime;
-
-	self->getMsGene = getMsGene;
-	self->getOsSeqGene = getOsSeqGene;
-	self->getArrivT = getArrivT;
-	self->getStartTime = getStartTime;
-	self->getEndTime = getEndTime;
-	self->getMachineNo = getMachineNo;
-
-	self->machineSelection = machineSelection;
-
-	self->reset(self);
+	self->process_time = NULL;
 }
 
 
-JobBase * newJobBase(){
-	JobBase *jb = (JobBase*)malloc(sizeof(JobBase));
-
-	// jb->ele = newLinkedListElement();
-	// jb->ele->pDerivedObject = jb;
-	// jb->ele->getValue = getOsSeqGene; // virtual ^_^
-
-	jb->init = initJobBase;
-
-	jb->init(jb);	
+job_base_t * newJobBase(){
+	job_base_t *jb = (job_base_t*)malloc(sizeof(job_base_t));
+	initJobBase(jb);
 	return jb;
 }

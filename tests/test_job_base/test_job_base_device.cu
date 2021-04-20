@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "test_job_base.h"
+#include <tests/include/test_job_base.h>
 
 #define amount 100000
 
@@ -17,10 +17,10 @@ using namespace std;
 
 class TestJobBaseDevice : public testing::Test{
 protected:
-	// Job * jb;
-	Job ** jb_host;
-	Job ** device_jb_addresses;
-	Job ** jb_device;
+	// job_t * jb;
+	job_t ** jb_host;
+	job_t ** device_jb_addresses;
+	job_t ** jb_device;
 	unsigned int * result_device;
 	unsigned int * result_host;
 	double arrayOfMsGene[amount];
@@ -28,18 +28,18 @@ protected:
 	unsigned int arrayOfSizePt[amount], arrayOfMcNum[amount];
 	void SetUp() override;
 	void TearDown() override;
-	void copyArrayOfJobBase(Job **, Job **);
+	void copyArrayOfJobBase(job_t **, job_t **);
 	void setMsGeneData();
 };
 
 void TestJobBaseDevice::SetUp() {
 	// initialize jb_host_*
-	size_t sizeof_array_of_pointer = sizeof(Job*) * amount;
+	size_t sizeof_array_of_pointer = sizeof(job_t*) * amount;
 	size_t sizeof_array_of_result = sizeof(unsigned int) * amount;
 
 	// host memory allocation
-	jb_host = (Job **)malloc(sizeof_array_of_pointer);
-	device_jb_addresses = (Job **)malloc(sizeof_array_of_pointer);
+	jb_host = (job_t **)malloc(sizeof_array_of_pointer);
+	device_jb_addresses = (job_t **)malloc(sizeof_array_of_pointer);
 	result_host = (unsigned int *)malloc(sizeof_array_of_result);
 
 	// device memory allocation
@@ -61,9 +61,9 @@ void TestJobBaseDevice::SetUp() {
 	ASSERT_EQ(cudaMemcpy(jb_device, device_jb_addresses, sizeof_array_of_pointer, cudaMemcpyHostToDevice), CUDA_SUCCESS);
 }
 
-void TestJobBaseDevice::copyArrayOfJobBase(Job** device_address, Job** src){
-	Job * device_temp_jb;
-	size_t size = sizeof(Job);
+void TestJobBaseDevice::copyArrayOfJobBase(job_t** device_address, job_t** src){
+	job_t * device_temp_jb;
+	size_t size = sizeof(job_t);
 	for(unsigned int i = 0; i < amount; ++i){
 		ASSERT_EQ(cudaMalloc((void**)&device_temp_jb, size), cudaSuccess);
 		ASSERT_EQ(cudaMemcpy(device_temp_jb, src[i], size, cudaMemcpyHostToDevice), cudaSuccess);
@@ -73,19 +73,6 @@ void TestJobBaseDevice::copyArrayOfJobBase(Job** device_address, Job** src){
 
 
 void TestJobBaseDevice::TearDown(){
-	// delete result_host;
-
-	// for(unsigned int i = 0; i < amount; ++i){
-	// 	// free host object
-	// 	delete jb_host[i];
-	// }
-	// 
-	// // free array
-	// delete [] jb_host;
-	// delete [] device_jb_addresses;
-	// // free device array
-	// ASSERT_EQ(cudaFree(jb_device), CUDA_SUCCESS);
-	// ASSERT_EQ(cudaFree(result_device), CUDA_SUCCESS);
 }
 
 void TestJobBaseDevice::setMsGeneData(){
@@ -102,21 +89,28 @@ void TestJobBaseDevice::setMsGeneData(){
     file.close();
 }
 
-__global__ void testMachineSelection(Job ** jb, unsigned int * result, double * msgene_device, unsigned int numElements){
+__global__ void testMachineSelection(job_t ** jb, unsigned int * result, double * msgene_device, unsigned int numElements){
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
+	job_base_operations_t jbops = JOB_BASE_OPS;
 	if(id < numElements){
-		jb[id]->base.init = initJobBase;
-		jb[id]->base.init(&jb[id]->base);
-		jb[id]->base.setMsGenePointer(&jb[id]->base, &(msgene_device[id]));
-		result[id] = jb[id]->base.machineSelection(&jb[id]->base);
+		//jb[id]->base.init = initJobBase;
+		//jb[id]->base.init(&jb[id]->base);
+		initJobBase(&jb[id]->base);
+		jbops.setMsGenePointer(&jb[id]->base, &(msgene_device[id]));
+		result[id] = jbops.machineSelection(&jb[id]->base);
+		// jb[id]->base.setMsGenePointer(&jb[id]->base, &(msgene_device[id]));
+		// result[id] = jb[id]->base.machineSelection(&jb[id]->base);
 	}
 }
 
 
 TEST_F(TestJobBaseDevice, test_machine_selection_host){
+	job_base_operations_t jbops = JOB_BASE_OPS;
 	for(int i = 0; i < amount; ++i){
-		jb_host[i]->base.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
-		ASSERT_EQ(jb_host[i]->base.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
+		jbops.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
+		ASSERT_EQ(jbops.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
+		// jb_host[i]->base.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
+		// ASSERT_EQ(jb_host[i]->base.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
 	}	
 }
 
