@@ -3,6 +3,7 @@
 
 #include <include/linked_list.h>
 #include <include/common.h>
+#include <include/def.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -12,7 +13,7 @@ struct list_item_t {
 	double value;
 };
 
-__device__ __host__ double linkedListItemGetValue(void *_self);
+__qualifier__ double linkedListItemGetValue(void *_self);
 
 list_item_t * new_list_item(double val);
 

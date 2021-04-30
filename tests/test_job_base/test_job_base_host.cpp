@@ -33,45 +33,45 @@ void TestJobBase::SetUp(){
 
 const double *TestJobBase::testSetMsGenePointer(double* ms_gene){
 	// j->setMsGenePointer(ms_gene);
-	jops.setMsGenePointer(&j->base, ms_gene);
+	jops.set_ms_gene_addr(&j->base, ms_gene);
 	return j->base.ms_gene;
 }
 const double *TestJobBase::testSetOsSeqGenePointer(double* os_seq_gene){
 	// j.setOsSeqGenePointer(os_seq_gene);
-	jops.setOsSeqGenePointer(&j->base, os_seq_gene);
+	jops.set_os_gene_addr(&j->base, os_seq_gene);
 	return j->base.os_seq_gene;
 }
 process_time_t* TestJobBase::testSetProcessTime(process_time_t *ptime){
 	// j.setProcessTime(ptime);
-	jops.setProcessTime(&j->base, ptime, 0);
+	jops.set_process_time(&j->base, ptime, 0);
 	return j->base.process_time;
 }
 double TestJobBase::testSetArrivT(double arriv_time){
-	jops.setArrivT(&j->base, arriv_time);
+	jops.set_arrival_time(&j->base, arriv_time);
 	return j->base.arriv_t;
 }
 double TestJobBase::testSetStartTime(double start_time){
-	jops.setStartTime(&j->base, start_time);
+	jops.set_start_time(&j->base, start_time);
 	return j->base.start_time;
 }
 
 double TestJobBase::testGetMsGene(){
-	return jops.getMsGene(&j->base); 
+	return jops.get_ms_gene(&j->base);
 }
 double TestJobBase::testGetOsSeqGene(){
-	return jops.getOsSeqGene(&j->base); 
+	return jops.get_os_gene(&j->base);
 }
 unsigned int TestJobBase::testGetMachineNo(){
-	return jops.getMachineNo(&j->base);
+	return jops.get_machine_no(&j->base);
 }
 double TestJobBase::testGetArrivT(){
-	return jops.getArrivT(&j->base);
+	return jops.get_arrival_time(&j->base);
 }
 double TestJobBase::testGetStartTime(){
-	return jops.getStartTime(&j->base);
+	return jops.get_start_time(&j->base);
 }
 double TestJobBase::testGetEndTime(){
-	return jops.getEndTime(&j->base);
+	return jops.get_end_time(&j->base);
 	
 }
 double *x;
@@ -101,29 +101,29 @@ TEST_F(TestJobBase, test_JobBase_setStartTime){
     EXPECT_EQ(testSetStartTime(10), 10);
 }
 TEST_F(TestJobBase, test_JobBase_getMsGene){
-    jops.setMsGenePointer(&j->base, &qq);
-    EXPECT_EQ(qq, jops.getMsGene(&j->base));
+    jops.set_ms_gene_addr(&j->base, &qq);
+    EXPECT_EQ(qq, jops.get_ms_gene(&j->base));
     // EXPECT_EQ(testGetMsGene(), j.getMsGene());
 }
 TEST_F(TestJobBase, test_JobBase_getOsSeqGene){
-    jops.setOsSeqGenePointer(&j->base, &qq);
-    EXPECT_EQ(qq, jops.getOsSeqGene(&j->base));
+    jops.set_os_gene_addr(&j->base, &qq);
+    EXPECT_EQ(qq, jops.get_os_gene(&j->base));
     // EXPECT_EQ(testGetOsSeqGene(), j.getOsSeqGene());
 }
 TEST_F(TestJobBase, test_JobBase_getMachineNo){
-    EXPECT_EQ(testGetMachineNo(), jops.getMachineNo(&j->base));
+    EXPECT_EQ(testGetMachineNo(), jops.get_machine_no(&j->base));
     // EXPECT_EQ(testGetMachineNo(), j.getMachineNo());
 }
 TEST_F(TestJobBase, test_JobBase_getArrivT){
-    EXPECT_EQ(testGetArrivT(), jops.getArrivT(&j->base));
+    EXPECT_EQ(testGetArrivT(), jops.get_arrival_time(&j->base));
     // EXPECT_EQ(testGetArrivT(), j.getArrivT());
 }
 TEST_F(TestJobBase, test_JobBase_getStartTime){
-    EXPECT_EQ(testGetStartTime(), jops.getStartTime(&j->base));
+    EXPECT_EQ(testGetStartTime(), jops.get_start_time(&j->base));
     // EXPECT_EQ(testGetStartTime(), j.getStartTime());
 }
 TEST_F(TestJobBase, test_JobBase_getEndTime){
-    EXPECT_EQ(testGetEndTime(), jops.getEndTime(&j->base));
+    EXPECT_EQ(testGetEndTime(), jops.get_end_time(&j->base));
     // EXPECT_EQ(testGetEndTime(),j.getEndTime());
 }
 

@@ -2,6 +2,7 @@
 #include "include/job_base.h"
 #include <bits/floatn.h>
 #include <cuda.h>
+#include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
 #include <include/linked_list.h>
@@ -37,8 +38,11 @@ public:
 	process_time_t **processTimes;
 	process_time_t **address_process_time_arr;
 
-	double *genes;
+	double **genes;
 	double *host_genes;
+	double **genes_address_arr;
+
+
 	unsigned int *device_can_run_machine_size;
 	unsigned int *host_can_run_machine_size;
 
@@ -126,8 +130,19 @@ void TestChromosomeBaseDevice::SetUp(){
 	cudaCheck( cudaMemcpy(processTimes, address_process_time_arr, sizeof(process_time_t *)*JOB_AMOUNT, cudaMemcpyHostToDevice), "copy can run tool from host to device");
 
 	// alloc genes
-	cudaCheck(cudaMalloc((void**)&genes, sizeof(double)*(JOB_AMOUNT<<1)*(CHROMOSOME_AMOUNT<<1)),"cuda alloc genes");
-	cudaCheck(cudaMallocHost((void**)&host_genes, sizeof(double)*(JOB_AMOUNT<<1)*(CHROMOSOME_AMOUNT<<1)),"cuda malloc hostld");
+	double *genes_tmp;
+	double *genes_host_tmp;
+	cudaCheck(cudaMallocHost((void**)&genes_host_tmp, sizeof(double)*(JOB_AMOUNT<<1)), "cudaMallocHost for genes_host_tmp");
+	cudaCheck(cudaMallocHost((void**)&genes_address_arr, sizeof(double*)*R_CHROMOSOME_AMOUNT), "cudaMallocHost for genes_address_arr");
+	for(int i = 0; i < R_CHROMOSOME_AMOUNT; ++i){
+		random_shuffle(genes_host_tmp, JOB_AMOUNT<<1);
+		cudaCheck(cudaMalloc((void**)&genes_tmp, sizeof(double)*(JOB_AMOUNT<<1)), "alloc for genes_tmp");
+		cudaCheck(cudaMemcpy(genes_tmp, genes_host_tmp, sizeof(double)*(JOB_AMOUNT<<1), cudaMemcpyHostToDevice), "cudaMemcpy for genes_tmp");
+		genes_address_arr[i] = genes_tmp;
+	}
+	cudaCheck(cudaMalloc((void**)&genes, sizeof(double*)*(R_CHROMOSOME_AMOUNT)),"cuda alloc genes");
+	cudaCheck(cudaFreeHost(genes_host_tmp), "cudaFreeHost genes_host_tmp");
+	cudaCheck(cudaMemcpy(genes, genes_address_arr, sizeof(double*)*R_CHROMOSOME_AMOUNT, cudaMemcpyHostToDevice), "cudaMemcpy genes, genes_address_arr");
 
 	// alloc ops
 	cudaCheck(cudaMalloc((void**)&ops, sizeof(list_operations_t)), "alloc ops");
@@ -179,13 +194,13 @@ __global__ void machineSetup(Machine **machines, int MACHINE_AMOUNT, int CHROMOS
 	}
 }
 
-__global__ void chromosomeSetup(Chromosome *chromosomes, double * genes, int JOB_AMOUNT, int CHROMOSOME_AMOUNT){
+__global__ void chromosomeSetup(Chromosome *chromosomes, double ** genes, int JOB_AMOUNT, int CHROMOSOME_AMOUNT){
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 	if(idx < CHROMOSOME_AMOUNT){
 		chromosomes[idx].val = idx;
 		chromosomes[idx].base.gene_size = JOB_AMOUNT<<1;
 		chromosomes[idx].base.chromosome_no = idx;
-		initChromosomeBase(&chromosomes[idx].base, genes + idx*(JOB_AMOUNT<<1));
+		chromosome_base_init(&chromosomes[idx].base, genes[idx]);
 	}
 }
 
@@ -195,7 +210,7 @@ __global__ void jobSetup(job_t ** jobs, unsigned int *can_run_tool_size, process
 	if(x < CHROMOSOME_AMOUNT && y < JOB_AMOUNT){
 		initJob(&jobs[x][y]);
 		jobs[x][y].base.job_no = y;
-		ops->setProcessTime(&jobs[x][y].base, process_times[y], can_run_tool_size[y]);
+		ops->set_process_time(&jobs[x][y].base, process_times[y], can_run_tool_size[y]);
 		// jobs[x][y].base.setProcessTime(&jobs[x][y].base, process_times[y], can_run_tool_size[y]);
 	}
 }
@@ -204,8 +219,8 @@ __global__ void jobBindGenes(job_t **jobs, Chromosome * chromosomes, job_base_op
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
 	int y = blockIdx.y * blockDim.y + threadIdx.y; 
 	if(x < R_CHROMOSOME_AMOUNT && y < JOB_AMOUNT){
-		jbops->setMsGenePointer(&jobs[x][y].base, chromosomes[x].base.ms_genes + y);
-		jbops->setOsSeqGenePointer(&jobs[x][y].base, chromosomes[x].base.os_genes + y);
+		jbops->set_ms_gene_addr(&jobs[x][y].base, chromosomes[x].base.ms_genes + y);
+		jbops->set_os_gene_addr(&jobs[x][y].base, chromosomes[x].base.os_genes + y);
 	}
 }
 
@@ -214,7 +229,7 @@ __global__ void machineSelection(job_t **jobs, job_base_operations_t *jbops, int
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
 	int machine_idx;
 	if(x < R_CHROMOSOME_AMOUNT && y < JOB_AMOUNT){
-		machine_idx = jbops->machineSelection(&jobs[x][y].base);
+		machine_idx = jbops->machine_selection(&jobs[x][y].base);
 		jobs[x][y].base.machine_no = jobs[x][y].base.process_time[machine_idx].machine_no;
 	}
 }
@@ -225,25 +240,33 @@ __global__ void machineSelection2(job_t **jobs, Machine **machines, machine_base
 	if( x < R_CHROMOSOME_AMOUNT && y < MACHINE_AMOUNT){
 		for(int i = 0; i < JOB_AMOUNT; ++i){
 			if(jobs[x][i].base.machine_no == y){
-				ops->addJob(&machines[x][y].base, &jobs[x][i].ele);
-				// machines[x][y].base.addJob(&machines[x][y].base, &jobs[x][i]);
+				ops->add_job(&machines[x][y].base, &jobs[x][i].ele);
 			}
 		}
 	}
 }
 
-__global__ void sortJob(Machine **machines, list_operations_t *ops, int MACHINE_AMOUNT, int R_CHROMOSOME_AMOUNT){
+__global__ void sortJob(Machine **machines, machine_base_operations_t *mbops, list_operations_t *ops, int MACHINE_AMOUNT, int R_CHROMOSOME_AMOUNT){
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
-	if( x == 0 && y == 0){
-		__sortJob(&machines[x][y].base, ops);
+	if( x < R_CHROMOSOME_AMOUNT && y < MACHINE_AMOUNT){
+	    mbops->sort_job(&machines[x][y].base, ops);
+//		__sortJob(&machines[x][y].base, ops);
+	}
+}
+
+__global__ void resetMachines(Machine **machines, machine_base_operations_t *mbops, int MACHINE_AMOUNT, int R_CHROMOSOME_AMOUNT){
+	int x = blockIdx.x * blockDim.x + threadIdx.x;
+	int y = blockIdx.y * blockDim.y + threadIdx.y;
+	if( x < R_CHROMOSOME_AMOUNT && y < MACHINE_AMOUNT){
+		mbops->reset(&machines[x][y].base);
 	}
 }
 
 __global__ void operationSetup(list_operations_t *ops,job_base_operations_t *jbops,  machine_base_operations_t *mbops){
-	ops->init = initList;
-	ops->setNext = __listEleSetNext;
-	ops->setPrev = __listEleSetPrev;
+	ops->init = _list_init;
+	ops->set_next = _list_ele_set_next;
+	ops->set_prev = _list_ele_set_prev;
 	
 	machine_base_operations_t mbtmp = MACHINE_BASE_OPS;
 	*mbops = mbtmp;
@@ -277,21 +300,24 @@ TEST_F(TestChromosomeBaseDevice, test_chromosome_base_device){
 	// start computing...
 	PRINTF("Start Computing...\n");
 	cudaCheck(cudaEventRecord(startEvent, 0), "cuda event record start event");
-	machineSelection<<<job_chromosome_block, job_chromosome_thread>>>(jobs, jbops, JOB_AMOUNT, R_CHROMOSOME_AMOUNT);  // machine selection
-
-	PRINTF("Finish machine selection part 1\n");
-	PRINTF("Start machine selection part2\n");
-	machineSelection2<<<machine_chromosome_block, machine_chromosome_thread>>>(jobs, machines, mbops, JOB_AMOUNT, MACHINE_AMOUNT, R_CHROMOSOME_AMOUNT);
-	PRINTF("Finish machine selection part2\n");
-	sortJob<<<machine_chromosome_block, machine_chromosome_thread>>>(machines, ops, MACHINE_AMOUNT, R_CHROMOSOME_AMOUNT);
-	cudaDeviceSynchronize();
-	PRINTF("Finish sorting\n");
+	for(int i = 0; i < GENERATIONS; ++i){
+		machineSelection<<<job_chromosome_block, job_chromosome_thread>>>(jobs, jbops, JOB_AMOUNT, R_CHROMOSOME_AMOUNT);  // machine selection
+		// PRINTF("Finish machine selection part 1\n");
+		// PRINTF("Start machine selection part2\n");
+		machineSelection2<<<machine_chromosome_block, machine_chromosome_thread>>>(jobs, machines, mbops, JOB_AMOUNT, MACHINE_AMOUNT, R_CHROMOSOME_AMOUNT);
+		// PRINTF("Finish machine selection part2\n");
+		sortJob<<<machine_chromosome_block, machine_chromosome_thread>>>(machines, mbops, ops, MACHINE_AMOUNT, R_CHROMOSOME_AMOUNT);
+		resetMachines<<<machine_chromosome_block, machine_chromosome_thread>>>(machines, mbops, MACHINE_AMOUNT, R_CHROMOSOME_AMOUNT);
+		cudaDeviceSynchronize();
+		// PRINTF("Finish sorting\n");
+		PRINTF("Finish generation %d\n", i);
+	 }
+	
 	cudaCheck(cudaEventRecord(stopEvent, 0), "cuda event record stop event");
 	cudaCheck(cudaEventSynchronize(stopEvent), "cuda event sync stop event");
 
 	float ms;
 	cudaCheck(cudaEventElapsedTime(&ms, startEvent, stopEvent), "get elapsed time");
 
-	PRINTF("Elapsed Time : %.3f\n", ms / 1000.0);
-
+	PRINTF("Elapsed Time : %.3fs\n", ms / 1000.0);
 }

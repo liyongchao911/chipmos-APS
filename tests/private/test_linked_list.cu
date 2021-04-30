@@ -14,13 +14,13 @@ list_item_t * new_list_item(double val){
 	list_item_t *item = (list_item_t *)malloc(sizeof(list_item_t));
 	if(!item)
 		return NULL;
-	// item->ele = newLinkedListElement();
-	// item->ele.setNext = 
-	initList(&(item->ele));
-	// item->ele.setNext = __listEleSetNext;
-	// item->ele.setPrev = __listEleSetPrev;
+	// item->ele = list_ele_new();
+	// item->ele.set_next =
+	_list_init(&(item->ele));
+	// item->ele.set_next = _list_ele_set_next;
+	// item->ele.set_prev = _list_ele_set_prev;
 	item->ele.ptr_derived_object = item;
-	item->ele.getValue = linkedListItemGetValue;
+	item->ele.get_value = linkedListItemGetValue;
 	item->value = val;
 	return item;
 }
@@ -31,8 +31,8 @@ void list_item_add(list_item_t ** list, list_item_t *item, list_operations_t ops
 		return;	
 	}
 	if(*list){
-		ops.setNext(&(item->ele), &(*list)->ele);
-		// item->ele.setNext(&(item->ele), &(*list)->ele);
+		ops.set_next(&(item->ele), &(*list)->ele);
+		// item->ele.set_next(&(item->ele), &(*list)->ele);
 		*list = item;	
 	}else{
 		*list = item;

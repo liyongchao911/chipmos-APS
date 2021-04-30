@@ -147,8 +147,8 @@ void TestLinkedListDevice::TearDown(){
 }
 
 __global__ void initLinkedListOps(list_operations_t *ops){
-	ops->setNext = __listEleSetNext;
-	ops->setPrev = __listEleSetPrev;
+    list_operations_t tmp = LINKED_LIST_OPS;
+    *ops = tmp;
 }
 
 __global__ void sortingSetUp(list_item_t ***items,  int *sizes, int **values){
@@ -158,16 +158,16 @@ __global__ void sortingSetUp(list_item_t ***items,  int *sizes, int **values){
 		// connect to device function
 		list_operations_t ops = LINKED_LIST_OPS;
 		for(int i = 0; i < sizes[idx]; ++i){
-			items[idx][i]->ele.getValue = linkedListItemGetValue;
-			// items[idx][i]->ele.setNext = __listEleSetNext;
-			// items[idx][i]->ele.setPrev = __listEleSetPrev;
+			items[idx][i]->ele.get_value = linkedListItemGetValue;
+			// items[idx][i]->ele.set_next = _list_ele_set_next;
+			// items[idx][i]->ele.set_prev = _list_ele_set_prev;
 			items[idx][i]->ele.ptr_derived_object = items[idx][i];
 			items[idx][i]->value = values[idx][i];
 		}
 
 		for(int i = 0, size = sizes[idx] - 1; i < size; ++i){
-			ops.setNext(&items[idx][i]->ele, &items[idx][i+1]->ele);		
-			// items[idx][i]->ele.setNext(&items[idx][i]->ele, &items[idx][i + 1]->ele);
+			ops.set_next(&items[idx][i]->ele, &items[idx][i + 1]->ele);
+			// items[idx][i]->ele.set_next(&items[idx][i]->ele, &items[idx][i + 1]->ele);
 		}
 
 	}
@@ -177,12 +177,12 @@ __global__ void sorting(list_item_t ***items, int **values, list_operations_t *o
  	int idx = threadIdx.x + blockIdx.x * blockDim.x;
  	if(idx < am){
 		list_ele_t *iter;
- 		iter = linkedListMergeSort(&(items[idx][0]->ele), ops);
+ 		iter = list_merge_sort(&(items[idx][0]->ele), ops);
 		items[idx][0] = (list_item_t*)iter->ptr_derived_object;
 		iter = &(items[idx][0]->ele);
 
 		for(int i = 0; iter ; ++i){
-			values[idx][i] = iter->getValue(iter);
+			values[idx][i] = iter->get_value(iter);
 			iter = iter->next;
 		}
  	}

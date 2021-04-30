@@ -1,4 +1,4 @@
-#include <cuda.h>
+#include <include/def.h>
 #include <include/machine_base.h>
 #include <gtest/gtest.h>
 
@@ -53,7 +53,7 @@ TEST_F(TestMachineBaseHost, test_machine_base_host_add_job){
 	machine_base_operations_t mbops = MACHINE_BASE_OPS;
 	for(int i = 0; i < amount; ++i){
 		for(int j = 0; j < sizes[i]; ++j){
-			mbops.addJob(&machines[i]->base, &jobs[i][j]->ele);
+			mbops.add_job(&machines[i]->base, &jobs[i][j]->ele);
 		}
 	}
 	
@@ -61,7 +61,7 @@ TEST_F(TestMachineBaseHost, test_machine_base_host_add_job){
 	for(int i = 0; i < amount; ++i){
 		ele = machines[i]->base.root;
 		for(int j = 0; j < sizes[i]; ++j){
-			ASSERT_EQ(ele->getValue(ele), values[i][j]) << "i = "<< i <<"j = "<<j<<std::endl;
+			ASSERT_EQ(ele->get_value(ele), values[i][j]) << "i = " << i << "j = " << j << std::endl;
 			ele = ele->next;
 		}	
 	}
@@ -73,21 +73,21 @@ TEST_F(TestMachineBaseHost, test_machine_base_host_sort_job){
 	machine_base_operations_t mbops = MACHINE_BASE_OPS;
 	for(int i = 0; i < amount; ++i){
 		for(int j = 0; j < sizes[i]; ++j){
-			mbops.addJob(&machines[i]->base, &jobs[i][j]->ele);
+			mbops.add_job(&machines[i]->base, &jobs[i][j]->ele);
 		}
 	}
 
 	
 	for(int i = 0; i < amount; ++i){
 		qsort(values[i], sizes[i], sizeof(int), cmpint);
-		mbops.sortJob(&machines[i]->base, &ops);
+		mbops.sort_job(&machines[i]->base, &ops);
 	}
 
 	list_ele_t *ele;
 	for(int i = 0; i < amount; ++i){
 		ele = machines[i]->base.root;
 		for(int j = 0; j < sizes[i]; ++j){
-			ASSERT_EQ(ele->getValue(ele), values[i][j]) << "i = "<< i <<"j = "<<j<<std::endl;
+			ASSERT_EQ(ele->get_value(ele), values[i][j]) << "i = " << i << "j = " << j << std::endl;
 			ele = ele->next;
 		}	
 	}

@@ -1,8 +1,9 @@
+
+
 #ifndef __CHROMOSOME_BASE_H__
 #define __CHROMOSOME_BASE_H__
 
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include <include/def.h>
 #include <include/job_base.h>
 #include <include/machine_base.h>
 
@@ -21,15 +22,15 @@ struct chromosome_base_t{
 struct chromosome_base_operations_t{
 	void (*init)(void *self, double *address);
 	void (*reset)(void *self);
-	void (*computeFitnessValue)(void *self, machine_base_t *machines, unsigned int machine_sizes, machine_base_operations_t *op);
+	void (*compute_fitness_value)(void *self, machine_base_t *machines, unsigned int machine_sizes, machine_base_operations_t *op);
 };
 
 
-chromosome_base_t * createChromosomeBase(size_t gene_size);
+chromosome_base_t * chromosome_base_new(size_t gene_size);
 
-__device__ __host__ void resetChromosomeBase(chromosome_base_t *base);
+__qualifier__ void chromosome_base_reset(chromosome_base_t *base);
 
-__device__ __host__ void initChromosomeBase(chromosome_base_t * base, double *address);
+__qualifier__ void chromosome_base_init(chromosome_base_t * base, double *address);
 
 
 #endif

@@ -8,7 +8,7 @@
 
 #define showList(iter, head)                                                 \
 	iter = head;                                                             \
-	while(iter) {printf("%.0f ", iter->getValue(iter)); iter = iter->next;}  \
+	while(iter) {printf("%.0f ", iter->get_value(iter)); iter = iter->next;}  \
 	printf("\n");                                                            \
 
 int main(int argc, const char *argv[]){
@@ -24,7 +24,7 @@ int main(int argc, const char *argv[]){
 	list_item_t *prev;
 	for(int i = 0; i < amount; ++i){
 		prev = new_list_item(value[i]);
-		ops.setNext(&prev->ele, head);
+		ops.set_next(&prev->ele, head);
 		head = &prev->ele;
 	}
 
@@ -33,7 +33,7 @@ int main(int argc, const char *argv[]){
 	showList(iter, head);
 	
 
-	head = linkedListMergeSort(head, &ops);
+	head = list_merge_sort(head, &ops);
 
 	printf("Sorted : ");
 	showList(iter, head);
@@ -41,7 +41,7 @@ int main(int argc, const char *argv[]){
 	qsort(value, amount, sizeof(double), cmpdouble);
 	iter = head;
 	for(int i = 0; i < amount; ++i){
-		assert(value[i] == iter->getValue(iter));
+		assert(value[i] == iter->get_value(iter));
 		iter = iter->next;
 	}
 }

@@ -1,24 +1,24 @@
 #ifndef __MACHINE_BASE_H__
 #define __MACHINE_BASE_H__
 
-#include "include/linked_list.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include <stddef.h>
+#include <include/def.h>
+#include <include/linked_list.h>
 #include <include/job_base.h>
 
 #ifndef MACHINE_BASE_OPS
 #define MACHINE_BASE_OPS machine_base_operations_t{                    \
-    .reset = resetMachineBase,                                         \
-    .addJob = __addJob,                                                \
-    .sortJob = __sortJob,                                              \
-    .getSizeOfJobs = getSizeOfJobs,                                    \
+    .reset = machine_base_reset,                                         \
+    .add_job = _machine_base_add_job,                                                \
+    .sort_job = _machine_base_sort_job,                                              \
+    .get_size_of_jobs = machine_base_get_size_of_jobs,                                    \
 }
 #endif
 
 
 typedef struct machine_base_t machine_base_t;
 
-machine_base_t * newMachineBase(unsigned int machine_no);
+machine_base_t * machine_base_new(unsigned int machine_no);
 
 struct machine_base_t{
 	list_ele_t * root;
@@ -33,21 +33,21 @@ struct machine_base_operations_t{
 
 	void (*reset)(machine_base_t *self);
 
-	void (*addJob)(machine_base_t *self, list_ele_t*);
-	void (*sortJob)(machine_base_t *self, list_operations_t *ops);
-	unsigned int (*getSizeOfJobs)(machine_base_t *self);
-	void (*getQuality)(machine_base_t *self);
+	void (*add_job)(machine_base_t *self, list_ele_t*);
+	void (*sort_job)(machine_base_t *self, list_operations_t *ops);
+	unsigned int (*get_size_of_jobs)(machine_base_t *self);
+	void (*get_quality)(machine_base_t *self);
 	
 	size_t sizeof_setup_time_function_array;	
-	double (*setUpTime[])(machine_base_t *self);
+	double (*set_up_times[])(machine_base_t *self);
 };
 
 
-__device__ __host__ void resetMachineBase(machine_base_t *_self);
-__device__ __host__ unsigned int getSizeOfJobs(machine_base_t* _self);
+__qualifier__ void machine_base_reset(machine_base_t *_self);
+__qualifier__ unsigned int machine_base_get_size_of_jobs(machine_base_t* _self);
 
-__device__ __host__ void initMachineBase(machine_base_t *_self);
-__device__ __host__ void __addJob(machine_base_t *_self, list_ele_t *);
-__device__ __host__ void __sortJob(machine_base_t *_self, list_operations_t *ops);
+__qualifier__ void machine_base_init(machine_base_t *_self);
+__qualifier__ void _machine_base_add_job(machine_base_t *_self, list_ele_t *);
+__qualifier__ void _machine_base_sort_job(machine_base_t *_self, list_operations_t *ops);
 
 #endif

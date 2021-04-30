@@ -8,7 +8,8 @@
 #include <include/machine_base.h>
 #include <include/job_base.h>
 #include <include/common.h>
-#include <cuda.h>
+
+#include <include/def.h>
 
 #ifdef MACHINE_BASE_OPS
 #undef MACHINE_BASE_OPS
@@ -16,10 +17,10 @@
 
 #define MACHINE_BASE_OPS machine_base_operations_t{\
 	.init = initMachine, \
-    .reset = resetMachineBase,\
-	.addJob = __addJob,\
-	.sortJob = __sortJob,\
-	.getSizeOfJobs = getSizeOfJobs\
+    .reset = machine_base_reset,\
+	.add_job = _machine_base_add_job,\
+	.sort_job = _machine_base_sort_job,\
+	.get_size_of_jobs = machine_base_get_size_of_jobs\
 }
 
 struct job_t{
@@ -33,13 +34,13 @@ struct Machine{
 	machine_base_t base;
 };
 
-__device__ __host__ double machineSortJobs(void * self);
+__qualifier__ double machineSortJobs(void * self);
 
-__device__ __host__ double jobGetValue(void *);
+__qualifier__ double jobGetValue(void *);
 
-__device__ __host__ void initMachine(void *self);
+__qualifier__ void initMachine(void *self);
 
-__device__ __host__ void initJob(job_t * _self);
+__qualifier__ void initJob(job_t * _self);
 
 job_t * newJob(double val);
 

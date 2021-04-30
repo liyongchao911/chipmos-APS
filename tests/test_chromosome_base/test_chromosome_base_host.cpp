@@ -44,7 +44,7 @@ void TestChromosomeBaseHost::SetUp(){
 	for(int i = 0; i < JOB_AMOUNT; ++i){
 		initJob(&jobs[i]);
 		jobs[i].base.job_no = i;
-		jbops.setProcessTime(&jobs[i].base, NULL, rand() % 100 + (MACHINE_AMOUNT >> 1));
+		jbops.set_process_time(&jobs[i].base, NULL, rand() % 100 + (MACHINE_AMOUNT >> 1));
 	}
 	
 	chromosomes = (Chromosome*)malloc(sizeof(Chromosome) * (CHROMOSOME_AMOUNT << 1));
@@ -59,7 +59,7 @@ void TestChromosomeBaseHost::SetUp(){
 		chromosomes[i].val = i;
 		chromosomes[i].base.gene_size = JOB_AMOUNT << 1;
 		chromosomes[i].base.chromosome_no = i;
-		initChromosomeBase(&chromosomes[i].base, genes + i *(JOB_AMOUNT<<1));
+		chromosome_base_init(&chromosomes[i].base, genes + i *(JOB_AMOUNT<<1));
 		random_shuffle(&chromosomes[i].base);
 	}
 }
@@ -88,15 +88,15 @@ TEST_F(TestChromosomeBaseHost, test_machine_selection_and_sorting){
 			for(int k = 0; k < JOB_AMOUNT; ++k){
 				// printf("j = %d, k = %d\n",j, k);
 				// link chromosome and jobs
-				jbops.setMsGenePointer(&jobs[k].base, chromosomes[j].base.ms_genes + k);
-				jbops.setOsSeqGenePointer(&jobs[k].base, chromosomes[j].base.os_genes + k);
+				jbops.set_ms_gene_addr(&jobs[k].base, chromosomes[j].base.ms_genes + k);
+				jbops.set_os_gene_addr(&jobs[k].base, chromosomes[j].base.os_genes + k);
 				
 				// machine selection part1
-				machine_no = jobs[k].base.machine_no = jbops.machineSelection(&jobs[k].base);
+				machine_no = jobs[k].base.machine_no = jbops.machine_selection(&jobs[k].base);
 				
 				// machine selection part2
 				// machines[machine_no].base.addJob(&machines[machine_no].base, &jobs[k]);
-				mbops.addJob(&machines[machine_no].base, &jobs[k].ele);
+				mbops.add_job(&machines[machine_no].base, &jobs[k].ele);
 			}
 
 			// sorting
@@ -104,7 +104,7 @@ TEST_F(TestChromosomeBaseHost, test_machine_selection_and_sorting){
 			printf("%d\tSorting...\n",j);	
 #endif
 			for(int k = 0; k < MACHINE_AMOUNT; ++k){
-				mbops.sortJob(&machines[k].base, &ops);
+				mbops.sort_job(&machines[k].base, &ops);
 				mbops.reset(&machines[k].base);
 				// machines[k].base.sortJob(&machines[k], &ops);
 				// machines[k].base.reset(&machines[k].base);
