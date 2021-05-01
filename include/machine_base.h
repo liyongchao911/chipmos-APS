@@ -174,7 +174,7 @@ __qualifier__ unsigned int machine_base_get_size_of_jobs(machine_base_t *_self);
  * machine_base_init () - Initialize machine base object
  * @param _self : machine base object
  */
-__qualifier__ void _machine_base_init(machine_base_t *_self);
+__qualifier__ void machine_base_init(machine_base_t *_self);
 
 /**
  * _machine_base_add_job () - Add new job into machine
