@@ -60,8 +60,22 @@ public:
 
     /**
      * csv - Constructor of csv object for reading file
-     * 
-     * This constructor is used to read csv file.
+     *
+     * This constructor is used to read csv file. The mode of opening file is
+     * specified in @b mode. if @b read is @b true the constructor will
+     * immediately read the data. @b head is used to specify the csv file has
+     * header, if head is set true but the head has empty columns, the
+     * constructor raise exception. @b r1 and @b r2 are used to specify the
+     * range of rows of csv file. If both are -1, all of data are read into to
+     * memory. If @b r1 isn't -1 but @b r2 is, rows from r1 to the end are read
+     * into memory.
+     *
+     * @var filename : the csv file name
+     * @var mode : the mode of opning the file
+     * @var read : read data immediately or not
+     * @var head : specify if data has header
+     * @var r1 : range from r1 if specify
+     * @var r2 : range to r2 if specify
      */
     csv(std::string filename,
         std::string mode,
@@ -70,30 +84,181 @@ public:
         int r1 = -1,
         int r2 = -1);
 
+    /**
+     * setMode () - set the file mode
+     *
+     * @var mode : file mode
+     */
     void setMode(std::string mode);
+
+    /**
+     * setFileName() - set the csv file path
+     *
+     * @var filename : csv file path
+     */
     void setFileName(std::string filename);
 
-    void setHeaders(std::map<std::string, std::string> mapping,
+    /**
+     * setHeaders() - set header by mapping new header to old header
+     *
+     * This function is used to change the header by using mapping. The
+     * parameter @b maps store the relation ship between new header and old
+     * header, i.e. new_header --map--> old_header. Parameter @b replace specify
+     * if the function add new header or replace old header by new header.
+     *
+     * @var maps : a container store the relationship between new header and old
+     * header.
+     * @var replace : if the function add new header or replace the old header.
+     */
+    void setHeaders(std::map<std::string, std::string> maps,
                     bool replace = false);
+
+    /**
+     * setHeaders() - directly set header
+     *
+     * @var head : new header
+     */
     void setHeaders(std::map<std::string, uint16_t> head);
-    void setHeader(std::string old, std::string n, bool replace = false);
 
+    /**
+     * setHeader() - set single header
+     *
+     * This function is used to add @b new_header or replace @b old_header by @b
+     * new_header. @b replace is used to specify if the function perform
+     * addition or replacment.
+     *
+     * @var old_header : specify which of index of this column name is going to
+     * be mapped by new_header
+     * @var new_header : new header name
+     * @var replace : specify if function function perform addition or
+     * replacement.
+     */
+    void setHeader(std::string old_header,
+                   std::string new_header,
+                   bool replace = false);
 
+    /**
+     * write() - output csv file
+     *
+     * This function hasn't been implemented. DO NOT USE IT.
+     */
     bool write(std::string filename, std::string mode, bool head);
+
+    /**
+     * read() - input csv file
+     *
+     * This function is used to read csv file. The mode of opening file is
+     * specified in @b mode. if @b read is @b true the constructor will
+     * immediately read the data. @b head is used to specify the csv file has
+     * header, if head is set true but the head has empty columns, the
+     * constructor raise exception. @b r1 and @b r2 are used to specify the
+     * range of rows of csv file. If both are -1, all of data are read into to
+     * memory. If @b r1 isn't -1 but @b r2 is, rows from r1 to the end are read
+     * into memory.
+     *
+     * if filename or mode isn't specified, the function use the data member
+     * filename or mode.
+     *
+     * @return true if read file successfully
+     *
+     * @var filename : csv file path
+     * @var mode : file opening mode
+     * @var head : specify if this csv file has header
+     * @var r1 : lower bound
+     * @var r2 : upper bound
+     */
     bool read(std::string filename = "",
               std::string mode = "",
               bool head = true,
               int r1 = -1,
               int r2 = -1);
+
+    /**
+     * read() - read csv file use data member filename and mode
+     *
+     * @b head is used to specify the csv file has
+     * header, if head is set true but the head has empty columns, the
+     * constructor raise exception. @b r1 and @b r2 are used to specify the
+     * range of rows of csv file. If both are -1, all of data are read into to
+     * memory. If @b r1 isn't -1 but @b r2 is, rows from r1 to the end are read
+     * into memory.
+     *
+     * @return true if read file successfully
+     *
+     * @var head : specify if this csv file has header
+     * @var r1 : lower bound
+     * @var r2 : upper bound
+     */
     bool read(bool head = true, int r1 = -1, int r2 = -1);
+
+    /**
+     * close() - reset file pointer
+     */
     void close();
-    unsigned int size();
+
+    /**
+     * size() - return number of rows
+     *
+     * @return number of rows
+     */
+    unsigned int nrows();
 
 
+    /**
+     * getRow() - return a row
+     *
+     * return @b row of the csv file if row exceed the number of rows of csv,
+     * the function will throw exception. @b row can be less than 0, the
+     * function will count the row from the back and return it.
+     *
+     * @return a vector of string
+     */
     std::vector<std::string> getRow(int row);
+
+    /**
+     * getElement() - get single string in the csv file
+     *
+     * this function is used to get single string of the csv file by specifing
+     * which row(number) and which col(number). @b row can be less than 0, the
+     * function will count the row from the back and return it.
+     *
+     *
+     * @return single string in the csv file
+     *
+     */
     std::string getElement(int col, int row);
+
+    /**
+     * getElement() - get single string in the csv file
+     *
+     * this function is used to get single string of the csv file by specifing
+     * which row(number) and which col(number). @b row can be less than 0, the
+     * function will count the row from the back and return it.
+     *
+     *
+     * @return single string in the csv file
+     *
+     */
     std::string getElement(std::string col, int row);
+
+    /**
+     * getElements() - get a row in the csv file
+     *
+     * this function is used to return row content its header. The return type
+     * is map<string, string> the mapping relation is header -> row element
+     *
+     * @return map<string, string> data which is relationship between header and
+     * row elements
+     *
+     */
     std::map<std::string, std::string> getElements(int nrow);
+
+    /**
+     * getData() - get the csv content
+     *
+     * @return csv data as 2-D array which is represented in
+     * vector<vector<string> >
+     */
     std::vector<std::vector<std::string> > getData();
 
     ~csv();

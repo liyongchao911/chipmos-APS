@@ -209,7 +209,7 @@ std::map<std::string, std::string> csv::getElements(int row)
     return data;
 }
 
-unsigned int csv::size(){
+unsigned int csv::nrows(){
     return _data.size();
 }
 
