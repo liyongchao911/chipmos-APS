@@ -119,9 +119,9 @@ void TestLinkedListDeviceOpt::TearDown(){
 }
 
 __global__ void initLinkedListOpsKernel(list_operations_t * op){
-	op->setNext = __listEleSetNext;
-	op->setPrev = __listEleSetPrev;
-	op->init = initList;
+    list_operations_t tmp = LINKED_LIST_OPS;
+    *op = tmp;
+    op->init = _list_init;
 }
 
 __global__ void sortingSetupKernel(list_item_t **items, int **values, int *sizes, unsigned int offset, int am){
@@ -130,13 +130,13 @@ __global__ void sortingSetupKernel(list_item_t **items, int **values, int *sizes
 		list_operations_t ops = LINKED_LIST_OPS;
 		for(int i = 0; i < sizes[idx]; ++i){
 			items[idx][i].value = values[idx][i];
-			initList(&items[idx][i].ele);		
-			items[idx][i].ele.getValue = linkedListItemGetValue;
+			_list_init(&items[idx][i].ele);
+			items[idx][i].ele.get_value = linkedListItemGetValue;
 			items[idx][i].ele.ptr_derived_object = &items[idx][i];
 		}
 		
 		for(int i = 0; i < sizes[idx] - 1; ++i){
-			ops.setNext(&items[idx][i].ele, &items[idx][i+1].ele);
+			ops.set_next(&items[idx][i].ele, &items[idx][i + 1].ele);
 		}
 	}
 }
@@ -145,10 +145,10 @@ __global__ void sorting(list_item_t **items, int **values, list_operations_t *op
 	int idx = threadIdx.x + blockIdx.x * blockDim.x + offset;
 	if(idx < am){
 		list_ele_t *iter;
-		iter = linkedListMergeSort(&items[idx][0].ele, ops);
+		iter = list_merge_sort(&items[idx][0].ele, ops);
 
 		for(int i = 0; iter; ++i){
-			values[idx][i] = iter->getValue(iter);
+			values[idx][i] = iter->get_value(iter);
 			iter = iter->next;
 		}
 	}

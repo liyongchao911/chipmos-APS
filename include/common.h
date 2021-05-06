@@ -1,11 +1,11 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
-#define cudaCheck(err, msg)          \
-	if(err != cudaSuccess){          \
-		perror(msg);                 \
-		exit(-1);                    \
-	}                                \
+#define cudaCheck(err, msg)   \
+    if (err != cudaSuccess) { \
+        perror(msg);          \
+        exit(-1);             \
+    }
 
 
 

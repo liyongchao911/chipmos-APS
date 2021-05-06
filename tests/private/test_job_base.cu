@@ -3,9 +3,9 @@
 
 job_t * newJob(int sizeof_pt){
 	job_t * j = (job_t*)malloc(sizeof(job_t));
-	initJobBase(&j->base);
+	job_base_init(&j->base);
 	job_base_operations_t jbops = JOB_BASE_OPS;
-	jbops.setProcessTime(&j->base, NULL, sizeof_pt);
+	jbops.set_process_time(&j->base, NULL, sizeof_pt);
 	return j;
 
 }

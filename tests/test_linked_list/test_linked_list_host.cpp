@@ -1,9 +1,5 @@
 #include <include/linked_list.h>
 #include <gtest/gtest.h>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <cuda_runtime_api.h>
-#include <texture_types.h>
 #include <iostream>
 #include <tests/include/test_linked_list.h>
 #include <tests/include/def.h>
@@ -29,7 +25,7 @@ public:
 void TestLinkedListHost::SetUp(){
 	eles = (list_ele_t**)malloc(sizeof(list_ele_t *) * amount);
 	for(int i = 0; i < amount; ++i){
-		eles[i] = newLinkedListElement();
+		eles[i] = list_ele_new();
 	}
 
 	eles_arr = (list_item_t **)calloc(amount, sizeof(list_item_t *));
@@ -77,8 +73,8 @@ void TestLinkedListHost::TearDown(){
 TEST_F(TestLinkedListHost, test_set_next_on_host){
 	list_operations_t ops = LINKED_LIST_OPS;
 	for(int i = 0, range = amount - 1; i < range; ++i){
-		ops.setNext(eles[i], eles[i+1]);
-		// eles[i]->setNext(eles[i], eles[i + 1]);
+		ops.set_next(eles[i], eles[i + 1]);
+		// eles[i]->set_next(eles[i], eles[i + 1]);
 	}
 
 	for(int i = 0, range = amount - 1; i < range; ++i){
@@ -93,8 +89,8 @@ TEST_F(TestLinkedListHost, test_set_next_on_host){
 TEST_F(TestLinkedListHost, test_set_prev_on_host){
 	list_operations_t ops = LINKED_LIST_OPS;
 	for(int i = 1; i < amount; ++i){
-		ops.setPrev(eles[i], eles[i-1]);
-		// eles[i]->setPrev(eles[i], eles[i - 1]);
+		ops.set_prev(eles[i], eles[i - 1]);
+		// eles[i]->set_prev(eles[i], eles[i - 1]);
 	}
 
 	for(int i = 1; i < amount; ++i){
@@ -113,13 +109,13 @@ TEST_F(TestLinkedListHost, test_sort_linked_list_on_host){
 	for(int i = 0; i < amount; ++i){
 		qsort(values[i], sizes[i], sizeof(int), cmpint);
 		if(sizes[i] != 0){
-			iter = linkedListMergeSort(&(eles_arr[i]->ele), &ops);
+			iter = list_merge_sort(&(eles_arr[i]->ele), &ops);
 			eles_arr[i] = (list_item_t *)iter->ptr_derived_object;
 			iter = &eles_arr[i]->ele;
 			// printf("Value : ");
 			for(int j = 0; j < sizes[i]; ++j){
-				// printf("%.2f ", iter->getValue(iter));
-				ASSERT_EQ(iter->getValue(iter), values[i][j]);
+				// printf("%.2f ", iter->get_value(iter));
+				ASSERT_EQ(iter->get_value(iter), values[i][j]);
 				iter = iter->next;
 			}
 		}

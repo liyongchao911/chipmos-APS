@@ -51,7 +51,7 @@ void TestJobBaseDevice::SetUp() {
 	for(unsigned int i = 0 ;i < amount; ++i){
 		jb_host[i] = newJob(arrayOfSizePt[i]);	
 		// jb_host[i] = new JobBaseChild(i);
-		// jb_host[i]->setMsGenePointer(&arrayOfMsGene[i]);
+		// jb_host[i]->set_ms_gene_addr(&arrayOfMsGene[i]);
 		// jb_host[i]->setProcessTime(NULL, arrayOfSizePt[i]);
 	}
 	//initilize device array
@@ -93,13 +93,13 @@ __global__ void testMachineSelection(job_t ** jb, unsigned int * result, double 
 	unsigned int id = blockDim.x * blockIdx.x + threadIdx.x;
 	job_base_operations_t jbops = JOB_BASE_OPS;
 	if(id < numElements){
-		//jb[id]->base.init = initJobBase;
+		//jb[id]->base.init = job_base_init;
 		//jb[id]->base.init(&jb[id]->base);
-		initJobBase(&jb[id]->base);
-		jbops.setMsGenePointer(&jb[id]->base, &(msgene_device[id]));
-		result[id] = jbops.machineSelection(&jb[id]->base);
-		// jb[id]->base.setMsGenePointer(&jb[id]->base, &(msgene_device[id]));
-		// result[id] = jb[id]->base.machineSelection(&jb[id]->base);
+		job_base_init(&jb[id]->base);
+		jbops.set_ms_gene_addr(&jb[id]->base, &(msgene_device[id]));
+		result[id] = jbops.machine_selection(&jb[id]->base);
+		// jb[id]->base.set_ms_gene_addr(&jb[id]->base, &(msgene_device[id]));
+		// result[id] = jb[id]->base.machine_selection(&jb[id]->base);
 	}
 }
 
@@ -107,10 +107,10 @@ __global__ void testMachineSelection(job_t ** jb, unsigned int * result, double 
 TEST_F(TestJobBaseDevice, test_machine_selection_host){
 	job_base_operations_t jbops = JOB_BASE_OPS;
 	for(int i = 0; i < amount; ++i){
-		jbops.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
-		ASSERT_EQ(jbops.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
-		// jb_host[i]->base.setMsGenePointer(&jb_host[i]->base, &arrayOfMsGene[i]);
-		// ASSERT_EQ(jb_host[i]->base.machineSelection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
+		jbops.set_ms_gene_addr(&jb_host[i]->base, &arrayOfMsGene[i]);
+		ASSERT_EQ(jbops.machine_selection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
+		// jb_host[i]->base.set_ms_gene_addr(&jb_host[i]->base, &arrayOfMsGene[i]);
+		// ASSERT_EQ(jb_host[i]->base.machine_selection(&jb_host[i]->base), arrayOfMcNum[i]) << "Entry : "<<i<<std::endl;
 	}	
 }
 
