@@ -18,9 +18,14 @@ std::vector<std::string> split(char *text, char delimiter)
             data.push_back(prev);
             iter += 2;
             prev = iter;
-        } else {
+        } else if(*(iter + 1) == '\0'){
+            data.push_back(prev);
+            ++iter;
+        }else {
             ++iter;
         }
     }
+
+    
     return data;
 }

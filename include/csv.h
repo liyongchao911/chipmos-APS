@@ -84,6 +84,8 @@ public:
         int r1 = -1,
         int r2 = -1);
 
+    void trim(std::string text);
+
     /**
      * setMode () - set the file mode
      *
@@ -259,7 +261,21 @@ public:
      * @return csv data as 2-D array which is represented in
      * vector<vector<string> >
      */
-    std::vector<std::vector<std::string> > getData();
+    std::vector<std::vector<std::string> > getData(int r1=-1, int r2=-1);
+
+    /**
+     * getColumn() - get column by specifing header
+     *
+     * @var header : spcified which column to return
+     * @return 1-D string array
+     */
+    std::vector<std::string> getColumn(std::string header);
+
+    
+    /**
+     * filter() - get a new csv object by specifing that column's == value 
+     */
+    csv filter(std::string head, std::string value);
 
     ~csv();
 };

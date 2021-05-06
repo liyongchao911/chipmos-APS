@@ -20,10 +20,28 @@ csv::csv(std::string filename,
     _filename = filename;
     _mode = mode;
     _file = NULL;
+    bool retval;
     if (r) {
-        read(filename, mode, head, r1, r2);
+        retval = read(filename, mode, head, r1, r2);
     }
 }
+
+void csv::trim(std::string text)
+{
+    size_t found;
+    iter(_data, i)
+    {
+        iter(_data[i], j)
+        {
+            found = _data[i][j].find_last_not_of(text);
+            if (found != std::string::npos)
+                _data[i][j].erase(found + 1);
+            else
+                _data[i][j].clear();
+        }
+    }
+}
+
 
 csv::~csv()
 {
@@ -39,7 +57,8 @@ bool csv::_hasBOM(char *_text, unsigned int bom, short bits)
     return !(result << bits);
 }
 
-bool csv::read(bool head, int r1, int r2){
+bool csv::read(bool head, int r1, int r2)
+{
     return read(_filename, _mode, head, r1, r2);
 }
 
@@ -107,9 +126,10 @@ bool csv::read(std::string filename,
     }
 
 
-
+    int i = 0;
     while (getline(&line_ptr, &size, _file) > 0) {
         text = split(line_ptr, ',');
+        ++i;
         _data.push_back(text);
     }
     free(line_ptr);
@@ -179,9 +199,9 @@ bool csv::write(std::string filename, std::string mode, bool head)
 std::vector<std::string> csv::getRow(int row)
 {
     int idx;
-    if(row < 0){
-        idx = (int)_data.size() + row;
-    }else
+    if (row < 0) {
+        idx = (int) _data.size() + row;
+    } else
         idx = row;
     return _data.at(idx);
 }
@@ -209,10 +229,57 @@ std::map<std::string, std::string> csv::getElements(int row)
     return data;
 }
 
-unsigned int csv::nrows(){
+unsigned int csv::nrows()
+{
     return _data.size();
 }
 
-std::vector<std::vector<std::string> > csv::getData(){
-    return _data;
+std::vector<std::vector<std::string> > csv::getData(int r1, int r2)
+{
+    std::vector<std::vector<std::string> > data;
+    if ((r1 < 0 && r2 > 0) || (r1 > 0 && r2 < -1)) {
+        throw std::invalid_argument("given r1 < 0 but r2 >0");
+    } else if (r1 > 0 && r2 == -1) {
+        r2 = _data.size();
+    } else {
+        return _data;
+    }
+
+    iter_range(_data, i, (unsigned int) r1, (unsigned int) r2)
+    {
+        data.push_back(_data[i]);
+    }
+    return data;
+}
+
+
+csv csv::filter(std::string head, std::string value)
+{
+    csv newcsv;
+
+    std::vector<std::vector<std::string> > data;
+    int idx = _head[head];
+    iter(_data, i)
+    {
+        if (_data[i][idx].compare(value) == 0) {
+            data.push_back(_data[i]);
+        }
+    }
+
+    newcsv._data = data;
+    newcsv._filename = _filename;
+    newcsv._head = _head;
+    newcsv._mode = _mode;
+
+    return newcsv;
+}
+
+std::vector<std::string> csv::getColumn(std::string head)
+{
+    int idx = _head[head];
+    std::vector<std::string> cols;
+
+    iter(_data, i) { cols.push_back(_data[i][idx]); }
+
+    return cols;
 }
