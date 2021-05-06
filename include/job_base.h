@@ -1,3 +1,28 @@
+/**
+ * @file job_base.h
+ * @brief job object definition and functions
+ *
+ * The file defines job_base_t type and its related functions and also the
+ * sturcture of process time.
+ *
+ * job_base_t is an algorithm object in genetic algorithm. The genes in
+ * job_base_t determine what kind of machine is used to work on the job and the
+ * order in the machine. job_base_t is also used to record a job and its basic
+ * information such as quantity, arrival time, start working time, the end of
+ * working time and etc. job_base_t can also be embedded in a container
+ * structure.
+ *
+ * job_base_t's related function type is defined in job_base_operations_t. The
+ * variable of job_base_operations_t are function pointer which pointed on the
+ * functions to perform the function on job_base_t object. If user does not wat
+ * to define the operations, user could use default job_base_operations_t
+ * initializer, JOB_BASE_OPS, to initialize the job_base_operations_t object and
+ * also use the provided functions.
+ *
+ * In this file, process_time_t is also defined. process_time_t is an structure
+ * to record the machine no and its process time.
+ */
+
 #ifndef __JOB_BASE_H__
 #define __JOB_BASE_H__
 
@@ -6,19 +31,39 @@
 #include <stddef.h>
 
 
-/**
- * @brief Store process time and its corresponding machine number.
- */
 typedef struct process_time_t process_time_t;
+typedef struct job_base_t job_base_t;
+typedef struct job_base_operations_t job_base_operations_t;
+
+/**
+ * @struct process_time_t
+ * @brief A structure that store machine number and its process time
+ *
+ * process_time_t is a structure which store machine number and its process
+ * time. All data is in numeric type such as unsigned int and double.
+ * process_time_t object can be embedded in a container structure. @b
+ * ptr_derived_object maintains the relationship between process_time_t object
+ * and the container structure object.
+ *
+ * @var machine_no : variable store the machine number
+ * @var process_time : double type which store the process time of @b machine_no
+ * @var ptr_derived_object : @b void* type pointer which point the the container
+ * structure object.
+ */
 struct process_time_t {
     unsigned int machine_no;
     double process_time;
     void *ptr_derived_object;
 };
 
-typedef struct job_base_t job_base_t;
-typedef struct job_base_operations_t job_base_operations_t;
 
+/**
+ * @struct job_base_t
+ * @brief A structure that store genes and some basic information about job
+ *
+ * job_base_t is a genetic algorithm object which store genes and some information about a job.
+ * @b ms_gene determines which machine accept this job. @b os_seq_gene determines the order of accepted job in machine. Both variables are double const * type to prevent setting value on gene. 
+ */
 struct job_base_t {
     void *ptr_derived_object;
 
@@ -27,7 +72,7 @@ struct job_base_t {
     double const *ms_gene;
     double const *os_seq_gene;
 
-    // partition is the partkkkition value of roulette.
+    // partition is the partition value of roulette.
     // for example : size of can run tools is 10, partition is 1/10
     double partition;
 

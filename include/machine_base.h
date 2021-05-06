@@ -2,7 +2,7 @@
  * @file machine_base.h
  * @brief machine object definition and funcitions
  *
- * The file defines the machine_base_t type and its related
+ * The file defines machine_base_t type and its related
  * functions. machine_base_t is used to record the set of jobs
  * and the sequence of jobs. machine_base_t also record some basic
  * information about the machine. The detail information is in
