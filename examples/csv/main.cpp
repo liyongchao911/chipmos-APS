@@ -1,7 +1,7 @@
 #include <execinfo.h>
-#include <signal.h>
 #include <include/common.h>
 #include <include/csv.h>
+#include <signal.h>
 #include <iostream>
 
 using namespace std;
@@ -34,7 +34,7 @@ int main(int argc, char const *argv[]){
         printf("usage : CSVFILE row_idx\n");
         exit(-1);
     }
-    csv file(argv[1], "r", false);
+    csv_t file(argv[1], "r", false);
     file.read(false, 3, 14);
 
     vector<string> data = file.getRow(atoi(argv[2]));

@@ -1,8 +1,8 @@
 /**
- * @file csv.h
- * @brief The definition of csv object
+ * @file csv_t.h
+ * @brief The definition of csv_t object
  *
- * csv type is defined in this file. csv object is used to read and write csv
+ * csv_t type is defined in this file. csv_t object is used to read and write csv_t
  * file.
  *
  * @author Eugene Lin <lin.eugene.l.e@gmail.com>
@@ -21,14 +21,14 @@
 #include "common.h"
 
 /**
- * @class csv
- * @breif csv type is used to read/write csv file.
+ * @class csv_t
+ * @breif csv_t type is used to read/write csv_t file.
  *
- * csv object is used to deel with csv file I/O. There are several csv file have
- * byte order remark. csv object is able to handle UTF-8 and UTF-16 byte order
+ * csv_t object is used to deel with csv_t file I/O. There are several csv_t file have
+ * byte order remark. csv_t object is able to handle UTF-8 and UTF-16 byte order
  * remark.
  */
-class csv
+class csv_t
 {
 protected:
     /**
@@ -56,28 +56,28 @@ protected:
     FILE *_file;
 
 public:
-    csv();
+    csv_t();
 
     /**
-     * csv - Constructor of csv object for reading file
+     * csv_t - Constructor of csv_t object for reading file
      *
-     * This constructor is used to read csv file. The mode of opening file is
+     * This constructor is used to read csv_t file. The mode of opening file is
      * specified in @b mode. if @b read is @b true the constructor will
-     * immediately read the data. @b head is used to specify the csv file has
+     * immediately read the data. @b head is used to specify the csv_t file has
      * header, if head is set true but the head has empty columns, the
      * constructor raise exception. @b r1 and @b r2 are used to specify the
-     * range of rows of csv file. If both are -1, all of data are read into to
+     * range of rows of csv_t file. If both are -1, all of data are read into to
      * memory. If @b r1 isn't -1 but @b r2 is, rows from r1 to the end are read
      * into memory.
      *
-     * @var filename : the csv file name
+     * @var filename : the csv_t file name
      * @var mode : the mode of opning the file
      * @var read : read data immediately or not
      * @var head : specify if data has header
      * @var r1 : range from r1 if specify
      * @var r2 : range to r2 if specify
      */
-    csv(std::string filename,
+    csv_t(std::string filename,
         std::string mode,
         bool read = true,
         bool head = true,
@@ -94,9 +94,9 @@ public:
     void setMode(std::string mode);
 
     /**
-     * setFileName() - set the csv file path
+     * setFileName() - set the csv_t file path
      *
-     * @var filename : csv file path
+     * @var filename : csv_t file path
      */
     void setFileName(std::string filename);
 
@@ -140,21 +140,21 @@ public:
                    bool replace = false);
 
     /**
-     * write() - output csv file
+     * write() - output csv_t file
      *
      * This function hasn't been implemented. DO NOT USE IT.
      */
     bool write(std::string filename, std::string mode, bool head);
 
     /**
-     * read() - input csv file
+     * read() - input csv_t file
      *
-     * This function is used to read csv file. The mode of opening file is
+     * This function is used to read csv_t file. The mode of opening file is
      * specified in @b mode. if @b read is @b true the constructor will
-     * immediately read the data. @b head is used to specify the csv file has
+     * immediately read the data. @b head is used to specify the csv_t file has
      * header, if head is set true but the head has empty columns, the
      * constructor raise exception. @b r1 and @b r2 are used to specify the
-     * range of rows of csv file. If both are -1, all of data are read into to
+     * range of rows of csv_t file. If both are -1, all of data are read into to
      * memory. If @b r1 isn't -1 but @b r2 is, rows from r1 to the end are read
      * into memory.
      *
@@ -163,9 +163,9 @@ public:
      *
      * @return true if read file successfully
      *
-     * @var filename : csv file path
+     * @var filename : csv_t file path
      * @var mode : file opening mode
-     * @var head : specify if this csv file has header
+     * @var head : specify if this csv_t file has header
      * @var r1 : lower bound
      * @var r2 : upper bound
      */
@@ -176,18 +176,18 @@ public:
               int r2 = -1);
 
     /**
-     * read() - read csv file use data member filename and mode
+     * read() - read csv_t file use data member filename and mode
      *
-     * @b head is used to specify the csv file has
+     * @b head is used to specify the csv_t file has
      * header, if head is set true but the head has empty columns, the
      * constructor raise exception. @b r1 and @b r2 are used to specify the
-     * range of rows of csv file. If both are -1, all of data are read into to
+     * range of rows of csv_t file. If both are -1, all of data are read into to
      * memory. If @b r1 isn't -1 but @b r2 is, rows from r1 to the end are read
      * into memory.
      *
      * @return true if read file successfully
      *
-     * @var head : specify if this csv file has header
+     * @var head : specify if this csv_t file has header
      * @var r1 : lower bound
      * @var r2 : upper bound
      */
@@ -209,7 +209,7 @@ public:
     /**
      * getRow() - return a row
      *
-     * return @b row of the csv file if row exceed the number of rows of csv,
+     * return @b row of the csv_t file if row exceed the number of rows of csv_t,
      * the function will throw exception. @b row can be less than 0, the
      * function will count the row from the back and return it.
      *
@@ -218,33 +218,33 @@ public:
     std::vector<std::string> getRow(int row);
 
     /**
-     * getElement() - get single string in the csv file
+     * getElement() - get single string in the csv_t file
      *
-     * this function is used to get single string of the csv file by specifing
+     * this function is used to get single string of the csv_t file by specifing
      * which row(number) and which col(number). @b row can be less than 0, the
      * function will count the row from the back and return it.
      *
      *
-     * @return single string in the csv file
+     * @return single string in the csv_t file
      *
      */
     std::string getElement(int col, int row);
 
     /**
-     * getElement() - get single string in the csv file
+     * getElement() - get single string in the csv_t file
      *
-     * this function is used to get single string of the csv file by specifing
+     * this function is used to get single string of the csv_t file by specifing
      * which row(number) and which col(number). @b row can be less than 0, the
      * function will count the row from the back and return it.
      *
      *
-     * @return single string in the csv file
+     * @return single string in the csv_t file
      *
      */
     std::string getElement(std::string col, int row);
 
     /**
-     * getElements() - get a row in the csv file
+     * getElements() - get a row in the csv_t file
      *
      * this function is used to return row content its header. The return type
      * is map<string, string> the mapping relation is header -> row element
@@ -256,9 +256,9 @@ public:
     std::map<std::string, std::string> getElements(int nrow);
 
     /**
-     * getData() - get the csv content
+     * getData() - get the csv_t content
      *
-     * @return csv data as 2-D array which is represented in
+     * @return csv_t data as 2-D array which is represented in
      * vector<vector<string> >
      */
     std::vector<std::vector<std::string> > getData(int r1=-1, int r2=-1);
@@ -273,11 +273,11 @@ public:
 
     
     /**
-     * filter() - get a new csv object by specifing that column's == value 
+     * filter() - get a new csv_t object by specifing that column's == value
      */
-    csv filter(std::string head, std::string value);
+    csv_t filter(std::string head, std::string value);
 
-    ~csv();
+    ~csv_t();
 };
 
 #endif

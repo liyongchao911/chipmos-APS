@@ -1,10 +1,17 @@
 #ifndef __ROUTE_H__
 #define __ROUTE_H__
 
+#include <include/csv.h>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include <include/csv.h>
+
+#define WB1 2200
+#define WB2 3200
+#define WB3 3400
+#define WB4 3600
+
+#define DA1 
 
 typedef struct station_t station_t;
 struct station_t{
@@ -14,7 +21,8 @@ struct station_t{
     int seq;
 };
 
-class route{
+class route_t
+{
 private:
     /// route_name map to its array of stations
     std::map<std::string, std::vector<station_t> > _routes;
@@ -25,7 +33,7 @@ public:
     /**
      * setRoute() - set routes from dataframe
      */
-    void setRoute(std::string routename, csv dataframe);
+    void setRoute(std::string routename, csv_t dataframe);
 
     /**
      * 

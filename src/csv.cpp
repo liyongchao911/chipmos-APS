@@ -6,11 +6,11 @@
 #include <locale>
 #include <stdexcept>
 
-csv::csv()
+csv_t::csv_t()
 {
     _file = NULL;
 }
-csv::csv(std::string filename,
+csv_t::csv_t(std::string filename,
          std::string mode,
          bool r,
          bool head,
@@ -26,7 +26,7 @@ csv::csv(std::string filename,
     }
 }
 
-void csv::trim(std::string text)
+void csv_t::trim(std::string text)
 {
     size_t found;
     iter(_data, i)
@@ -43,13 +43,13 @@ void csv::trim(std::string text)
 }
 
 
-csv::~csv()
+csv_t::~csv_t()
 {
     if (_file)
         fclose(_file);
 }
 
-bool csv::_hasBOM(char *_text, unsigned int bom, short bits)
+bool csv_t::_hasBOM(char *_text, unsigned int bom, short bits)
 {
     unsigned int result, *text;
     text = (unsigned int *) _text;
@@ -57,12 +57,12 @@ bool csv::_hasBOM(char *_text, unsigned int bom, short bits)
     return !(result << bits);
 }
 
-bool csv::read(bool head, int r1, int r2)
+bool csv_t::read(bool head, int r1, int r2)
 {
     return read(_filename, _mode, head, r1, r2);
 }
 
-bool csv::read(std::string filename,
+bool csv_t::read(std::string filename,
                std::string mode,
                bool head,
                int r1,
@@ -151,17 +151,17 @@ bool csv::read(std::string filename,
     return true;
 }
 
-void csv::setMode(std::string mode)
+void csv_t::setMode(std::string mode)
 {
     _mode = mode;
 }
 
-void csv::setFileName(std::string filename)
+void csv_t::setFileName(std::string filename)
 {
     _filename = filename;
 }
 
-void csv::setHeader(std::string old, std::string n, bool replace)
+void csv_t::setHeader(std::string old, std::string n, bool replace)
 {
     _head[n] = _head[old];
     if (replace) {
@@ -169,12 +169,12 @@ void csv::setHeader(std::string old, std::string n, bool replace)
     }
 }
 
-void csv::setHeaders(std::map<std::string, std::uint16_t> head)
+void csv_t::setHeaders(std::map<std::string, std::uint16_t> head)
 {
     _head = head;
 }
 
-void csv::setHeaders(std::map<std::string, std::string> mapping, bool replace)
+void csv_t::setHeaders(std::map<std::string, std::string> mapping, bool replace)
 {
     for (std::map<std::string, std::string>::iterator it = mapping.begin();
          it != mapping.end(); ++it) {
@@ -182,7 +182,7 @@ void csv::setHeaders(std::map<std::string, std::string> mapping, bool replace)
     }
 }
 
-void csv::close()
+void csv_t::close()
 {
     if (_file) {
         fclose(_file);
@@ -190,13 +190,13 @@ void csv::close()
     }
 }
 
-bool csv::write(std::string filename, std::string mode, bool head)
+bool csv_t::write(std::string filename, std::string mode, bool head)
 {
     return true;
 }
 
 
-std::vector<std::string> csv::getRow(int row)
+std::vector<std::string> csv_t::getRow(int row)
 {
     int idx;
     if (row < 0) {
@@ -206,18 +206,18 @@ std::vector<std::string> csv::getRow(int row)
     return _data.at(idx);
 }
 
-std::string csv::getElement(std::string _col, int row)
+std::string csv_t::getElement(std::string _col, int row)
 {
     uint16_t col = _head[_col];
     return getRow(row).at(col);
 }
 
-std::string csv::getElement(int col, int row)
+std::string csv_t::getElement(int col, int row)
 {
     return getRow(row).at(col);
 }
 
-std::map<std::string, std::string> csv::getElements(int row)
+std::map<std::string, std::string> csv_t::getElements(int row)
 {
     std::map<std::string, std::string> data;
 
@@ -229,12 +229,12 @@ std::map<std::string, std::string> csv::getElements(int row)
     return data;
 }
 
-unsigned int csv::nrows()
+unsigned int csv_t::nrows()
 {
     return _data.size();
 }
 
-std::vector<std::vector<std::string> > csv::getData(int r1, int r2)
+std::vector<std::vector<std::string> > csv_t::getData(int r1, int r2)
 {
     std::vector<std::vector<std::string> > data;
     if ((r1 < 0 && r2 > 0) || (r1 > 0 && r2 < -1)) {
@@ -253,9 +253,9 @@ std::vector<std::vector<std::string> > csv::getData(int r1, int r2)
 }
 
 
-csv csv::filter(std::string head, std::string value)
+csv_t csv_t::filter(std::string head, std::string value)
 {
-    csv newcsv;
+    csv_t newcsv;
 
     std::vector<std::vector<std::string> > data;
     int idx = _head[head];
@@ -274,7 +274,7 @@ csv csv::filter(std::string head, std::string value)
     return newcsv;
 }
 
-std::vector<std::string> csv::getColumn(std::string head)
+std::vector<std::string> csv_t::getColumn(std::string head)
 {
     int idx = _head[head];
     std::vector<std::string> cols;
