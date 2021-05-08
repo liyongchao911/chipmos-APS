@@ -10,6 +10,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 add_subdirectory(src)
 add_subdirectory(examples)
 
-# add_executable(main main.cpp)
-# target_link_libraries(main lib)
+add_executable(main main.cpp)
+target_link_libraries(main lib)
 # add_subdirectory(tests)
