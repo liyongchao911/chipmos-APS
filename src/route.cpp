@@ -7,7 +7,8 @@
 route_t::route_t()
 {
     _wb_stations = {WB1, WB2, WB3, WB4};
-    _da_stations = {DA1, DA2, DA3, DA4, DA5, DA6, DA7, DA8, DA9, DA10, DA11, DA12, DA13, DA14, DA15};
+    _da_stations = {DA1, DA2,  DA3,  DA4,  DA5,  DA6,  DA7, DA8,
+                    DA9, DA10, DA11, DA12, DA13, DA14, DA15};
 }
 
 void route_t::setRoute(std::string routename, csv_t dataframe)
@@ -98,12 +99,16 @@ void route_t::setupBeforeStation(std::string routename,
 bool route_t::isLotInStations(lot_t lot)
 {
     int idx, oper;
-    if(_wb_stations.count(lot.oper()) && lot.mvin()){ // if lot is on WB station  and has moved in
-        idx = findStationIdx(lot.route(), lot.oper()); // locate the oper on the route
-        if(idx > 0 && (unsigned int)(idx + 1) < _routes[lot.route()].size()){ // check if idx is route is resonable
+    if (_wb_stations.count(lot.oper()) &&
+        lot.mvin()) {  // if lot is on WB station  and has moved in
+        idx = findStationIdx(lot.route(),
+                             lot.oper());  // locate the oper on the route
+        if (idx > 0 && (unsigned int) (idx + 1) <
+                           _routes[lot.route()]
+                               .size()) {  // check if idx is route is resonable
             oper = _routes[lot.route()][++idx].oper;
             return _beforeWB[lot.route()].count(oper);
-        }else
+        } else
             return false;
     }
     return _beforeWB[lot.route()].count(lot.oper());
@@ -165,10 +170,10 @@ int route_t::calculatQueueTime(lot_t &lot)
     //
     // in this condition, idx need to plus 1, the lot start from next station
     if (_wb_stations.count(lot.tmp_oper) == 1) {
-        if (lot.tmp_mvin) { // if lot is in WB an has moved in,
-            idx += 1; // move to next station
-            lot.tmp_mvin = false; // mvin = false
-        } else {  // lot is waiting at WB station
+        if (lot.tmp_mvin) {        // if lot is in WB an has moved in,
+            idx += 1;              // move to next station
+            lot.tmp_mvin = false;  // mvin = false
+        } else {                   // lot is waiting at WB station
             lot.setTraverseFinished();
             return 0;
         }
@@ -177,14 +182,13 @@ int route_t::calculatQueueTime(lot_t &lot)
     // check if lot is in DA
     // if lot is in DA,
     if (_da_stations.count(lot.tmp_oper) == 1) {  // lot is in DA
-        if(lot.tmp_mvin){  // lot is originally in DA and mvin
-            idx += 1; // advance
+        if (lot.tmp_mvin) {  // lot is originally in DA and mvin
+            idx += 1;        // advance
             lot.tmp_mvin = false;
         } else {
-            lot.tmp_oper = _routes[routename][++idx].oper; // advance
-            return 2; // advance and dispatch
+            lot.tmp_oper = _routes[routename][++idx].oper;  // advance
+            return 2;  // advance and dispatch
         }
-        
     }
 
 
@@ -222,8 +226,8 @@ int route_t::calculatQueueTime(lot_t &lot)
             if (oper == CURE) {
                 ++times_of_passing_cure;
             } else if (_da_stations.count(
-                           oper)) {  // oper is a D/A station,  dispatch
-                lot.tmp_oper = oper; // lot traverse to DA station
+                           oper)) {   // oper is a D/A station,  dispatch
+                lot.tmp_oper = oper;  // lot traverse to DA station
                 return 1;
             } else if (_wb_stations.count(oper)) {  // traverse to W/B station
                 lot.tmp_oper = oper;
@@ -235,7 +239,3 @@ int route_t::calculatQueueTime(lot_t &lot)
 
     return -1;
 }
-
-
-
-

@@ -26,31 +26,34 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     checkFormation();
 }
 
-void lot_t::checkFormation(){ 
-
+void lot_t::checkFormation()
+{
     std::string error_msg;
     std::vector<std::string> data_members;
-    
-    if(_route.length() == 0)
+
+    if (_route.length() == 0)
         data_members.push_back("route");
 
-    if(_lot_number.length() == 0)
+    if (_lot_number.length() == 0)
         data_members.push_back("lot_number");
-    
-    if(_pin_package.length() == 0)
+
+    if (_pin_package.length() == 0)
         data_members.push_back("pin_package");
 
-    if(_recipe.length() == 0)
+    if (_recipe.length() == 0)
         data_members.push_back("recipe");
 
-    if(data_members.size()){
-        error_msg = data_members.size() > 1 ? "These" : "This" " information, ";
-        for(unsigned int i = 0; i < data_members.size(); ++i){
-            error_msg += data_members[i];              
+    if (data_members.size()) {
+        error_msg = data_members.size() > 1 ? "These"
+                                            : "This"
+                                              " information, ";
+        for (unsigned int i = 0; i < data_members.size(); ++i) {
+            error_msg += data_members[i];
         }
-        error_msg += data_members.size() > 1 ? ", are" : ", is" " not provided";
+        error_msg += data_members.size() > 1 ? ", are"
+                                             : ", is"
+                                               " not provided";
 
         throw std::invalid_argument(error_msg);
     }
-
 }
