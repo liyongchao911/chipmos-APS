@@ -58,6 +58,8 @@ protected:
 public:
     csv_t();
 
+    csv_t(csv_t & csv);
+
     /**
      * csv_t - Constructor of csv_t object for reading file
      *
