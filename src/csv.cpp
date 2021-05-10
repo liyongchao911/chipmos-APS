@@ -6,16 +6,25 @@
 #include <locale>
 #include <stdexcept>
 
+csv_t::csv_t(csv_t &csv)
+{
+    this->_file = NULL;
+    this->_data = csv._data;
+    this->_head = csv._head;
+    this->_mode = csv._mode;
+    this->_filename = csv._filename;
+}
+
 csv_t::csv_t()
 {
     _file = NULL;
 }
 csv_t::csv_t(std::string filename,
-         std::string mode,
-         bool r,
-         bool head,
-         int r1,
-         int r2)
+             std::string mode,
+             bool r,
+             bool head,
+             int r1,
+             int r2)
 {
     _filename = filename;
     _mode = mode;
@@ -45,8 +54,9 @@ void csv_t::trim(std::string text)
 
 csv_t::~csv_t()
 {
-    if (_file)
+    if (_file != NULL)
         fclose(_file);
+    _file = NULL;
 }
 
 bool csv_t::_hasBOM(char *_text, unsigned int bom, short bits)
@@ -63,10 +73,10 @@ bool csv_t::read(bool head, int r1, int r2)
 }
 
 bool csv_t::read(std::string filename,
-               std::string mode,
-               bool head,
-               int r1,
-               int r2)
+                 std::string mode,
+                 bool head,
+                 int r1,
+                 int r2)
 {
     _data.clear();
     if (filename.compare("") == 0) {
