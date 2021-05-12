@@ -26,23 +26,22 @@ int arrivalTime(int argc, const char *argv[])
     // setup wip
     // Step 1 : read wip.csv
     csv_t wip("wip.csv", "r", true, true);
-    map<string, string> wipheader = {{"lot_number", "wlot_lot_number"},
-                                     {"qty", "wlot_qty_1"},
-                                     {"hold", "wlot_hold"},
-                                     {"oper", "wlot_oper"},
-                                     {"mvin", "wlot_mvin_perfmd"},
-                                     {"recipe", "bd_id"},
-                                     {"prod_id", "wlot_prod"}};
-    wip.setHeaders(wipheader);
     wip.trim(" ");
+    wip.setHeaders(map<string, string>({{"lot_number", "wlot_lot_number"},
+                                        {"qty", "wlot_qty_1"},
+                                        {"hold", "wlot_hold"},
+                                        {"oper", "wlot_oper"},
+                                        {"mvin", "wlot_mvin_perfmd"},
+                                        {"recipe", "bd_id"},
+                                        {"prod_id", "wlot_prod"}}));
 
     // Step 2 : read product_find_process_id
     csv_t prod_pid_mapping("product_find_process_id.csv", "r", true, true);
-    map<string, string> ppid_header = {{"prod_id", "product"},
-                                       {"process_id", "process_id"},
-                                       {"bom_id", "bom_id"}};
-    prod_pid_mapping.setHeaders(ppid_header);
     prod_pid_mapping.trim(" ");
+    prod_pid_mapping.setHeaders(
+        map<string, string>({{"prod_id", "product"},
+                             {"process_id", "process_id"},
+                             {"bom_id", "bom_id"}}));
     map<string, string> prod_pid;
     map<string, string> prod_bom;
     for (unsigned int i = 0; i < prod_pid_mapping.nrows(); ++i) {
@@ -72,6 +71,7 @@ int arrivalTime(int argc, const char *argv[])
     lot_t lot_tmp;
     for (unsigned int i = 0, size = wip.nrows(); i < size; ++i) {
         try {
+            // lot_tmp = lot_t(wip.getElements(i));
             lot_tmp = lot_t(wip.getElements(i));
         } catch (std::invalid_argument &e) {
             wip_report.push_back("Lot Entry  " + to_string(i + 2) + " " +
@@ -115,6 +115,7 @@ int arrivalTime(int argc, const char *argv[])
                 "Lot Entry" + to_string(i + 2) + ": " + lot_tmp.lotNumber() +
                 "the lot_size of process id(" + lot_tmp.processId() + ") is" +
                 to_string(lot_size) + " which is less than 0");
+            continue;
         }
 
         alllots.push_back(lot_tmp);
@@ -137,12 +138,12 @@ int arrivalTime(int argc, const char *argv[])
     route_t routes;
     csv_t routelist_df("routelist.csv", "r", true, true);
     csv_t queue_time("newqueue_time.csv", "r", true, true);
-    map<string, string> header = {{"route", "wrto_route"},
-                                  {"oper", "wrto_oper"},
-                                  {"seq", "wrto_seq_num"},
-                                  {"desc", "wrto_opr_shrt_desc"}};
-    routelist_df.setHeaders(header);
     routelist_df.trim(" ");
+    routelist_df.setHeaders(
+        map<string, string>({{"route", "wrto_route"},
+                             {"oper", "wrto_oper"},
+                             {"seq", "wrto_seq_num"},
+                             {"desc", "wrto_opr_shrt_desc"}}));
     routes.setQueueTime(queue_time);
 
 
@@ -153,20 +154,17 @@ int arrivalTime(int argc, const char *argv[])
 
     // setRoute -> get wb - 7
     csv_t df;
-    clock_t clock1 = clock();
     iter(routenames, i)
     {
         df = routelist_df.filter("route", routenames[i]);
         routes.setRoute(routenames[i], df);
     }
-    clock_t clock2 = clock();
-    printf("time usage = %.3f\n", (clock2 - clock1) / (double) CLOCKS_PER_SEC);
 
-    // check if lot is in WB - 7
     iter(alllots, i)
     {
-        if (routes.isLotInStations(alllots[i]) &&
-            !alllots[i].hold()) {  // check if lot is in WB - 7
+        if (routes.isLotInStations(alllots[i]) &&  // check if lot is in WB-7
+            !alllots[i].hold() &&
+            alllots[i].qty()) {  // check if lot is hold and qty != 0
             lots.push_back(alllots[i]);
         }
     }
@@ -182,7 +180,7 @@ int arrivalTime(int argc, const char *argv[])
     iter(unfinished, i)
     {
         try {
-            retval = routes.calculatQueueTime(unfinished[i]);
+            retval = routes.calculateQueueTime(unfinished[i]);
             switch (retval) {
             case -1:  // error
                 unfinished[i].addLog("error on route.calculatQueueTime");
@@ -201,18 +199,14 @@ int arrivalTime(int argc, const char *argv[])
         } catch (std::out_of_range &e) {  // for da_stations_t function member
             wip_report.push_back(e.what());
             cout << e.what() << endl;
-            // outputReport("wip-report.txt", wip_report);
-            // ++ loss_recipe;
-            // exit(-1);
         } catch (std::logic_error &e) {
             wip_report.push_back(e.what());
             cout << e.what() << endl;
-            // outputReport("wip-report.txt", wip_report);
         }
     }
 
-    std::string debug_str = "AYZ084CC2002A";
-    iter(recipes, i) { printf("i = %d\n", i); }
+    unfinished = das.distributeProductionCapacity();
+
 
     cout << "amount of loss recipe = " << loss_recipe << endl;
     outputReport("wip-report.txt", wip_report);

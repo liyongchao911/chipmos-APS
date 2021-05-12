@@ -6,13 +6,9 @@ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-# add_subdirectory(include)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
-# add_subdirectory(src)
-# add_subdirectory(examples)
 
 file(GLOB_RECURSE src ./src/*.cpp)
 add_executable(main main.cpp ${src})
-# add_subdirectory(tests)
