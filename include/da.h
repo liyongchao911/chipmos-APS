@@ -41,8 +41,9 @@ public:
     bool addArrivedLotToDA(lot_t &lot);
     bool addUnarrivedLotToDA(lot_t &lot);
 
-
     std::vector<lot_t> distributeProductionCapacity();
+
+    void removeAllLots();
 };
 
 #endif

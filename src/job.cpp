@@ -68,8 +68,8 @@ void lot_t::checkFormation()
         data_members.push_back("recipe");
 
     if (data_members.size()) {
-        error_msg = data_members.size() > 1 ? "These"
-                                            : "This"
+        error_msg = data_members.size() > 1 ? ", these"
+                                            : ", this"
                                               " information, ";
         for (unsigned int i = 0; i < data_members.size(); ++i) {
             error_msg += data_members[i];
@@ -96,7 +96,7 @@ std::vector<lot_t> lot_t::createSublots()
         lot_t tmp(*this);
         tmp._lot_number += str_number;
         tmp._is_sub_lot = true;
-        tmp._log.clear();
+        tmp.addLog("This lot is splited from the parent lot");
         if (remain - _lot_size > 0) {
             tmp._qty = _lot_size;
             remain -= tmp._qty;

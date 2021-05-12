@@ -106,6 +106,10 @@ public:
     inline double fcst() { return _fcst_time; }
 
     inline double queueTime() { return _queue_time; }
+
+    inline std::string info(){
+        return "{Lot Number : " + _lot_number + ", route : " + _route + ", recipe : ", _recipe + "}";
+    }
 };
 
 

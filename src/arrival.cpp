@@ -21,6 +21,7 @@ using namespace std;
 int arrivalTime(int argc, const char *argv[])
 {
     vector<string> wip_report;
+    string err_msg;
 
 
     // setup wip
@@ -67,6 +68,7 @@ int arrivalTime(int argc, const char *argv[])
 
     // Finally, combine all data
     std::vector<lot_t> alllots;
+    std::vector<lot_t> faulty_lots;
     std::vector<lot_t> lots;
     lot_t lot_tmp;
     for (unsigned int i = 0, size = wip.nrows(); i < size; ++i) {
@@ -160,55 +162,79 @@ int arrivalTime(int argc, const char *argv[])
         routes.setRoute(routenames[i], df);
     }
 
+
+    // filter, check if lot is in scheduling plan
     iter(alllots, i)
     {
-        if (routes.isLotInStations(alllots[i]) &&  // check if lot is in WB-7
-            !alllots[i].hold() &&
-            alllots[i].qty()) {  // check if lot is hold and qty != 0
+        if (alllots[i].hold()) {
+            alllots[i].addLog("Lot is hold");
+            faulty_lots.push_back(alllots[i]);
+        } else if (!routes.isLotInStations(alllots[i])) {
+            alllots[i].addLog("Lot is not in WB - 7");
+            faulty_lots.push_back(alllots[i]);
+        } else if (alllots[i].qty() <= 0) {
+            alllots[i].addLog("Lot's qty <= 0");
+            faulty_lots.push_back(alllots[i]);
+        } else {
             lots.push_back(alllots[i]);
         }
     }
+    
 
-
+    // route traversal and sum the queue time
     int retval = 0;
-    int loss_recipe = 0;
     std::vector<lot_t> unfinished = lots;
     std::vector<lot_t> finished;
+    std::vector<lot_t> dontcare;
 
-    vector<string> recipes;
-
-    iter(unfinished, i)
-    {
-        try {
-            retval = routes.calculateQueueTime(unfinished[i]);
-            switch (retval) {
-            case -1:  // error
-                unfinished[i].addLog("error on route.calculatQueueTime");
-                break;
-            case 0:  // lot is finished
-                finished.push_back(unfinished[i]);
-                break;
-            case 2:  // add to DA_arrived
-                das.addArrivedLotToDA(unfinished[i]);
-                break;
-            case 1:  // add to DA_unarrived
-                das.addUnarrivedLotToDA(unfinished[i]);
-                // recipes.push_back(unfinished[i].recipe());
-                break;
+    while (unfinished.size()) {
+        iter(unfinished, i)
+        {
+            try {
+                retval = routes.calculateQueueTime(unfinished[i]);
+                switch (retval) {
+                case -1:  // error
+                    err_msg =
+                        "Error occures on routes.calculateQueueTime, the "
+                        "reason is the lot can't reach W/B satation.";
+                    unfinished[i].addLog(err_msg);
+                    faulty_lots.push_back(unfinished[i]);
+                    wip_report.push_back(
+                        err_msg + "lot information : " + unfinished[i].info());
+                    break;
+                case 0:  // lot is finished
+                    unfinished[i].addLog("Lot is finished traversing the route");
+                    finished.push_back(unfinished[i]);
+                    break;
+                case 2:  // add to DA_arrived
+                    unfinished[i].addLog("Lot is waiting on DA station, it is cataloged to arrived");
+                    das.addArrivedLotToDA(unfinished[i]);
+                    break;
+                case 1:  // add to DA_unarrived
+                    unfinished[i].addLog("Lot traverse to DA station, it is cataloged to unarrived");
+                    das.addUnarrivedLotToDA(unfinished[i]);
+                    break;
+                }
+            } catch (std::out_of_range
+                         &e) {  // for da_stations_t function member,
+                                // addArrivedLotToDA and addUnarrivedLotToDA
+                unfinished[i].addLog(e.what());
+                faulty_lots.push_back(unfinished[i]);
+                wip_report.push_back(e.what() +
+                                     std::string("lot information : ") +
+                                     unfinished[i].info());
+            } catch (std::logic_error &e) {  // for calculateQueueTime
+                unfinished[i].addLog(e.what());
+                faulty_lots.push_back(unfinished[i]);
+                wip_report.push_back(e.what() +
+                                     std::string("lot information : ") +
+                                     unfinished[i].info());
             }
-        } catch (std::out_of_range &e) {  // for da_stations_t function member
-            wip_report.push_back(e.what());
-            cout << e.what() << endl;
-        } catch (std::logic_error &e) {
-            wip_report.push_back(e.what());
-            cout << e.what() << endl;
         }
+        unfinished = das.distributeProductionCapacity();
+        das.removeAllLots();
     }
 
-    unfinished = das.distributeProductionCapacity();
-
-
-    cout << "amount of loss recipe = " << loss_recipe << endl;
     outputReport("wip-report.txt", wip_report);
     return 0;
 }

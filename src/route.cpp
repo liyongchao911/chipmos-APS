@@ -2,6 +2,7 @@
 #include <cstdarg>
 #include <ctime>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 route_t::route_t()
@@ -51,10 +52,10 @@ void route_t::setQueueTime(csv_t queue_time_df)
 }
 
 std::vector<station_t> route_t::setupBeforeStation(std::string routename,
-                                 bool remove,
-                                 int nstations,
-                                 int nopts,
-                                 ...)
+                                                   bool remove,
+                                                   int nstations,
+                                                   int nopts,
+                                                   ...)
 {
     std::set<int> opers;
     std::set<int> station_opers;
@@ -154,9 +155,8 @@ int route_t::calculateQueueTime(lot_t &lot)
 
     // if can't locate the oper, idx will be less then 0
     if (idx < 0) {
-        std::string error =
-            "Can't locate the oper of lot_number : " + lot.lotNumber() +
-            " in the route" + lot.route();
+        std::string error = "Can't locate lot.temp_oper(" +
+                            std::to_string(lot.tmp_oper) + ") on the route";
         throw std::logic_error(error);
     }
 
@@ -184,10 +184,10 @@ int route_t::calculateQueueTime(lot_t &lot)
     // check if lot is in DA
     // if lot is in DA,
     if (_da_stations.count(lot.tmp_oper) == 1) {  // lot is in DA
-        if (lot.tmp_mvin) {  // lot is in DA and mvin
-            idx += 1;        // advance
+        if (lot.tmp_mvin) {                       // lot is in DA and mvin
+            idx += 1;                             // advance
             lot.tmp_mvin = false;
-        } else { // lot is in D/A and hasn't moved in
+        } else {  // lot is in D/A and hasn't moved in
             lot.tmp_oper = _routes[routename][++idx].oper;  // advance
             return 2;  // advance and dispatch
         }
@@ -217,9 +217,7 @@ int route_t::calculateQueueTime(lot_t &lot)
                     std::string error_text =
                         std::to_string(prev) + " -> " + std::to_string(oper) +
                         " is invalid queue time combination, please check "
-                        "queue_time's input file.  "
-                        "lot_number : " +
-                        lot.lotNumber();
+                        "queue_time's input file.  ";
 
                     throw std::logic_error(error_text);
                 }
@@ -231,8 +229,8 @@ int route_t::calculateQueueTime(lot_t &lot)
                 ++times_of_passing_cure;
             } else if (_da_stations.count(
                            oper)) {  // oper is a D/A station,  dispatch
-                lot.tmp_mvin = false; 
-                lot.tmp_oper = _routes[routename][i + 1] // ad
+                lot.tmp_mvin = false;
+                lot.tmp_oper = _routes[routename][i + 1]  // ad
                                    .oper;  // lot traverse to DA station
                 lot.addQueueTime(qt);
                 return 1;

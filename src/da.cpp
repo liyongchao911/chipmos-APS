@@ -35,7 +35,7 @@ int da_stations_t::setFcst(csv_t _fcst, bool strict)
                 continue;
 
             act = std::stod(elements["da_act"]) * 1000;
-            remain = fcst;  // TODO : remain = fcst - act may less than 0
+            remain = fcst;  // FIXME : remain = fcst - act may less than 0
 
             _da_stations_container[bd_id] = da_station_t{.fcst = fcst,
                                                          .act = act,
@@ -91,12 +91,10 @@ std::vector<lot_t> da_stations_t::distributeProductionCapacity()
     // arrived first
 
     // TODO: sorting
-    int size = 0;
     for (std::map<std::string, da_station_t>::iterator it =
              _da_stations_container.begin();
          it != _da_stations_container.end(); it++) {
         lots += daDistributeCapacity(it->second);
-        size += it->second.arrived.size();
     }
 
     return lots;
@@ -119,6 +117,7 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
     {
         tmp = (double) arrived_lots[i].qty() / da.upm;
         da.time += tmp;
+        arrived_lots[i].addLog("Lot pass DA station");
         result.push_back(arrived_lots[i]);
         if (da.time > 1440) {
             da.finished = true;
@@ -165,4 +164,14 @@ std::vector<lot_t> da_stations_t::getSubLot(std::vector<lot_t> lots)
         }
     }
     return result;
+}
+
+void da_stations_t::removeAllLots()
+{
+    for (std::map<std::string, da_station_t>::iterator it =
+             _da_stations_container.begin();
+         it != _da_stations_container.end(); it++) {
+        it->second.arrived.clear();
+        it->second.unarrived.clear();
+    }
 }
