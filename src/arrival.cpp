@@ -275,6 +275,33 @@ vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
     return finished;
 }
 
+void setPartId(string filename,
+               vector<lot_t> &lots,
+               vector<lot_t> &faulty_lots,
+               vector<string> &wip_report)
+{
+}
+
+void setAmountofWire(string filename,
+                     vector<lot_t> &lots,
+                     vector<lot_t> &faulty_lots,
+                     vector<string> &wip_report)
+{
+}
+
+void setPartNo(string filename,
+               vector<lot_t> &lots,
+               vector<lot_t> &faulty_lots,
+               vector<string> &wip_report)
+{
+}
+
+void setAmountOfToos(string filename,
+                     vector<lot_t> &lots,
+                     vector<lot_t> &faulty_lots,
+                     vector<string> &wip_report)
+{
+}
 
 vector<lot_t> createLots(string wip_file_name,
                          string prod_pid_filename,
@@ -292,6 +319,10 @@ vector<lot_t> createLots(string wip_file_name,
     readWip(wip_file_name, alllots, wip_report);
     setPidBomId(prod_pid_filename, alllots, faulty_lots, wip_report);
     setLotSize(eim, alllots, faulty_lots, wip_report);
+
+    // TODO : setPartId, setPartNo, setAmountOfTools, setAmountOfWires
+
+
 
     if (alllots.size() == 0) {
         outputReport("wip-report.txt", wip_report);

@@ -2,6 +2,7 @@
 #define __COMMON_H__
 
 #include <cstdio>
+#include <ctime>
 #include <string>
 #include <vector>
 
@@ -27,4 +28,9 @@ std::vector<T> operator+=(std::vector<T> &op1, std::vector<T> op2)
     iter(op2, i) { op1.push_back(op2[i]); }
     return op1;
 }
+
+/**
+ * timeConverter() - convert text to time_t
+ */
+time_t timeConverter(char *text);
 #endif

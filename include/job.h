@@ -17,10 +17,14 @@ protected:
     std::string _prod_id;
     std::string _process_id;
     std::string _bom_id;
+    std::string _part_id;
+    std::string _part_no;
 
     int _qty;
     int _oper;
     int _lot_size;
+    int _amount_of_wires;
+    int _amount_of_tools;
 
     bool _hold;
     bool _mvin;
@@ -107,8 +111,28 @@ public:
 
     inline double queueTime() { return _queue_time; }
 
-    inline std::string info(){
-        return "{Lot Number : " + _lot_number + ", route : " + _route + ", recipe : ", _recipe + "}";
+    inline std::string info()
+    {
+        return "{Lot Number : " + _lot_number + ", route : " + _route +
+                   ", recipe : ",
+               _recipe + "}";
+    }
+
+    inline void setPardId(std::string partid) { _part_id = partid; }
+
+    inline void setPartNo(std::string part_no) { _part_no = part_no; }
+
+    inline std::string part_id() { return _part_id; }
+
+    inline std::string part_no() { return _part_no; }
+
+    inline void setAmountOfTools(int tool) { _amount_of_tools = tool; }
+
+    inline void setAmountOfWires(int amount) { _amount_of_wires = amount; }
+
+    inline int getAmountOfMachines()
+    {
+        return std::min(_amount_of_tools, _amount_of_wires);
     }
 };
 

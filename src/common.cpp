@@ -29,3 +29,11 @@ std::vector<std::string> split(char *text, char delimiter)
 
     return data;
 }
+
+time_t timeConverter(char *text)
+{
+    time_t time;
+    // TODO : convert text to time;
+    //
+    return time;
+}
