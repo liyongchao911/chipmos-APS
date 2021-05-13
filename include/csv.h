@@ -2,8 +2,8 @@
  * @file csv_t.h
  * @brief The definition of csv_t object
  *
- * csv_t type is defined in this file. csv_t object is used to read and write csv_t
- * file.
+ * csv_t type is defined in this file. csv_t object is used to read and write
+ * csv_t file.
  *
  * @author Eugene Lin <lin.eugene.l.e@gmail.com>
  * @date 2021.5.5
@@ -24,9 +24,9 @@
  * @class csv_t
  * @breif csv_t type is used to read/write csv_t file.
  *
- * csv_t object is used to deel with csv_t file I/O. There are several csv_t file have
- * byte order remark. csv_t object is able to handle UTF-8 and UTF-16 byte order
- * remark.
+ * csv_t object is used to deel with csv_t file I/O. There are several csv_t
+ * file have byte order remark. csv_t object is able to handle UTF-8 and UTF-16
+ * byte order remark.
  */
 class csv_t
 {
@@ -58,7 +58,7 @@ protected:
 public:
     csv_t();
 
-    csv_t(csv_t & csv);
+    csv_t(csv_t &csv);
 
     /**
      * csv_t - Constructor of csv_t object for reading file
@@ -80,11 +80,11 @@ public:
      * @var r2 : range to r2 if specify
      */
     csv_t(std::string filename,
-        std::string mode,
-        bool read = true,
-        bool head = true,
-        int r1 = -1,
-        int r2 = -1);
+          std::string mode,
+          bool read = true,
+          bool head = true,
+          int r1 = -1,
+          int r2 = -1);
 
     void trim(std::string text);
 
@@ -211,8 +211,8 @@ public:
     /**
      * getRow() - return a row
      *
-     * return @b row of the csv_t file if row exceed the number of rows of csv_t,
-     * the function will throw exception. @b row can be less than 0, the
+     * return @b row of the csv_t file if row exceed the number of rows of
+     * csv_t, the function will throw exception. @b row can be less than 0, the
      * function will count the row from the back and return it.
      *
      * @return a vector of string
@@ -263,7 +263,7 @@ public:
      * @return csv_t data as 2-D array which is represented in
      * vector<vector<string> >
      */
-    std::vector<std::vector<std::string> > getData(int r1=-1, int r2=-1);
+    std::vector<std::vector<std::string> > getData(int r1 = -1, int r2 = -1);
 
     /**
      * getColumn() - get column by specifing header
@@ -273,7 +273,7 @@ public:
      */
     std::vector<std::string> getColumn(std::string header);
 
-    
+
     /**
      * filter() - get a new csv_t object by specifing that column's == value
      */

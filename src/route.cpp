@@ -2,6 +2,7 @@
 #include <cstdarg>
 #include <ctime>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 route_t::route_t()
@@ -44,17 +45,17 @@ void route_t::setQueueTime(csv_t queue_time_df)
         elements.erase(elements.find("station"));
         for (std::map<std::string, std::string>::iterator it = elements.begin();
              it != elements.end(); it++) {
-            queue_time[std::stoi(it->first)] = std::stoi(it->second);
+            queue_time[std::stoi(it->first)] = std::stoi(it->second) * 60;
         }
         _queue_time[station] = queue_time;
     }
 }
 
-void route_t::setupBeforeStation(std::string routename,
-                                 bool remove,
-                                 int nstations,
-                                 int nopts,
-                                 ...)
+std::vector<station_t> route_t::setupBeforeStation(std::string routename,
+                                                   bool remove,
+                                                   int nstations,
+                                                   int nopts,
+                                                   ...)
 {
     std::set<int> opers;
     std::set<int> station_opers;
@@ -94,6 +95,8 @@ void route_t::setupBeforeStation(std::string routename,
         iter(vec, i) { stations.push_back(_routes[routename][vec[i]]); }
         _routes[routename] = stations;
     }
+
+    return stations;
 }
 
 bool route_t::isLotInStations(lot_t lot)
@@ -140,7 +143,7 @@ int route_t::findStationIdx(std::string routename, int oper)
  *  1. begining station is next station.
  *
  */
-int route_t::calculatQueueTime(lot_t &lot)
+int route_t::calculateQueueTime(lot_t &lot)
 {
     if (lot.isTraversalFinish())
         return 0;
@@ -152,9 +155,8 @@ int route_t::calculatQueueTime(lot_t &lot)
 
     // if can't locate the oper, idx will be less then 0
     if (idx < 0) {
-        std::string error =
-            "Can't locate the oper of lot_number : " + lot.lotNumber() +
-            " in the route" + lot.route();
+        std::string error = "Can't locate lot.temp_oper(" +
+                            std::to_string(lot.tmp_oper) + ") on the route";
         throw std::logic_error(error);
     }
 
@@ -182,14 +184,16 @@ int route_t::calculatQueueTime(lot_t &lot)
     // check if lot is in DA
     // if lot is in DA,
     if (_da_stations.count(lot.tmp_oper) == 1) {  // lot is in DA
-        if (lot.tmp_mvin) {  // lot is originally in DA and mvin
-            idx += 1;        // advance
+        if (lot.tmp_mvin) {                       // lot is in DA and mvin
+            idx += 1;                             // advance
             lot.tmp_mvin = false;
-        } else {
+        } else {  // lot is in D/A and hasn't moved in
             lot.tmp_oper = _routes[routename][++idx].oper;  // advance
             return 2;  // advance and dispatch
         }
     }
+
+    lot.tmp_mvin = false;
 
 
     // traverse the route from the begining station idx to D/A or W/B or to the
@@ -213,9 +217,7 @@ int route_t::calculatQueueTime(lot_t &lot)
                     std::string error_text =
                         std::to_string(prev) + " -> " + std::to_string(oper) +
                         " is invalid queue time combination, please check "
-                        "queue_time's input file.  "
-                        "lot_number : " +
-                        lot.lotNumber();
+                        "queue_time's input file.  ";
 
                     throw std::logic_error(error_text);
                 }
@@ -226,11 +228,16 @@ int route_t::calculatQueueTime(lot_t &lot)
             if (oper == CURE) {
                 ++times_of_passing_cure;
             } else if (_da_stations.count(
-                           oper)) {   // oper is a D/A station,  dispatch
-                lot.tmp_oper = oper;  // lot traverse to DA station
+                           oper)) {  // oper is a D/A station,  dispatch
+                lot.tmp_mvin = false;
+                lot.tmp_oper = _routes[routename][i + 1]  // ad
+                                   .oper;  // lot traverse to DA station
+                lot.addQueueTime(qt);
                 return 1;
             } else if (_wb_stations.count(oper)) {  // traverse to W/B station
+                lot.tmp_mvin = false;
                 lot.tmp_oper = oper;
+                lot.addQueueTime(qt);
                 lot.setTraverseFinished();
                 return 0;
             }
