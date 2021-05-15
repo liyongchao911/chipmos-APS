@@ -30,6 +30,18 @@ std::vector<std::string> split(char *text, char delimiter)
     return data;
 }
 
+void stringToLower(char *text)
+{
+    for (; *text; ++text)
+        *text |= 0x20;
+}
+
+void stringToUpper(char *text)
+{
+    for (; *text; ++text)
+        *text ^= 0x20;
+}
+
 time_t timeConverter(char *text)
 {
     time_t time;
