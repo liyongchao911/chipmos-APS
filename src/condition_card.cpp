@@ -19,7 +19,7 @@ condition_cards_h::condition_cards_h(int n, ...)
     for (int i = 0; i < n; ++i) {
         ptr = va_arg(list, char *);
         ptr = strdup(ptr);
-        dataScrubbing(ptr);
+        formated(ptr);
         // stringToLower(ptr);
         _model_set.insert(ptr);
         printf("string : %s\n", ptr);
@@ -28,7 +28,7 @@ condition_cards_h::condition_cards_h(int n, ...)
     va_end(list);
 }
 
-std::string condition_cards_h::dataScrubbing(std::string _text)
+std::string condition_cards_h::formated(std::string _text)
 {
     // to lower and replace ' ' with '-'
     for (unsigned int i = 0; i < _text.length(); ++i) {
@@ -39,7 +39,7 @@ std::string condition_cards_h::dataScrubbing(std::string _text)
     return _text;
 }
 
-char *condition_cards_h::dataScrubbing(char *text)
+char *condition_cards_h::formated(char *text)
 {
     char *ptr = text;
     for (; *ptr; ++ptr) {
@@ -60,7 +60,7 @@ void condition_cards_h::addMapping(std::string std_model_name, int n, ...)
     for (int i = 0; i < n; ++i) {
         ptr = va_arg(variables, char *);
         ptr = strdup(ptr);
-        _model_mapping[model_name].push_back(dataScrubbing(ptr));
+        _model_mapping[model_name].push_back(formated(ptr));
         free(ptr);
     }
     va_end(variables);
@@ -191,7 +191,7 @@ card_t condition_cards_h::readConditionCard(string filename,
                 if (_model_mapping.count(temp_model) > 0) {
                     can_run_models += _model_mapping[temp_model];
                 } else {
-                    dataScrubbing(temp_model);
+                    formated(temp_model);
                     if (_model_set.count(temp_model) && result.at(i).length()) {
                         can_run_models.push_back(temp_model);
                     }
