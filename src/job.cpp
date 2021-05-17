@@ -85,7 +85,7 @@ void lot_t::checkFormation()
 std::vector<lot_t> lot_t::createSublots()
 {
     std::vector<lot_t> lots;
-    if (_lot_number.length() >= 8) {
+    if (_is_sub_lot) {
         return lots;
     }
     char str_number[100];
@@ -109,3 +109,5 @@ std::vector<lot_t> lot_t::createSublots()
 
     return lots;
 }
+
+
