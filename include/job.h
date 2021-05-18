@@ -33,7 +33,6 @@ protected:
     double _queue_time;  // for all queue time;
     double _fcst_time;   // for DA fcst time
     double _outplan_time;
-    double _uph;
 
     bool _finish_traversal;
 
@@ -187,6 +186,15 @@ public:
      */
     void setAmountOfWires(int amount);
 
+    /**
+     * setCanRunModel () - setup a single model
+     */
+    void setCanRunModel(std::string model);
+
+    /**
+     * setCanRunModels () - setup multiple models
+     */
+    void setCanRunModels(std::vector<std::string> models);
 
     /**
      * getAmountOfMachines () - get the amount of machines which can process
@@ -480,8 +488,7 @@ inline double lot_t::queueTime()
 inline std::string lot_t::info()
 {
     return "{Lot Number : " + _lot_number + ", route : " + _route +
-               ", recipe : ",
-           _recipe + "}";
+           ", recipe : " + _recipe + "}";
 }
 
 
@@ -512,5 +519,15 @@ inline void lot_t::setAmountOfTools(int tool)
 inline void lot_t::setAmountOfWires(int amount)
 {
     _amount_of_wires = amount;
+}
+
+inline void lot_t::setCanRunModel(std::string model)
+{
+    _uphs[model] = 0;
+}
+
+inline void lot_t::setCanRunModels(std::vector<std::string> models)
+{
+    iter(models, i) { _uphs[models[i]] = 0; }
 }
 #endif

@@ -109,5 +109,3 @@ std::vector<lot_t> lot_t::createSublots()
 
     return lots;
 }
-
-

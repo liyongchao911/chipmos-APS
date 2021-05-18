@@ -26,8 +26,21 @@ std::vector<std::string> split(char *text, char delimiter)
         }
     }
 
-
     return data;
+}
+
+std::string join(std::vector<std::string> strings, std::string delimiter)
+{
+    if (strings.size() == 0)
+        return "";
+    std::string s;
+    iter_range(strings, i, 0, strings.size() - 1)
+    {
+        s += strings[i];
+        s += delimiter;
+    }
+    s += strings[strings.size() - 1];
+    return s;
 }
 
 void stringToLower(char *text)

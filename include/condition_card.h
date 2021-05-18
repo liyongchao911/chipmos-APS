@@ -203,9 +203,9 @@ public:
     /**
      * getModels() - get the models by recipe and oper
      */
-    inline card_t getModels(std::string recipe, int oper)
+    inline card_t getModels(std::string recipe, int oper) noexcept(false)
     {
-        return _models[recipe][oper];
+        return _models.at(recipe).at(oper);
     }
 };
 
