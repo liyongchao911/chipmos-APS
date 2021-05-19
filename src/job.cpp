@@ -25,6 +25,8 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     tmp_mvin = _mvin;
 
     _is_sub_lot = _lot_number.length() >= 8 ? true : false;
+    _amount_of_tools = 0;
+    _amount_of_wires = 0;
 
     checkFormation();
 }
@@ -67,6 +69,10 @@ void lot_t::checkFormation()
     if (_recipe.length() == 0)
         data_members.push_back("recipe");
 
+    if(_qty <= 0){
+        data_members.push_back("qty");
+    }
+
     if (data_members.size()) {
         error_msg = data_members.size() > 1 ? ", these"
                                             : ", this"
@@ -76,7 +82,7 @@ void lot_t::checkFormation()
         }
         error_msg += data_members.size() > 1 ? ", are"
                                              : ", is"
-                                               " not provided";
+                                               " incorrect";
 
         throw std::invalid_argument(error_msg);
     }
@@ -96,7 +102,7 @@ std::vector<lot_t> lot_t::createSublots()
         lot_t tmp(*this);
         tmp._lot_number += str_number;
         tmp._is_sub_lot = true;
-        tmp.addLog("This lot is splited from the parent lot");
+        tmp.addLog("This lot is split from the parent lot " + _lot_number);
         if (remain - _lot_size > 0) {
             tmp._qty = _lot_size;
             remain -= tmp._qty;
@@ -106,6 +112,41 @@ std::vector<lot_t> lot_t::createSublots()
         }
         lots.push_back(tmp);
     }
+    _qty = remain;
 
     return lots;
 }
+std::map<std::string, std::string> lot_t::data(){
+    std::map<std::string, std::string> d;
+    d["route"] = _route;
+    d["lot_number"] = _lot_number;
+    d["pin_package"] = _pin_package;
+    d["recipe"] = _recipe;
+    d["prod_id"] = _prod_id;
+    d["process_id"] = _process_id;
+    d["bom_id"] = _bom_id;
+    d["part_id"] = _part_id;
+    d["part_no"] = _part_no;
+
+    d["qty"] = std::to_string(_qty);
+    d["oper"] = std::to_string(_oper);
+    d["dest_oper"] = std::to_string(tmp_oper);
+    d["lot_size"] = std::to_string(_lot_size);
+    d["amount_of_wires"] = std::to_string(_amount_of_wires);
+    d["amount_of_tools"] = std::to_string(_amount_of_tools);
+    d["hold"] = _hold ? "Y" : "N";
+    d["mvin"] = _mvin ? "Y" : "N";
+    d["is_sub_lot"] = _is_sub_lot ? "Y" : "N";
+    d["queue_time"] = std::to_string(_queue_time);
+    d["fcst_time"] = std::to_string(_fcst_time);
+    // d["arrival_time"] = std::to_string(
+    d["log"] = join(_log, "||"); 
+    
+    std::vector<std::string> models;
+    for(std::map<std::string, double>::iterator it = _uphs.begin(); it != _uphs.end(); ++it){
+        models.push_back(it->first);
+    }
+    d["CAN_RUN_MODELS"] = join(models, ",");
+    return d;
+}
+

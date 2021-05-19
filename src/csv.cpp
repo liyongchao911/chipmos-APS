@@ -90,6 +90,24 @@ std::vector<std::string> csv_t::parseCsvRow(char *text, char delimiter)
     return data;
 }
 
+std::string csv_t::formCsvElement(std::string text){
+    bool hasSpecialChar = false;
+    for(unsigned int i = 0, length = text.length(); i < length; ++i){
+        if(text[i] == ','){
+            hasSpecialChar = true;
+        } else if(text[i] == '"'){
+            hasSpecialChar = true;
+            text.insert(text.begin() + i, '"');
+        }
+    }
+    if(hasSpecialChar){
+        text.insert(text.begin(), '"');
+        text.append("\"");
+    }
+
+    return text;
+}
+
 void csv_t::trim(std::string text)
 {
     size_t found;
@@ -272,6 +290,8 @@ void csv_t::addData(std::map<std::string, std::string> elements)
         setHeaders(head);
     }
 
+    
+
     for (std::map<std::string, std::string>::iterator it = elements.begin();
          it != elements.end(); ++it) {
         try {
@@ -282,25 +302,50 @@ void csv_t::addData(std::map<std::string, std::string> elements)
                        " in the exist dataframe";
             throw std::out_of_range(err_msg);
         }
-        data[idx] = it->second;
+        data.insert(data.begin() + idx, it->second);
     }
+    _data.push_back(data);
 }
 
 bool csv_t::write(std::string filename, std::string mode, bool head)
 {
+    if(filename.length() == 0)
+        filename = _filename;
+
+    if(mode.length() == 0)
+        mode = _mode;
+
     if (_file) {
         close();
     }
     _file = fopen(filename.c_str(), mode.c_str());
     int retval = 0;
     std::vector<std::string> strings_temp;
-    for (std::map<std::string, std::uint16_t>::iterator it = _head.begin();
-         it != _head.end(); it++) {
-        strings_temp.push_back(it->first);
+    std::string row;
+    if(head){
+        for (std::map<std::string, std::uint16_t>::iterator it = _head.begin();
+             it != _head.end(); it++) {
+            strings_temp.push_back(it->first);
+        }
+        row = join(strings_temp, ",");
+        retval = fprintf(_file, "%s\n", row.c_str());
+        if(retval < 0){
+            return false;
+        }
     }
-    std::string temp = join(strings_temp, ",");
-    fprintf(_file, "%s\n", temp.c_str());
-
+    iter(_data, i){
+        strings_temp.clear();
+        for(std::map<std::string, std::uint16_t>::iterator it = _head.begin(); it != _head.end(); ++it){
+            strings_temp.push_back(formCsvElement(_data[i][it->second]));
+        }
+        row = join(strings_temp, ","); 
+        retval = fprintf(_file, "%s\n", row.c_str());
+        if(retval < 0){
+            return false;
+        }
+        
+   }
+    
     return true;
 }
 

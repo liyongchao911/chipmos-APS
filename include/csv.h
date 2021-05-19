@@ -73,6 +73,8 @@ protected:
      */
     std::vector<std::string> parseCsvRow(char *text, char delimiter);
 
+    std::string formCsvElement(std::string text);
+
 public:
     csv_t();
 
@@ -171,7 +173,7 @@ public:
      */
     bool write(std::string filename = "",
                std::string mode = "",
-               bool head = "");
+               bool head = true);
 
     /**
      * read() - input csv_t file

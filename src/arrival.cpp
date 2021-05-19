@@ -186,7 +186,7 @@ void setupRoute(string routelist, string queuetime, route_t &routes)
 }
 
 vector<lot_t> wb_7_filter(vector<lot_t> alllots,
-                          vector<lot_t> &faulty_lots,
+                          vector<lot_t> &dontcare,
                           route_t routes)
 {
     vector<lot_t> lots;
@@ -194,14 +194,11 @@ vector<lot_t> wb_7_filter(vector<lot_t> alllots,
     {
         if (alllots[i].hold()) {
             alllots[i].addLog("Lot is hold");
-            faulty_lots.push_back(alllots[i]);
+            dontcare.push_back(alllots[i]);
         } else if (!routes.isLotInStations(alllots[i])) {
             alllots[i].addLog("Lot is not in WB - 7");
-            faulty_lots.push_back(alllots[i]);
-        } else if (alllots[i].qty() <= 0) {
-            alllots[i].addLog("Lot's qty <= 0");
-            faulty_lots.push_back(alllots[i]);
-        } else {
+            dontcare.push_back(alllots[i]);
+        }  else {
             lots.push_back(alllots[i]);
         }
     }
@@ -210,6 +207,7 @@ vector<lot_t> wb_7_filter(vector<lot_t> alllots,
 
 vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
                                 vector<lot_t> &faulty_lots,
+                                vector<lot_t> &dontcare,
                                 da_stations_t &das,
                                 route_t routes,
                                 vector<string> wip_report)
@@ -218,7 +216,6 @@ vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
     string err_msg;
     std::vector<lot_t> unfinished = lots;
     std::vector<lot_t> finished;
-    std::vector<lot_t> dontcare;
 
     while (unfinished.size()) {
         iter(unfinished, i)
@@ -237,7 +234,7 @@ vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
                     break;
                 case 0:  // lot is finished
                     unfinished[i].addLog(
-                        "Lot is finished traversing the route");
+                        "Lot finishs traversing the route");
                     finished.push_back(unfinished[i]);
                     break;
                 case 2:  // add to DA_arrived
@@ -273,6 +270,8 @@ vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
         das.removeAllLots();
     }
 
+    dontcare += das.getParentLots();
+
     return finished;
 }
 
@@ -298,7 +297,7 @@ void setupCanRunModels(string card_official,
                 cards.getModels(lots[i].recipe(), lots[i].tmp_oper).models);
             result.push_back(lots[i]);
         } catch (out_of_range &e) {
-            lots[i].addLog("Lot has not match condition card");
+            lots[i].addLog("Lot has not matched condition card");
             faulty_lots.push_back(lots[i]);
         }
     }
@@ -346,6 +345,7 @@ vector<lot_t> createLots(string wip_file_name,
     std::vector<lot_t> alllots;
     std::vector<lot_t> faulty_lots;
     std::vector<lot_t> lots;
+    vector<lot_t> dontcare;
 
     readWip(wip_file_name, alllots, wip_report);
     outputReport("read_wip_report.txt", wip_report);
@@ -356,12 +356,6 @@ vector<lot_t> createLots(string wip_file_name,
 
     // TODO : setPartId, setPartNo, setAmountOfTools, setAmountOfWires
 
-
-
-    // if (alllots.size() == 0) {
-    //     outputReport("wip-report.txt", wip_report);
-    //     exit(-1);
-    // }
 
     /*************************************************************************************/
 
@@ -375,20 +369,35 @@ vector<lot_t> createLots(string wip_file_name,
 
 
     // filter, check if lot is in scheduling plan
-    lots = wb_7_filter(alllots, faulty_lots, routes);
+    lots = wb_7_filter(alllots, dontcare, routes);
 
 
     // route traversal and sum the queue time
-    vector<lot_t> dontcare;
-    lots = queueTimeAndQueue(lots, dontcare, das, routes, wip_report);
+    lots = queueTimeAndQueue(lots,faulty_lots, dontcare, das, routes, wip_report);
 
     setupCanRunModels("ConditionCard/CARD_OFFICAL", "ConditionCard/CARD_TEMP",
                       lots, faulty_lots, wip_report);
 
 
-    // TODO: output faulty lot
-    // TODO: output dontcare lot
-
+    // output faulty lots
+    csv_t faulty_lots_csv("faulty_lots.csv", "w");
+    iter(faulty_lots, i){
+        faulty_lots_csv.addData(faulty_lots[i].data());
+    }
+    faulty_lots_csv.write();
+    // output dontcare lots
+    csv_t dontcare_lots_csv("dontcare.csv", "w"); 
+    iter(dontcare, i){
+        dontcare_lots_csv.addData(dontcare[i].data());
+    }
+    dontcare_lots_csv.write();
+    
+    // output lots
+    csv_t lots_csv("lots.csv", "w");
+    iter(lots, i){
+        lots_csv.addData(lots[i].data());
+    }
+    lots_csv.write();
 
     outputReport("wip-report.txt", wip_report);
     return lots;

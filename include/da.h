@@ -15,6 +15,7 @@ typedef struct da_station_t {
     bool finished;
     std::vector<lot_t> arrived;
     std::vector<lot_t> unarrived;
+    std::vector<lot_t> remaining;
 } da_station_t;
 
 
@@ -27,7 +28,8 @@ private:
         da_station_t &da);  // for single da_station
 
     std::vector<lot_t> getSubLot(std::vector<lot_t> lots);
-
+    
+    std::vector<lot_t> _parent_lots;
 public:
     da_stations_t(csv_t fcst, bool strict = false);
 
@@ -44,6 +46,12 @@ public:
     std::vector<lot_t> distributeProductionCapacity();
 
     void removeAllLots();
+
+    std::vector<lot_t> getParentLots();
 };
+
+inline std::vector<lot_t> da_stations_t::getParentLots(){
+    return _parent_lots;
+}
 
 #endif

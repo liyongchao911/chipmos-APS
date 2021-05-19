@@ -4,7 +4,38 @@
 #include <include/job.h>
 #include <string>
 #include <vector>
-
+/**
+ * createLots () - create lot by reading a bunch of file
+ *
+ * ****************************************************************
+ *                         prod_pid         pid_bomId
+ * WIP -----------> lots -----------> lots ----------->lots -->
+ *       |                    |                 |
+ *       |                    |                 |
+ *       |                    |                 |
+ *       v                    v                 v
+ *    wip_report         faulty_lot        faulty_lot 
+ *
+ * ****************************************************************
+ * 
+ *      pid_lotSize         wb_7_filter         queueTimeAndQ
+ * lots-------------> lots --------------> lots -------------->lots
+ *          |                   |                       |
+ *          |                   |                       |
+ *          v                   v                       v
+ *      faulty_lot        dont_care_lots     faulty_lot, dont_care
+ *
+ * ****************************************************************
+ *
+ *       setCanRunModels
+ * lots ------------------> return
+ *           |
+ *           |
+ *           v
+ *      faulty_lot
+ *
+ * ****************************************************************
+ */
 std::vector<lot_t> createLots(std::string wip_file_name,
                               std::string prod_pid_filename,
                               std::string eim,
