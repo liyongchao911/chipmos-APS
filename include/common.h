@@ -32,5 +32,5 @@ std::vector<T> operator+=(std::vector<T> &op1, std::vector<T> op2)
 /**
  * timeConverter() - convert text to time_t
  */
-time_t timeConverter(char *text);
+time_t timeConverter(const char *text);
 #endif

@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 #include <vector>
-
+ //recover_time=outplan-machine_t(char* time)
 typedef struct {
     double recover_time;
     std::string entity_name;
@@ -18,10 +18,11 @@ typedef struct {
 class machines_t
 {
 private:
+
     // _entities[MODEL][AREA] is a vector of entity_t object.
     std::map<std::string, std::map<std::string, std::vector<entity_t> > >
         _entities;
-    time_t time;
+    double time;
 
 public:
     /**
@@ -30,7 +31,7 @@ public:
      * The constructor will convert @b _time to time_t type
      */
     machines_t(char *_time);
-
+    machines_t(){};
     /**
      * addMachine() - add new machine
      *
@@ -39,7 +40,7 @@ public:
      * elements[MODEL] = "UTC3000" and etc... This function will convert
      * elements to entity_t object.
      */
-    void addMachine(std::map<std::string, std::string> elements);
+    void addMachine(std::map<std::string, std::string> elements){};
 
     /**
      * addMachines() - add machines from dataframe
