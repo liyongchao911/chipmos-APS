@@ -23,6 +23,7 @@ void readWip(string filename, vector<lot_t> &lots, vector<string> &wip_report)
     // setup wip
     // Step 1 : read wip.csv
     csv_t wip(filename, "r", true, true);
+    wip.dropNullRow();
     wip.trim(" ");
     wip.setHeaders(map<string, string>({{"lot_number", "wlot_lot_number"},
                                         {"qty", "wlot_qty_1"},
@@ -198,7 +199,7 @@ vector<lot_t> wb_7_filter(vector<lot_t> alllots,
         } else if (!routes.isLotInStations(alllots[i])) {
             alllots[i].addLog("Lot is not in WB - 7");
             dontcare.push_back(alllots[i]);
-        }  else {
+        } else {
             lots.push_back(alllots[i]);
         }
     }
@@ -233,8 +234,7 @@ vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
                         err_msg + "lot information : " + unfinished[i].info());
                     break;
                 case 0:  // lot is finished
-                    unfinished[i].addLog(
-                        "Lot finishs traversing the route");
+                    unfinished[i].addLog("Lot finishes traversing the route");
                     finished.push_back(unfinished[i]);
                     break;
                 case 2:  // add to DA_arrived
@@ -245,7 +245,7 @@ vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
                     break;
                 case 1:  // add to DA_unarrived
                     unfinished[i].addLog(
-                        "Lot traverse to DA station, it is cataloged to "
+                        "Lot traverses to DA station, it is cataloged to "
                         "unarrived");
                     das.addUnarrivedLotToDA(unfinished[i]);
                     break;
@@ -297,7 +297,7 @@ void setupCanRunModels(string card_official,
                 cards.getModels(lots[i].recipe(), lots[i].tmp_oper).models);
             result.push_back(lots[i]);
         } catch (out_of_range &e) {
-            lots[i].addLog("Lot has not matched condition card");
+            lots[i].addLog("Lot has no matched condition card");
             faulty_lots.push_back(lots[i]);
         }
     }
@@ -373,7 +373,8 @@ vector<lot_t> createLots(string wip_file_name,
 
 
     // route traversal and sum the queue time
-    lots = queueTimeAndQueue(lots,faulty_lots, dontcare, das, routes, wip_report);
+    lots =
+        queueTimeAndQueue(lots, faulty_lots, dontcare, das, routes, wip_report);
 
     setupCanRunModels("ConditionCard/CARD_OFFICAL", "ConditionCard/CARD_TEMP",
                       lots, faulty_lots, wip_report);
@@ -381,22 +382,16 @@ vector<lot_t> createLots(string wip_file_name,
 
     // output faulty lots
     csv_t faulty_lots_csv("faulty_lots.csv", "w");
-    iter(faulty_lots, i){
-        faulty_lots_csv.addData(faulty_lots[i].data());
-    }
+    iter(faulty_lots, i) { faulty_lots_csv.addData(faulty_lots[i].data()); }
     faulty_lots_csv.write();
     // output dontcare lots
-    csv_t dontcare_lots_csv("dontcare.csv", "w"); 
-    iter(dontcare, i){
-        dontcare_lots_csv.addData(dontcare[i].data());
-    }
+    csv_t dontcare_lots_csv("dontcare.csv", "w");
+    iter(dontcare, i) { dontcare_lots_csv.addData(dontcare[i].data()); }
     dontcare_lots_csv.write();
-    
+
     // output lots
     csv_t lots_csv("lots.csv", "w");
-    iter(lots, i){
-        lots_csv.addData(lots[i].data());
-    }
+    iter(lots, i) { lots_csv.addData(lots[i].data()); }
     lots_csv.write();
 
     outputReport("wip-report.txt", wip_report);

@@ -169,7 +169,13 @@ public:
     /**
      * write() - output csv_t file
      *
-     * This function hasn't been implemented. DO NOT USE IT.
+     * write is used to write out the dataframe to a csv file.
+     *
+     * @param filename : specify the output filename. The default filename is
+     * csv_t::filename
+     * @param mode : specify the output mode. The default mode is csv_t::mode
+     * @param head : specify if the output csv file need to output header or
+     * just data
      */
     bool write(std::string filename = "",
                std::string mode = "",
@@ -306,8 +312,25 @@ public:
      */
     csv_t filter(std::string head, std::string value);
 
-    // HAVEN'T FINISHED. DO NOT USE!
+    /**
+     * addData() - add a row to dataframe
+     *
+     * addData is a function used to add data to dataframe. The type of
+     * parameter is std::map<std::string, std::string> which means that the
+     * parameter is a mapping relationship between headers and elements. For
+     * example : elements["HEADER"] == DATA.
+     *
+     * @param elements : a mapping relationship between headers and data
+     */
     void addData(std::map<std::string, std::string> elements);
+
+    /**
+     * dropNullRow() - drop the empty row
+     *
+     * After reading the csv file, there maybe lots of empty row in the
+     * dataframe. dropNullRow will drop all empty row of the dataframe.
+     */
+    void dropNullRow();
 
     ~csv_t();
 };

@@ -19,7 +19,7 @@ int da_stations_t::setFcst(csv_t _fcst, bool strict)
         bd_id = elements["bd_id"];
         if (bd_id.length() &&
             bd_id.compare("(null)") != 0) {  // remove empty bd_id
-            
+
             // overwrite
             fcst = std::stod(elements["da_out"]) * 1000;
 
@@ -29,7 +29,7 @@ int da_stations_t::setFcst(csv_t _fcst, bool strict)
             act = std::stod(elements["da_act"]) * 1000;
             remain = fcst;  // FIXME : remain = fcst - act may less than 0
 
-           if (_da_stations_container.count(bd_id) != 0) {
+            if (_da_stations_container.count(bd_id) != 0) {
                 if (strict) {
                     std::string error_msg =
                         "bd_id :" + bd_id + " is duplicated";
@@ -43,12 +43,11 @@ int da_stations_t::setFcst(csv_t _fcst, bool strict)
                 remain = fcst;
             }
             _da_stations_container[bd_id] = da_station_t{.fcst = fcst,
-                                                             .act = act,
-                                                             .remain = remain,
-                                                             .upm = fcst / 1440,
-                                                             .time = 0,
-                                                             .finished = false};
-           
+                                                         .act = act,
+                                                         .remain = remain,
+                                                         .upm = fcst / 1440,
+                                                         .time = 0,
+                                                         .finished = false};
         }
     }
     return retval;
@@ -121,15 +120,16 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
     double tmp;
     iter(arrived_lots, i)
     {
-        if(!da.finished){
+        if (!da.finished) {
             tmp = (double) arrived_lots[i].qty() / da.upm;
             da.time += tmp;
             arrived_lots[i].addLog("Lot pass DA station");
             result.push_back(arrived_lots[i]);
-            if (da.time > 1440) { //FIXME : should be 1440 ? or a variable number?
+            if (da.time >
+                1440) {  // FIXME : should be 1440 ? or a variable number?
                 da.finished = true;
             }
-        }else{
+        } else {
             arrived_lots[i].addLog("Lot is pushed into remaining");
             da.remaining.push_back(arrived_lots[i]);
         }
@@ -137,7 +137,7 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
 
     iter(unarrived_lots, i)
     {
-        if(!da.finished){
+        if (!da.finished) {
             tmp = (double) unarrived_lots[i].qty() / da.upm;
             if (da.time > unarrived_lots[i].queueTime()) {
                 unarrived_lots[i].addQueueTime(da.time -
@@ -150,10 +150,11 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
                 da.time += tmp;
             }
             result.push_back(unarrived_lots[i]);
-            if (da.time > 1440) { // FIXME : should be 1440 or a variable number? 
+            if (da.time >
+                1440) {  // FIXME : should be 1440 or a variable number?
                 da.finished = true;
             }
-        }else{
+        } else {
             unarrived_lots[i].addLog("Lot is pushed into remaining.");
             da.remaining.push_back(unarrived_lots[i]);
         }
@@ -171,7 +172,7 @@ std::vector<lot_t> da_stations_t::getSubLot(std::vector<lot_t> lots)
         if (!lots[i].isSubLot()) {
             temp_lots = lots[i].createSublots();
             result += temp_lots;
-            lots[i].addLog("Lot is split to several sub-lots"); 
+            lots[i].addLog("Lot is split to several sub-lots");
             _parent_lots.push_back(lots[i]);
         } else {
             result.push_back(lots[i]);

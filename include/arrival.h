@@ -14,10 +14,10 @@
  *       |                    |                 |
  *       |                    |                 |
  *       v                    v                 v
- *    wip_report         faulty_lot        faulty_lot 
+ *    wip_report         faulty_lot        faulty_lot
  *
  * ****************************************************************
- * 
+ *
  *      pid_lotSize         wb_7_filter         queueTimeAndQ
  * lots-------------> lots --------------> lots -------------->lots
  *          |                   |                       |

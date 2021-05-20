@@ -90,17 +90,18 @@ std::vector<std::string> csv_t::parseCsvRow(char *text, char delimiter)
     return data;
 }
 
-std::string csv_t::formCsvElement(std::string text){
+std::string csv_t::formCsvElement(std::string text)
+{
     bool hasSpecialChar = false;
-    for(unsigned int i = 0, length = text.length(); i < length; ++i){
-        if(text[i] == ','){
+    for (unsigned int i = 0, length = text.length(); i < length; ++i) {
+        if (text[i] == ',') {
             hasSpecialChar = true;
-        } else if(text[i] == '"'){
+        } else if (text[i] == '"') {
             hasSpecialChar = true;
             text.insert(text.begin() + i, '"');
         }
     }
-    if(hasSpecialChar){
+    if (hasSpecialChar) {
         text.insert(text.begin(), '"');
         text.append("\"");
     }
@@ -208,11 +209,8 @@ bool csv_t::read(std::string filename,
         _data.push_back(text);
     }
 
-
-    int i = 0;
     while (getline(&line_ptr, &size, _file) > 0) {
         text = parseCsvRow(line_ptr, ',');
-        ++i;
         _data.push_back(text);
     }
     free(line_ptr);
@@ -290,7 +288,7 @@ void csv_t::addData(std::map<std::string, std::string> elements)
         setHeaders(head);
     }
 
-    
+
 
     for (std::map<std::string, std::string>::iterator it = elements.begin();
          it != elements.end(); ++it) {
@@ -309,10 +307,10 @@ void csv_t::addData(std::map<std::string, std::string> elements)
 
 bool csv_t::write(std::string filename, std::string mode, bool head)
 {
-    if(filename.length() == 0)
+    if (filename.length() == 0)
         filename = _filename;
 
-    if(mode.length() == 0)
+    if (mode.length() == 0)
         mode = _mode;
 
     if (_file) {
@@ -322,30 +320,31 @@ bool csv_t::write(std::string filename, std::string mode, bool head)
     int retval = 0;
     std::vector<std::string> strings_temp;
     std::string row;
-    if(head){
+    if (head) {
         for (std::map<std::string, std::uint16_t>::iterator it = _head.begin();
              it != _head.end(); it++) {
             strings_temp.push_back(it->first);
         }
         row = join(strings_temp, ",");
         retval = fprintf(_file, "%s\n", row.c_str());
-        if(retval < 0){
+        if (retval < 0) {
             return false;
         }
     }
-    iter(_data, i){
+    iter(_data, i)
+    {
         strings_temp.clear();
-        for(std::map<std::string, std::uint16_t>::iterator it = _head.begin(); it != _head.end(); ++it){
+        for (std::map<std::string, std::uint16_t>::iterator it = _head.begin();
+             it != _head.end(); ++it) {
             strings_temp.push_back(formCsvElement(_data[i][it->second]));
         }
-        row = join(strings_temp, ","); 
+        row = join(strings_temp, ",");
         retval = fprintf(_file, "%s\n", row.c_str());
-        if(retval < 0){
+        if (retval < 0) {
             return false;
         }
-        
-   }
-    
+    }
+
     return true;
 }
 
@@ -436,4 +435,20 @@ std::vector<std::string> csv_t::getColumn(std::string head)
     iter(_data, i) { cols.push_back(_data[i][idx]); }
 
     return cols;
+}
+
+void csv_t::dropNullRow()
+{
+    std::vector<std::vector<std::string> > data = _data;
+    _data.clear();
+    iter(data, i)
+    {
+        if (data[i].size() == 1) {
+            if (data[i][0].length() != 0) {
+                _data.push_back(data[i]);
+            }
+        } else {
+            _data.push_back(data[i]);
+        }
+    }
 }

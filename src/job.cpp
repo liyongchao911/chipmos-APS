@@ -69,18 +69,18 @@ void lot_t::checkFormation()
     if (_recipe.length() == 0)
         data_members.push_back("recipe");
 
-    if(_qty <= 0){
+    if (_qty <= 0) {
         data_members.push_back("qty");
     }
 
     if (data_members.size()) {
-        error_msg = data_members.size() > 1 ? ", these"
+        error_msg = data_members.size() > 1 ? ", these information, "
                                             : ", this"
                                               " information, ";
         for (unsigned int i = 0; i < data_members.size(); ++i) {
-            error_msg += data_members[i];
+            error_msg += data_members[i] + " ";
         }
-        error_msg += data_members.size() > 1 ? ", are"
+        error_msg += data_members.size() > 1 ? ", are incorrect"
                                              : ", is"
                                                " incorrect";
 
@@ -116,7 +116,8 @@ std::vector<lot_t> lot_t::createSublots()
 
     return lots;
 }
-std::map<std::string, std::string> lot_t::data(){
+std::map<std::string, std::string> lot_t::data()
+{
     std::map<std::string, std::string> d;
     d["route"] = _route;
     d["lot_number"] = _lot_number;
@@ -140,13 +141,13 @@ std::map<std::string, std::string> lot_t::data(){
     d["queue_time"] = std::to_string(_queue_time);
     d["fcst_time"] = std::to_string(_fcst_time);
     // d["arrival_time"] = std::to_string(
-    d["log"] = join(_log, "||"); 
-    
+    d["log"] = join(_log, "||");
+
     std::vector<std::string> models;
-    for(std::map<std::string, double>::iterator it = _uphs.begin(); it != _uphs.end(); ++it){
+    for (std::map<std::string, double>::iterator it = _uphs.begin();
+         it != _uphs.end(); ++it) {
         models.push_back(it->first);
     }
     d["CAN_RUN_MODELS"] = join(models, ",");
     return d;
 }
-
