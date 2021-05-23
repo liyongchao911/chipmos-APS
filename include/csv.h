@@ -308,7 +308,7 @@ public:
 
 
     /**
-     * filter() - get a new csv_t object by specifing that column's == value
+     * filter() - get a new csv_t object by specifing that column's name == value
      */
     csv_t filter(std::string head, std::string value);
 

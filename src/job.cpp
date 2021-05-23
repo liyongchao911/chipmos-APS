@@ -27,32 +27,9 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _is_sub_lot = _lot_number.length() >= 8 ? true : false;
     _amount_of_tools = 0;
     _amount_of_wires = 0;
-
-    checkFormation();
 }
 
-// lot_t::lot_t(lot_t & lot){
-//     this->_route = lot._route;
-//     this->_lot_number = lot._lot_number;
-//     this->_pin_package = lot._pin_package;
-//     this->_recipe = lot._recipe;
-//     this->_prod_id = lot._prod_id;
-//     this->_process_id = lot._process_id;
-//     this->_qty = lot._qty;
-//     this->_oper = lot._oper;
-//     this->_lot_size = lot._lot_size;
-//     this->_hold = lot._hold;
-//     this->_mvin = lot._mvin;
-//     this->_queue_time = lot._queue_time;
-//     this->_fcst_time = lot._fcst_time;
-//     this->_outplan_time = lot._outplan_time;
-//     this->_finish_traversal = lot._finish_traversal;
-//     this->tmp_mvin = lot.tmp_mvin;
-//     this->tmp_oper = lot.tmp_oper;
-// }
-
-
-void lot_t::checkFormation()
+bool lot_t::checkFormation()
 {
     std::string error_msg;
     std::vector<std::string> data_members;
@@ -74,18 +51,19 @@ void lot_t::checkFormation()
     }
 
     if (data_members.size()) {
-        error_msg = data_members.size() > 1 ? ", these information, "
-                                            : ", this"
+        error_msg = data_members.size() > 1 ? "These information, "
+                                            : "This"
                                               " information, ";
         for (unsigned int i = 0; i < data_members.size(); ++i) {
-            error_msg += data_members[i] + " ";
+            error_msg += data_members[i] + " ,";
         }
-        error_msg += data_members.size() > 1 ? ", are incorrect"
-                                             : ", is"
-                                               " incorrect";
-
-        throw std::invalid_argument(error_msg);
+        error_msg += data_members.size() > 1 ? " are incorrect."
+                                             : " is"
+                                               " incorrect.";
+        addLog(error_msg);
+        return false;
     }
+    return true;
 }
 
 std::vector<lot_t> lot_t::createSublots()

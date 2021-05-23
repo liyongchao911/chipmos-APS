@@ -18,7 +18,7 @@
 
 using namespace std;
 
-void readWip(string filename, vector<lot_t> &lots, vector<string> &wip_report)
+void readWip(string filename, vector<lot_t> &lots, vector<lot_t> &faulty_lots)
 {
     // setup wip
     // Step 1 : read wip.csv
@@ -34,14 +34,12 @@ void readWip(string filename, vector<lot_t> &lots, vector<string> &wip_report)
                                         {"prod_id", "wlot_prod"}}));
     lot_t lot_tmp;
     for (unsigned int i = 0, size = wip.nrows(); i < size; ++i) {
-        try {
-            lot_tmp = lot_t(wip.getElements(i));
-        } catch (std::invalid_argument &e) {
-            wip_report.push_back("Lot Entry  " + to_string(i + 2) + " " +
-                                 e.what());
-            continue;
+        lot_tmp = lot_t(wip.getElements(i));
+        if (lot_tmp.checkFormation()) {
+            lots.push_back(lot_tmp);
+        } else {
+            faulty_lots.push_back(lot_tmp);
         }
-        lots.push_back(lot_tmp);
     }
 }
 
@@ -347,8 +345,7 @@ vector<lot_t> createLots(string wip_file_name,
     std::vector<lot_t> lots;
     vector<lot_t> dontcare;
 
-    readWip(wip_file_name, alllots, wip_report);
-    outputReport("read_wip_report.txt", wip_report);
+    readWip(wip_file_name, alllots, faulty_lots);
     wip_report.clear();
 
     setPidBomId(prod_pid_filename, alllots, faulty_lots, wip_report);
@@ -394,7 +391,14 @@ vector<lot_t> createLots(string wip_file_name,
     iter(lots, i) { lots_csv.addData(lots[i].data()); }
     lots_csv.write();
 
-    outputReport("wip-report.txt", wip_report);
+    // ouput wip
+    csv_t wip_csv("out.csv", "w");
+    iter(faulty_lots, i) { wip_csv.addData(faulty_lots[i].data()); }
+    iter(dontcare, i) { wip_csv.addData(dontcare[i].data()); }
+    iter(lots, i) { wip_csv.addData(lots[i].data()); }
+    wip_csv.write();
+
+    // outputReport("wip-report.txt", wip_report);
     return lots;
 }
 

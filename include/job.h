@@ -85,7 +85,7 @@ public:
      *
      * @exception : std::invalid_argumaent
      */
-    void checkFormation() noexcept(false);
+    bool checkFormation();
 
     /**
      * addLog () - add log for this lot
