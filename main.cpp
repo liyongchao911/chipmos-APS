@@ -24,10 +24,17 @@ using namespace std;
 
 int main(int argc, const char *argv[])
 {
-//    vector<lot_t> lots =
-//        createLots("WipOutPlanTime_.csv", "product_find_process_id.csv",
-//                   "process_find_lot_size_and_entity.csv", "fcst.csv",
-//                   "routelist.csv", "newqueue_time.csv");
+
+            vector<lot_t> lots =
+                createLots("WipOutPlanTime_.csv", "product_find_process_id.csv",
+                           "process_find_lot_size_and_entity.csv", "fcst.csv",
+                           "routelist.csv", "newqueue_time.csv");
+            csv_t out("out.csv", "w");
+            iter(lots, i){
+                out.addData(lots[i].data());
+            }
+            out.write();
+
     csv_t time("machine.csv","r",true,true);
     time.trim(" ");
     csv_t location("Location For WB.csv","r",true,true);
@@ -64,4 +71,5 @@ int main(int argc, const char *argv[])
     machines_t x("12/19/20 10:30");
     cout<<x.gettime();
    return 0;
+
 }
