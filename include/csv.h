@@ -37,9 +37,9 @@ protected:
      * In _hasBOM, the first 4 characters are cast to be unsigned int type
      * variable and check if the variable has BOM.
      *
-     * @var _text : first line in the file.
-     * @var bom : byte order mark number.
-     * @var bits : specify what kind of UTF
+     * @param _text : first line in the file.
+     * @param bom : byte order mark number.
+     * @param bits : specify what kind of UTF
      *
      * @warning :
      * 1. Make sure @b _text has at least 4 bytes. If @b _text doesn't, the
@@ -55,10 +55,33 @@ protected:
     std::string _filename;
     FILE *_file;
 
+    /**
+     * parseCsvRow () - parse a row in csv file
+     *
+     * This function is able to parse a row, which contains special characters,
+     * such as '"' and ',', in an element in row. The special character '"' in
+     * an element follows another '"', and the element is quoted. For example,
+     * the representation of an element with special character the sheet  is
+     * A"B. The representation in the csv file is "A""B". For another example,
+     * the representation of an element in the sheet is A,B. The representation
+     * in csv file is "A,B". parseCsvRow is able to parse these kind of elements
+     * to recover the original representation.
+     *
+     * @param text : pointer to character type of variable, which points on a
+     * row in csv file
+     * @param delimiter : delimiter in csv file
+     */
+    std::vector<std::string> parseCsvRow(char *text, char delimiter);
+
 public:
     csv_t();
 
     csv_t(csv_t &csv);
+
+    /**
+     * csv_t - Constructor of csv_t object for reading/writing file
+     */
+    csv_t(std::string filename, std::string mode);
 
     /**
      * csv_t - Constructor of csv_t object for reading file
@@ -73,7 +96,7 @@ public:
      * into memory.
      *
      * @var filename : the csv_t file name
-     * @var mode : the mode of opning the file
+     * @var mode : the mode of opening file
      * @var read : read data immediately or not
      * @var head : specify if data has header
      * @var r1 : range from r1 if specify
@@ -81,8 +104,8 @@ public:
      */
     csv_t(std::string filename,
           std::string mode,
-          bool read = true,
-          bool head = true,
+          bool read,
+          bool head,
           int r1 = -1,
           int r2 = -1);
 
@@ -146,7 +169,9 @@ public:
      *
      * This function hasn't been implemented. DO NOT USE IT.
      */
-    bool write(std::string filename, std::string mode, bool head);
+    bool write(std::string filename = "",
+               std::string mode = "",
+               bool head = "");
 
     /**
      * read() - input csv_t file
@@ -201,7 +226,7 @@ public:
     void close();
 
     /**
-     * size() - return number of rows
+     * nrows() - return number of rows
      *
      * @return number of rows
      */
@@ -278,6 +303,9 @@ public:
      * filter() - get a new csv_t object by specifing that column's == value
      */
     csv_t filter(std::string head, std::string value);
+
+    // HAVEN'T FINISHED. DO NOT USE!
+    void addData(std::map<std::string, std::string> elements);
 
     ~csv_t();
 };

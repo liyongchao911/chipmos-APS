@@ -9,6 +9,7 @@
 #include <string>
 
 #include <include/common.h>
+#include <include/condition_card.h>
 #include <include/csv.h>
 #include <include/da.h>
 #include <include/job.h>
@@ -275,6 +276,35 @@ vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
     return finished;
 }
 
+void setupCanRunModels(string card_official,
+                       string card_temp,
+                       vector<lot_t> &lots,
+                       vector<lot_t> &faulty_lots,
+                       vector<string> &wip_report)
+{
+    condition_cards_h cards(12, "UTC-1000", "UTC-1000S", "UTC-2000",
+                            "UTC-2000S", "UTC-3000", "UTC-5000S", "Maxum Base",
+                            "Maxum Plus", "Maxum Ultra", "Iconn", "Iconn Plus",
+                            "RAPID");
+    cards.addMapping("Maxum (Ultra)", 2, "Maxum", "Maxum-Ultra");
+
+    cards.readConditionCardsDir(card_official);
+    cards.readConditionCardsDir(card_temp);
+    vector<lot_t> result;
+    iter(lots, i)
+    {
+        try {
+            lots[i].setCanRunModels(
+                cards.getModels(lots[i].recipe(), lots[i].tmp_oper).models);
+            result.push_back(lots[i]);
+        } catch (out_of_range &e) {
+            lots[i].addLog("Lot has not match condition card");
+            faulty_lots.push_back(lots[i]);
+        }
+    }
+    lots = result;
+}
+
 void setPartId(string filename,
                vector<lot_t> &lots,
                vector<lot_t> &faulty_lots,
@@ -316,7 +346,11 @@ vector<lot_t> createLots(string wip_file_name,
     std::vector<lot_t> alllots;
     std::vector<lot_t> faulty_lots;
     std::vector<lot_t> lots;
+
     readWip(wip_file_name, alllots, wip_report);
+    outputReport("read_wip_report.txt", wip_report);
+    wip_report.clear();
+
     setPidBomId(prod_pid_filename, alllots, faulty_lots, wip_report);
     setLotSize(eim, alllots, faulty_lots, wip_report);
 
@@ -324,10 +358,10 @@ vector<lot_t> createLots(string wip_file_name,
 
 
 
-    if (alllots.size() == 0) {
-        outputReport("wip-report.txt", wip_report);
-        exit(-1);
-    }
+    // if (alllots.size() == 0) {
+    //     outputReport("wip-report.txt", wip_report);
+    //     exit(-1);
+    // }
 
     /*************************************************************************************/
 
@@ -348,8 +382,13 @@ vector<lot_t> createLots(string wip_file_name,
     vector<lot_t> dontcare;
     lots = queueTimeAndQueue(lots, dontcare, das, routes, wip_report);
 
+    setupCanRunModels("ConditionCard/CARD_OFFICAL", "ConditionCard/CARD_TEMP",
+                      lots, faulty_lots, wip_report);
+
+
     // TODO: output faulty lot
     // TODO: output dontcare lot
+
 
     outputReport("wip-report.txt", wip_report);
     return lots;

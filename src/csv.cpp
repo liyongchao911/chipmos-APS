@@ -19,6 +19,14 @@ csv_t::csv_t()
 {
     _file = NULL;
 }
+
+csv_t::csv_t(std::string filename, std::string mode)
+{
+    _filename = filename;
+    _mode = mode;
+    _file = NULL;
+}
+
 csv_t::csv_t(std::string filename,
              std::string mode,
              bool r,
@@ -33,6 +41,53 @@ csv_t::csv_t(std::string filename,
     if (r) {
         retval = read(filename, mode, head, r1, r2);
     }
+}
+
+std::vector<std::string> csv_t::parseCsvRow(char *text, char delimiter)
+{
+    char *iter = text, *prev = text;
+    std::vector<std::string> data;
+    while (*iter) {
+        if (*iter == delimiter ||
+            *iter == '\n') {  // for unix-like newline character
+            *iter = '\0';
+            data.push_back(prev);
+            prev = ++iter;
+        } else if (*iter == '\r' &&
+                   *(iter + 1) ==
+                       '\n') {  // for windows newline characters '\r\n'
+            *iter = '\0';
+            data.push_back(prev);
+            iter += 2;
+            prev = iter;
+        } else if (*(iter + 1) == '\0') {
+            data.push_back(prev);
+            ++iter;
+        } else if (*iter == '"') {
+            std::string temp = "";
+            ++iter;
+            // if iter is '"', program expect next character is '"'.
+            while ((*iter != '"') || (*iter == '"' && *(iter + 1) == '"')) {
+                if ((*iter == '"') && *(iter + 1) == '"') {
+                    temp += "\"";
+                    iter += 2;
+                } else {
+                    temp += *iter;
+                    ++iter;
+                }
+            }
+            data.push_back(temp);
+            if (*iter)
+                iter += 2;
+            else
+                break;
+            prev = iter;
+        } else {
+            ++iter;
+        }
+    }
+
+    return data;
 }
 
 void csv_t::trim(std::string text)
@@ -122,7 +177,7 @@ bool csv_t::read(std::string filename,
     }
 
 
-    text = split(line_ptr, ',');
+    text = parseCsvRow(line_ptr, ',');
     if (head) {
         for (int i = 0, size = text.size(); i < size; ++i) {
             if (text[i].compare("") != 0) {
@@ -138,7 +193,7 @@ bool csv_t::read(std::string filename,
 
     int i = 0;
     while (getline(&line_ptr, &size, _file) > 0) {
-        text = split(line_ptr, ',');
+        text = parseCsvRow(line_ptr, ',');
         ++i;
         _data.push_back(text);
     }
@@ -200,8 +255,52 @@ void csv_t::close()
     }
 }
 
+void csv_t::addData(std::map<std::string, std::string> elements)
+{
+    std::vector<std::string> data;
+    data.reserve(elements.size());
+    std::map<std::string, std::uint16_t> head;
+
+    // if _head is empty, set the header
+    int idx = 0;
+    if (_head.empty()) {
+        for (std::map<std::string, std::string>::iterator it = elements.begin();
+             it != elements.end(); ++it) {
+            head[it->first] = idx;
+            ++idx;
+        }
+        setHeaders(head);
+    }
+
+    for (std::map<std::string, std::string>::iterator it = elements.begin();
+         it != elements.end(); ++it) {
+        try {
+            idx = _head.at(it->first);
+        } catch (std::out_of_range &e) {
+            std::string err_msg = e.what();
+            err_msg += " There is no such head " + it->first +
+                       " in the exist dataframe";
+            throw std::out_of_range(err_msg);
+        }
+        data[idx] = it->second;
+    }
+}
+
 bool csv_t::write(std::string filename, std::string mode, bool head)
 {
+    if (_file) {
+        close();
+    }
+    _file = fopen(filename.c_str(), mode.c_str());
+    int retval = 0;
+    std::vector<std::string> strings_temp;
+    for (std::map<std::string, std::uint16_t>::iterator it = _head.begin();
+         it != _head.end(); it++) {
+        strings_temp.push_back(it->first);
+    }
+    std::string temp = join(strings_temp, ",");
+    fprintf(_file, "%s\n", temp.c_str());
+
     return true;
 }
 

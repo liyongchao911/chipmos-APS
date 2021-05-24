@@ -161,6 +161,8 @@ std::vector<lot_t> da_stations_t::getSubLot(std::vector<lot_t> lots)
         if (!lots[i].isSubLot()) {
             temp_lots = lots[i].createSublots();
             result += temp_lots;
+        } else {
+            result.push_back(lots[i]);
         }
     }
     return result;
