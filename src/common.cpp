@@ -60,14 +60,15 @@ time_t timeConverter(const char *text)
     time_t time;
 
     tm tm_;
-    int year, month, day, hour, minute, second;// 定义时间的各个int临时变量。
-        sscanf(text, "%d/%d/%d %d:%d", &month, &day, &year, &hour, &minute);// 将string存储的日期时间，转换为int临时变量。
-        tm_.tm_year = year+100;                 // 年，由于tm结构体存储的是从1900年开始的时间，所以tm_year为int临时变量减去1900。
-        tm_.tm_mon = month - 1;                    // 月，由于tm结构体的月份存储范围为0-11，所以tm_mon为int临时变量减去1。
-        tm_.tm_mday = day;                         // 日。
-        tm_.tm_hour = hour;                        // 时。
-        tm_.tm_min = minute;                       // 分。
-        tm_.tm_isdst = 0;                          // 非夏令时。
+    int year, month, day, hour, minute, second;
+        sscanf(text, "%d/%d/%d %d:%d", &month, &day, &year, &hour, &minute);
+        tm_.tm_year = year+100;                 // only last two digit ,so plus 100
+        tm_.tm_mon = month - 1;                    // monte:tm structure store 0-11 so minus one
+        tm_.tm_mday = day;                         // day
+        tm_.tm_hour = hour;                        // hour
+        tm_.tm_min = minute;                       // minute
+        tm_.tm_sec =0;                             //second
+        tm_.tm_isdst = 0;                          // whether summer time or not
         time = mktime(&tm_);
 
         //printf("1");

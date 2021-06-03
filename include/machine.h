@@ -6,7 +6,9 @@
 #include <map>
 #include <string>
 #include <vector>
- //recover_time=outplan-machine_t(char* time)
+
+ /*recover_time=outplan-machine_t(char* time)
+  */
 typedef struct {
     double recover_time;
     std::string entity_name;
@@ -52,14 +54,14 @@ public:
      *
      * add machines from @csv_t type dataframe.
      */
-    void addMachines(csv_t dataframe){};
+    void addMachines(csv_t dataframe,csv_t dataframe2);
 
     /**
      * randomlyGetEntities () - randomly get the entities by model and area
      */
     std::vector<entity_t> randomlyGetEntities(std::string model_name,
                                               std::string area,
-                                              int amount){};
+                                              int amount);
     void settime(double time){
         this->time=time;
     }

@@ -25,7 +25,7 @@ using namespace std;
 int main(int argc, const char *argv[])
 {
 
-            /*vector<lot_t> lots =
+            vector<lot_t> lots =
                 createLots("WipOutPlanTime_.csv", "product_find_process_id.csv",
                            "process_find_lot_size_and_entity.csv", "fcst.csv",
                            "routelist.csv", "newqueue_time.csv");
@@ -33,7 +33,7 @@ int main(int argc, const char *argv[])
             iter(lots, i){
                 out.addData(lots[i].data());
             }
-            out.write();*/
+            out.write();
     srand( time(0));
     csv_t time("machine.csv","r",true,true);
     time.trim(" ");
