@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+ /*recover_time=outplan-machine_t(char* time)
+  */
 typedef struct {
     double recover_time;
     std::string entity_name;
@@ -18,19 +20,25 @@ typedef struct {
 class machines_t
 {
 private:
-    // _entities[MODEL][AREA] is a vector of entity_t object.
+    std::map<std::string, std::string> _entity_location;
+
+    // _entities[MODEL][LOCATION] is a vector of entity_t object.
     std::map<std::string, std::map<std::string, std::vector<entity_t> > >
         _entities;
-    time_t time;
-
+    double time;
 public:
+
+
     /**
      * machines_t () - constructor of machines_t
      *
      * The constructor will convert @b _time to time_t type
      */
-    machines_t(char *_time);
+    machines_t(const char *_time);
 
+    void initializeEntityLocation(csv_t dataframe);
+
+    machines_t(){};
     /**
      * addMachine() - add new machine
      *
@@ -46,7 +54,7 @@ public:
      *
      * add machines from @csv_t type dataframe.
      */
-    void addMachines(csv_t dataframe);
+    void addMachines(csv_t dataframe,csv_t dataframe2);
 
     /**
      * randomlyGetEntities () - randomly get the entities by model and area
@@ -54,6 +62,12 @@ public:
     std::vector<entity_t> randomlyGetEntities(std::string model_name,
                                               std::string area,
                                               int amount);
+    void settime(double time){
+        this->time=time;
+    }
+    double gettime(){
+        return this->time;
+    }
 };
 
 #endif
