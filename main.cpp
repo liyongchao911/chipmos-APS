@@ -42,24 +42,23 @@ int main(int argc, const char *argv[])
     unsigned int locationrows=location.nrows();
 
     vector<string>Location=location.getColumn("Location");
-//    for(int i=0;i<Location.size();i++){
-//        cout<<Location[i]<<'\n';
-//    }
+    for(int i=0;i<Location.size();i++){
+        cout<<Location[i]<<'\n';
+    }
 
-    //csv_t entity;
-    //entity = time.filter("ENTITY", "BB211");
-
-    //cout<<entity;
     machines_t machines;
     unsigned int nrows = location.nrows();
-    map<string, string> _entity_location;
+    map<string, string> elements;
+    
+    //vector<string>store=time.getRow(1);
+    // elements["MODEL"]=store[2];
+    // elements["AREA"]=store[21];
+    // elements["ENTITY"]=store[0];
+    // //cout<<elements["ENTITY"];
+    // machines.addMachine(elements);
+    
 
-    /** MAP: _entity_location["ENTITY"]=Location*/
-    for(unsigned int i = 0; i < nrows; ++i){
-        _entity_location[location.getElement("ENTITY",i)]=location.getElement("Location",i);
 
-    }
-    machines.addMachine(_entity_location);
 
 //    cout<<machines.time;
     //cout<<machine

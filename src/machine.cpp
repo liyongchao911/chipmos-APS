@@ -9,16 +9,24 @@
 //}
 
 void machines_t::addMachine(std::map<std::string, std::string> elements){
+
+    
+    csv_t LFW("Location For WB.csv","r",true,true);
+    std::vector <std::string>Location=LFW.getColumn("Location");
+    std::vector <std::string>LFWEntity=LFW.getColumn("Entity");
+    for(int i=0;i<Location.size();i++){
+       _entity_location[LFWEntity.at(i)]=Location.at(i); 
+    }
+    if( _entity_location.empty() ) {
+        return;
+    }
     std::string location = _entity_location[elements["ENTITY"]];
-    _entities[elements["MODELS"]][location].push_back( entity_t{
+    _entities[elements["MODEL"]][location].push_back( entity_t{
             .recover_time = 0,
             .entity_name=elements["ENTITY"],
-            .model_name = elements["MODELS"],
-            .area=elements["AREA"]
-
-});
-
-
+            .model_name = elements["MODEL"],
+            .area=elements["AREA"]});
+    //std::cout<<_entities[elements["MODEL"]][location][0].area;
 }
 void machines_t::addMachines(csv_t LFW,csv_t WB){
     std::vector <std::string>Location=LFW.getColumn("Location");
@@ -26,8 +34,8 @@ void machines_t::addMachines(csv_t LFW,csv_t WB){
     std::vector<std::string>Area=WB.getColumn("AREA");
     std::vector<std::string>Model=WB.getColumn("MODEL");
     std::vector<std::string>WBEntity=WB.getColumn("ENTITY");
-     unsigned int WBrows =Model.size();
-    unsigned int LFWrows =Model.size();
+    unsigned int WBrows =Model.size();
+    unsigned int LFWrows =Location.size();
     for(int i=0;i<WBrows;i++){
         for(int j=0;j<LFWrows;j++){
             if(LFWEntity.at(j)==WBEntity.at(i)){
@@ -37,6 +45,7 @@ void machines_t::addMachines(csv_t LFW,csv_t WB){
                 .model_name = Model[i],
                 .area=Area[i]
                  });
+                 break;
             }
 
         }
