@@ -80,18 +80,7 @@ private:
 
 
 protected:
-    /**
-     * formated () - change the format of text
-     *
-     * formated are used to change the format of text to be in lowercase and
-     * replace the space with hyphen of the text.
-     *
-     * @return the formatted text
-     */
-    virtual std::string formated(std::string text);
-    virtual char *formated(char *);
-
-    /**
+        /**
      * addLog () - add log
      */
     virtual inline void addLog(std::string text) { _log.push_back(text); }
@@ -170,6 +159,8 @@ public:
      */
     void readConditionCards(std::string sub_dir_name, bool replace = false);
 
+    void readBdIdModelsMappingFile(std::string filename);
+
 
     /**
      * readConditionCard () - read a single condition card file
@@ -207,6 +198,23 @@ public:
     {
         return _models.at(recipe).at(oper);
     }
+
+    inline std::map<std::string, std::map<int, card_t> > getModels(){
+        return _models;
+    }
+
+    /**
+     * formated () - change the format of text
+     *
+     * formated are used to change the format of text to be in lowercase and
+     * replace the space with hyphen of the text.
+     *
+     * @return the formatted text
+     */
+    virtual std::string formated(std::string text);
+    virtual char *formated(char *);
+
+
 };
 
 #endif

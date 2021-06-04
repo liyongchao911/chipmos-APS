@@ -273,20 +273,16 @@ vector<lot_t> queueTimeAndQueue(vector<lot_t> lots,
     return finished;
 }
 
-void setupCanRunModels(string card_official,
-                       string card_temp,
+void setupCanRunModels(string bdidModelsMappingFile,
                        vector<lot_t> &lots,
-                       vector<lot_t> &faulty_lots,
-                       vector<string> &wip_report)
+                       vector<lot_t> &faulty_lots)
 {
     condition_cards_h cards(12, "UTC-1000", "UTC-1000S", "UTC-2000",
                             "UTC-2000S", "UTC-3000", "UTC-5000S", "Maxum Base",
                             "Maxum Plus", "Maxum Ultra", "Iconn", "Iconn Plus",
                             "RAPID");
     cards.addMapping("Maxum (Ultra)", 2, "Maxum", "Maxum-Ultra");
-
-    cards.readConditionCardsDir(card_official);
-    cards.readConditionCardsDir(card_temp);
+    cards.readBdIdModelsMappingFile(bdidModelsMappingFile);
     vector<lot_t> result;
     iter(lots, i)
     {
@@ -373,8 +369,8 @@ vector<lot_t> createLots(string wip_file_name,
     lots =
         queueTimeAndQueue(lots, faulty_lots, dontcare, das, routes, wip_report);
 
-    setupCanRunModels("ConditionCard/CARD_OFFICAL", "ConditionCard/CARD_TEMP",
-                      lots, faulty_lots, wip_report);
+    setupCanRunModels("wb_bdid_models.csv",
+                      lots, faulty_lots);
 
 
     // output faulty lots

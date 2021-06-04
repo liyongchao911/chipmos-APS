@@ -22,7 +22,6 @@ condition_cards_h::condition_cards_h(int n, ...)
         formated(ptr);
         // stringToLower(ptr);
         _model_set.insert(ptr);
-        printf("string : %s\n", ptr);
         free(ptr);
     }
     va_end(list);
@@ -145,7 +144,6 @@ card_t condition_cards_h::readConditionCard(string filename,
                                             string recipe,
                                             unsigned int oper)
 {
-    // csv_t card(filename, "r", true, false, 12, 14);
     csv_t card(filename, "r", true, false);
     vector<vector<string> > data = card.getData();
     int idx = -1;
@@ -188,7 +186,7 @@ card_t condition_cards_h::readConditionCard(string filename,
                 temp_model = strdup(temp.c_str());
                 stringToLower(temp_model);
                 // check _model_mapping
-                if (_model_mapping.count(temp_model) > 0) {
+                if (_model_mapping.count(temp_model) > 0 && result.at(i).length()) {
                     can_run_models += _model_mapping[temp_model];
                 } else {
                     formated(temp_model);
@@ -205,3 +203,22 @@ card_t condition_cards_h::readConditionCard(string filename,
 
     return card_t{.oper = oper, .recipe = recipe, .models = can_run_models};
 }
+
+void condition_cards_h::readBdIdModelsMappingFile(string filename){
+    csv_t bd_model(filename, "r", true, true);
+    bd_model.trim(" ");
+    // map<string, map<int, card_t > > models;
+    map<string, string> elements;
+    unsigned int nrows = bd_model.nrows(); 
+    unsigned int oper;
+    string bd_id;
+    for(unsigned int i = 0; i < nrows; ++i){
+        elements = bd_model.getElements(i);
+        oper = stoul(elements["oper"]); 
+        bd_id = elements["bd_id"];
+        if(_models[bd_id].count(oper) == 0){
+            _models[bd_id][oper] = card_t{ .oper = oper, .recipe = bd_id};
+        }
+        _models[bd_id][oper].models.push_back(formated(elements["model"])); 
+    }
+} 

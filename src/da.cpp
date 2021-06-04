@@ -23,8 +23,8 @@ int da_stations_t::setFcst(csv_t _fcst, bool strict)
             // overwrite
             fcst = std::stod(elements["da_out"]) * 1000;
 
-            if (fcst == 0)
-                continue;
+            // if (fcst == 0)
+            //     continue;
 
             act = std::stod(elements["da_act"]) * 1000;
             remain = fcst;  // FIXME : remain = fcst - act may less than 0
