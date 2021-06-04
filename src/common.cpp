@@ -1,6 +1,6 @@
 #include <include/common.h>
 
-using namespace std;
+
 std::vector<std::string> split(char *text, char delimiter)
 {
     char *iter = text, *prev = text;
@@ -55,27 +55,10 @@ void stringToUpper(char *text)
         *text ^= 0x20;
 }
 
-time_t timeConverter(const char *text)
+time_t timeConverter(char *text)
 {
     time_t time;
-
-    tm tm_;
-    int year, month, day, hour, minute, second;
-        sscanf(text, "%d/%d/%d %d:%d", &month, &day, &year, &hour, &minute);
-        tm_.tm_year = year+100;                 // only last two digit ,so plus 100
-        tm_.tm_mon = month - 1;                    // monte:tm structure store 0-11 so minus one
-        tm_.tm_mday = day;                         // day
-        tm_.tm_hour = hour;                        // hour
-        tm_.tm_min = minute;                       // minute
-        tm_.tm_sec =0;                             //second
-        tm_.tm_isdst = 0;                          // whether summer time or not
-        time = mktime(&tm_);
-
-        //printf("1");
-
     // TODO : convert text to time;
     //
-
     return time;
 }
-
