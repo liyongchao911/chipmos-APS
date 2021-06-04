@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(ChipmosWb LANGUAGES CUDA CXX)
+project(ChipmosWb LANGUAGES CXX)
 include_directories(${CMAKE_SOURCE_DIR})
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")
