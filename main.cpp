@@ -14,6 +14,7 @@
 #include <include/csv.h>
 #include <include/da.h>
 #include <include/job.h>
+#include <include/machine.h>
 #include <include/route.h>
 
 
@@ -27,5 +28,21 @@ int main(int argc, const char *argv[])
         createLots("WipOutPlanTime_.csv", "product_find_process_id.csv",
                    "process_find_lot_size_and_entity.csv", "fcst.csv",
                    "routelist.csv", "newqueue_time.csv");
+
+    csv_t machine_csv("machines.csv", "r", true, true);
+    machine_csv.trim(" ");
+    machine_csv.setHeaders(map<string, string>({{"entity", "ENTITY"},
+                                                {"model", "MODEL"},
+                                                {"recover_time", "OUTPLAN"}}));
+
+    csv_t location_csv("location.csv", "r", true, true);
+    location_csv.trim(" ");
+    location_csv.setHeaders(
+        map<string, string>({{"entity", "entity"}, {"location", "location"}}));
+
+
+    char *text = strdup("2020/12/19 10:50");
+    machines_t machines(text);
+    machines.addMachines(machine_csv, location_csv);
     return 0;
 }

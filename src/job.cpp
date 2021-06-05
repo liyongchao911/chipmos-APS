@@ -94,6 +94,7 @@ std::vector<lot_t> lot_t::createSublots()
 
     return lots;
 }
+
 std::map<std::string, std::string> lot_t::data()
 {
     std::map<std::string, std::string> d;

@@ -7,6 +7,10 @@
 #include <string>
 #include <vector>
 
+typedef struct job_t{
+
+}job_t;
+
 class lot_t
 {
 protected:
@@ -353,6 +357,8 @@ public:
     double queueTime();
 
     std::map<std::string, std::string> data();
+
+    void setUph(std::string name, double uph);
 };
 
 inline void lot_t::setBomId(std::string bom_id)
@@ -532,6 +538,9 @@ inline void lot_t::setCanRunModels(std::vector<std::string> models)
 {
     iter(models, i) { _uphs[models[i]] = 0; }
 }
-
+    
+inline void lot_t::setUph(std::string model, double uph){
+    _uphs.at(model) = uph;
+}
 
 #endif

@@ -11,7 +11,7 @@ typedef struct {
     double recover_time;
     std::string entity_name;
     std::string model_name;
-    std::string area;
+    std::string location;
 } entity_t;
 
 
@@ -21,6 +21,8 @@ private:
     // _entities[MODEL][AREA] is a vector of entity_t object.
     std::map<std::string, std::map<std::string, std::vector<entity_t> > >
         _entities;
+
+    std::vector<std::map<std::string, std::string> > faulty_machine;
     time_t time;
 
 public:
@@ -32,7 +34,7 @@ public:
     machines_t(char *_time);
 
     /**
-     * addMachine() - add new machine
+     * addMachine() - add a machine
      *
      * @b elements is a std::map container which store the relationship between
      * header and data. For example, elements[ENTITY] == "BB211",
@@ -46,7 +48,7 @@ public:
      *
      * add machines from @csv_t type dataframe.
      */
-    void addMachines(csv_t dataframe);
+    void addMachines(csv_t machines, csv_t location);
 
     /**
      * randomlyGetEntities () - randomly get the entities by model and area
