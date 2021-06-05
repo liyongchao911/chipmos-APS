@@ -303,6 +303,44 @@ void setPartId(string filename,
                vector<lot_t> &faulty_lots,
                vector<string> &wip_report)
 {
+    // filename = "BomList"
+    csv_t bomlist(filename, "r", true, true);
+    bomlist.trim(" ");
+    bomlist.setHeaders(map<string, string>(
+        {{"bom_id", "bom_id"}, {"oper", "oper"}, {"part_id", "part_id"}}));
+    map<string, string> bom_part;
+    for (unsigned int i = 0; i < bomlist.nrows(); ++i) {
+        map<string, string> tmp = bomlist.getElements(i);
+        if (tmp["oper"] == "2200" || tmp["oper"] == "3200" ||
+            tmp["oper"] == "3400" || tmp["oper"] == "3600") {
+            bom_part[tmp["bom_id"]] = tmp["part_id"];
+        }
+    }
+
+    vector<lot_t> result;
+
+    string err_msg;
+
+    iter(lots, i)
+    {
+        try {
+            string part_id = bom_part.at(lots[i].bomId());
+            lots[i].setPartId(part_id);
+        } catch (std::out_of_range &e) {
+            err_msg = "Lot Entry " + to_string(i + 2) + ": " +
+                      lots[i].lotNumber() +
+                      " has no mapping relationship between its bom id(" +
+                      lots[i].bomId() + ") and its part_id";
+            lots[i].addLog(err_msg);
+            faulty_lots.push_back(lots[i]);
+            wip_report.push_back(err_msg);
+            continue;
+        }
+
+        result.push_back(lots[i]);
+    }
+
+    lots = result;
 }
 
 void setAmountofWire(string filename,
@@ -310,6 +348,46 @@ void setAmountofWire(string filename,
                      vector<lot_t> &faulty_lots,
                      vector<string> &wip_report)
 {
+    // filename = "GW Inventory.csv"
+    csv_t gw(filename, "r", true, true);
+    gw.trim(" ");
+    gw.setHeaders(map<string, string>(
+        {{"gw_part_no", "gw_part_no"}, {"roll_length", "roll_length"}}));
+    map<string, int> part_roll;
+    for (unsigned int i = 0; i < gw.nrows(); ++i) {
+        map<string, string> tmp = gw.getElements(i);
+        if (part_roll.find(tmp["gw_part_no"]) == part_roll.end()) {
+            part_roll[tmp["gw_part_no"]] = 0;
+        }
+        if (stod(tmp["roll_length"]) >= 1000.0) {
+            part_roll[tmp["gw_part_no"]] = part_roll[tmp["gw_part_no"]] + 1;
+        }
+    }
+
+    vector<lot_t> result;
+
+    string err_msg;
+
+    iter(lots, i)
+    {
+        try {
+            int amountOfWires = part_roll.at(lots[i].part_id());
+            lots[i].setAmountOfWires(amountOfWires);
+        } catch (std::out_of_range &e) {
+            err_msg = "Lot Entry " + to_string(i + 2) + ": " +
+                      lots[i].lotNumber() +
+                      " has no mapping relationship between its part id(" +
+                      lots[i].part_id() + ") and its roll_length";
+            lots[i].addLog(err_msg);
+            faulty_lots.push_back(lots[i]);
+            wip_report.push_back(err_msg);
+            continue;
+        }
+
+        result.push_back(lots[i]);
+    }
+
+    lots = result;
 }
 
 void setPartNo(string filename,
@@ -317,13 +395,101 @@ void setPartNo(string filename,
                vector<lot_t> &faulty_lots,
                vector<string> &wip_report)
 {
+    // filename = "Process find heatblock.csv"
+    csv_t heatblock(filename, "r", true, true);
+    heatblock.trim(" ");
+    heatblock.setHeaders(map<string, string>(
+        {{"process_id", "process_id"}, {"remark", "remark"}}));
+    map<string, string> pid_remark;
+    for (unsigned int i = 0; i < heatblock.nrows(); ++i) {
+        map<string, string> tmp = heatblock.getElements(i);
+        // get substring of remark from first to "("
+        string str = tmp["remark"];
+        if (str[0] == 'A') {  // if remark == "Compression Mold" or "O/S
+                              // Xray檢驗___/20ea", then it shouldn't be used.
+            str = str.substr(0, str.find(" "));
+            if (str.find("(") != std::string::npos) {
+                str = str.substr(0, str.find("("));
+            }
+            pid_remark[tmp["process_id"]] = str;
+        }
+    }
+
+    vector<lot_t> result;
+
+    string err_msg;
+
+    iter(lots, i)
+    {
+        try {
+            string part_no = pid_remark.at(lots[i].processId());
+            lots[i].setPartNo(part_no);
+        } catch (std::out_of_range &e) {
+            err_msg = "Lot Entry " + to_string(i + 2) + ": " +
+                      lots[i].lotNumber() +
+                      " has no mapping relationship between its process id(" +
+                      lots[i].processId() + ") and its remark";
+            lots[i].addLog(err_msg);
+            faulty_lots.push_back(lots[i]);
+            wip_report.push_back(err_msg);
+            continue;
+        }
+
+        result.push_back(lots[i]);
+    }
+
+    lots = result;
 }
 
-void setAmountOfToos(string filename,
-                     vector<lot_t> &lots,
-                     vector<lot_t> &faulty_lots,
-                     vector<string> &wip_report)
+void setAmountOfTools(string filename,
+                      vector<lot_t> &lots,
+                      vector<lot_t> &faulty_lots,
+                      vector<string> &wip_report)
 {
+    // filename = "EMS Heatblock data.csv"
+    csv_t ems(filename, "r", true, true);
+    ems.trim(" ");
+    ems.setHeaders(map<string, string>(
+        {{"part_no", "part_no"}, {"qty1", "qty1"}, {"qty3", "qty3"}}));
+    map<string, int> pno_qty;
+    for (unsigned int i = 0; i < ems.nrows(); ++i) {
+        map<string, string> tmp = ems.getElements(i);
+        if (stoi(tmp["qty1"]) <= stoi(tmp["qty3"])) {
+            pno_qty[tmp["part_no"]] = stoi(tmp["qty1"]);
+        } else {
+            pno_qty[tmp["part_no"]] = stoi(tmp["qty3"]);
+        }
+    }
+
+    vector<lot_t> result;
+
+    string err_msg;
+
+    iter(lots, i)
+    {
+        try {
+            int amountOfTool = pno_qty.at(lots[i].part_no());
+            lots[i].setAmountOfTools(amountOfTool);
+        } catch (std::out_of_range &e) {
+            // if part_no has no mapping qty1 and qty3, its number of tool
+            // should be 0, and should be recorded which one it is.
+            lots[i].setAmountOfTools(0);
+            result.push_back(lots[i]);
+
+            err_msg = "Lot Entry " + to_string(i + 2) + ": " +
+                      lots[i].lotNumber() +
+                      " has no mapping relationship between its part_no(" +
+                      lots[i].part_no() + ") and its qty1 and qty3";
+            lots[i].addLog(err_msg);
+            faulty_lots.push_back(lots[i]);
+            wip_report.push_back(err_msg);
+            continue;
+        }
+
+        result.push_back(lots[i]);
+    }
+
+    lots = result;
 }
 
 vector<lot_t> createLots(string wip_file_name,
@@ -331,7 +497,11 @@ vector<lot_t> createLots(string wip_file_name,
                          string eim,
                          string fcst_filename,
                          string routelist_filename,
-                         string queue_time_filename)
+                         string queue_time_filename,
+                         string bomlist_filename,
+                         string heatblock_filename,
+                         string ems_filename,
+                         string gw_filename)
 {
     vector<string> wip_report;
     string err_msg;
@@ -364,6 +534,12 @@ vector<lot_t> createLots(string wip_file_name,
     // filter, check if lot is in scheduling plan
     lots = wb_7_filter(alllots, dontcare, routes);
 
+    // setPartId
+    setPartId(bomlist_filename, lots, faulty_lots, wip_report);
+    setAmountofWire(gw_filename, lots, faulty_lots, wip_report);
+    // setPartNo
+    setPartNo(heatblock_filename, lots, faulty_lots, wip_report);
+    setAmountOfTools(ems_filename, lots, faulty_lots, wip_report);
 
     // route traversal and sum the queue time
     lots =

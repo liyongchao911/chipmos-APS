@@ -3,7 +3,7 @@
 
 using namespace std;
 
-machines_t::machines_t(char *_time){
+machines_t::machines_t(const char *_time){
     time = timeConverter(_time);
 }
 

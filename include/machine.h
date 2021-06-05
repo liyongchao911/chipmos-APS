@@ -18,6 +18,8 @@ typedef struct {
 class machines_t
 {
 private:
+    std::map<std::string, std::string> _entity_location;
+
     // _entities[MODEL][AREA] is a vector of entity_t object.
     std::map<std::string, std::map<std::string, std::vector<entity_t> > >
         _entities;
@@ -31,7 +33,7 @@ public:
      *
      * The constructor will convert @b _time to time_t type
      */
-    machines_t(char *_time);
+    machines_t(const char *_time);
 
     /**
      * addMachine() - add a machine
@@ -48,7 +50,7 @@ public:
      *
      * add machines from @csv_t type dataframe.
      */
-    void addMachines(csv_t machines, csv_t location);
+    void addMachines(csv_t machines_csv, csv_t location_csv);
 
     /**
      * randomlyGetEntities () - randomly get the entities by model and area

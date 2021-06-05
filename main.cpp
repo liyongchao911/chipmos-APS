@@ -27,7 +27,12 @@ int main(int argc, const char *argv[])
     vector<lot_t> lots =
         createLots("WipOutPlanTime_.csv", "product_find_process_id.csv",
                    "process_find_lot_size_and_entity.csv", "fcst.csv",
-                   "routelist.csv", "newqueue_time.csv");
+                   "routelist.csv", "newqueue_time.csv",
+                   "BOM List_20210521.csv", "Process find heatblock.csv",
+                   "EMS Heatblock data.csv", "GW Inventory.csv");
+    csv_t out("out.csv", "w");
+    iter(lots, i) { out.addData(lots[i].data()); }
+    out.write();
 
     csv_t machine_csv("machines.csv", "r", true, true);
     machine_csv.trim(" ");
