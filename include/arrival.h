@@ -41,7 +41,11 @@ std::vector<lot_t> createLots(std::string wip_file_name,
                               std::string eim,
                               std::string fcst_filename,
                               std::string routelist_filename,
-                              std::string queue_time_filename);
+                              std::string queue_time_filename,
+                              std::string bomlist_filename,
+                              std::string heatblock_filename,
+                              std::string ems_filename,
+                              std::string gw_filename);
 
 
 void outputReport(std::string filename, std::vector<std::string> report);

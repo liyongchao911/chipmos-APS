@@ -159,7 +159,7 @@ public:
      *
      * @param partid : a std::string type of variable.
      */
-    void setPardId(std::string partid);
+    void setPartId(std::string partid);
 
     /**
      * setPartNo () - setup part_no
@@ -494,7 +494,7 @@ inline std::string lot_t::info()
 }
 
 
-inline void lot_t::setPardId(std::string partid)
+inline void lot_t::setPartId(std::string partid)
 {
     _part_id = partid;
 }
