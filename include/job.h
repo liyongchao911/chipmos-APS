@@ -1,7 +1,7 @@
 #ifndef __JOB_H__
 #define __JOB_H__
 
-#include <include/common.h>
+#include <include/infra.h>
 #include <map>
 #include <stdexcept>
 #include <string>

@@ -1,7 +1,7 @@
 #ifndef __CONDITION_CARD_H__
 #define __CONDITION_CARD_H__
 
-#include <include/common.h>
+#include <include/infra.h>
 #include <include/csv.h>
 #include <stdarg.h>
 #include <map>

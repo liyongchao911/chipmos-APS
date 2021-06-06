@@ -1,7 +1,7 @@
 #ifndef __DA_H__
 #define __DA_H__
 
-#include <include/common.h>
+#include <include/infra.h>
 #include <include/csv.h>
 #include <include/job.h>
 #include <vector>

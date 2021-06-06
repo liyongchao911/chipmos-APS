@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <include/common.h>
+#include <include/infra.h>
 #include <include/condition_card.h>
 #include <include/csv.h>
 #include <include/da.h>
