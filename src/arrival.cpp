@@ -315,8 +315,10 @@ void setPartId(string filename,
     map<string, string> bom_part;
     for (unsigned int i = 0; i < bomlist.nrows(); ++i) {
         map<string, string> tmp = bomlist.getElements(i);
-        if (tmp["oper"] == "2200" || tmp["oper"] == "3200" ||
-            tmp["oper"] == "3400" || tmp["oper"] == "3600") {
+        // if "oper" is WB, then get its part_id.
+        std::set<int> opers = {WB1, WB2, WB3, WB4};
+        int oper_int = stoi(tmp["oper"]);
+        if (opers.count(oper_int) != 0) {
             bom_part[tmp["bom_id"]] = tmp["part_id"];
         }
     }
@@ -458,10 +460,12 @@ void setAmountOfTools(string filename,
     map<string, int> pno_qty;
     for (unsigned int i = 0; i < ems.nrows(); ++i) {
         map<string, string> tmp = ems.getElements(i);
-        if (stoi(tmp["qty1"]) <= stoi(tmp["qty3"])) {
-            pno_qty[tmp["part_no"]] = stoi(tmp["qty1"]);
+        int qty1_int = stoi(tmp["qty1"]);
+        int qty3_int = stoi(tmp["qty3"]);
+        if (qty1_int <= qty3_int) {
+            pno_qty[tmp["part_no"]] = qty1_int;
         } else {
-            pno_qty[tmp["part_no"]] = stoi(tmp["qty3"]);
+            pno_qty[tmp["part_no"]] = qty3_int;
         }
     }
 
