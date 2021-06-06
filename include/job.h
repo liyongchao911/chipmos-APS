@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <include/csv.h>
 
 typedef struct job_t{
 
@@ -43,6 +44,7 @@ protected:
     std::vector<std::string> _log;
 
     std::map<std::string, double> _uphs;
+    std::map<std::string, double> _process_times;
 
 public:
     int tmp_oper;
@@ -359,6 +361,8 @@ public:
     std::map<std::string, std::string> data();
 
     void setUph(std::string name, double uph);
+
+    bool setUph(csv_t uph);
 };
 
 inline void lot_t::setBomId(std::string bom_id)
@@ -541,6 +545,7 @@ inline void lot_t::setCanRunModels(std::vector<std::string> models)
     
 inline void lot_t::setUph(std::string model, double uph){
     _uphs.at(model) = uph;
+    _process_times[model] = (_qty / uph) * 60;
 }
 
 #endif

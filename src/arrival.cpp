@@ -1,6 +1,7 @@
 #include <include/arrival.h>
 #include <ctime>
 #include <exception>
+#include <ios>
 #include <iostream>
 #include <iterator>
 #include <map>
@@ -14,7 +15,6 @@
 #include <include/da.h>
 #include <include/job.h>
 #include <include/route.h>
-
 
 using namespace std;
 
@@ -277,8 +277,8 @@ void setupCanRunModels(string bdidModelsMappingFile,
                        vector<lot_t> &lots,
                        vector<lot_t> &faulty_lots)
 {
-    condition_cards_h cards(12, "UTC-1000", "UTC-1000S", "UTC-2000",
-                            "UTC-2000S", "UTC-3000", "UTC-5000S", "Maxum Base",
+    condition_cards_h cards(12, "UTC1000", "UTC1000S", "UTC2000",
+                            "UTC2000S", "UTC3000", "UTC5000S", "Maxum Base",
                             "Maxum Plus", "Maxum Ultra", "Iconn", "Iconn Plus",
                             "RAPID");
     cards.addMapping("Maxum (Ultra)", 2, "Maxum", "Maxum-Ultra");
@@ -496,6 +496,28 @@ void setAmountOfTools(string filename,
     lots = result;
 }
 
+void setupUph(string uph_file_name, vector<lot_t> & lots, vector<lot_t> & faulty_lots){
+    csv_t uph_csv(uph_file_name, "r", true, true);
+    uph_csv.trim(" ");
+    uph_csv.setHeaders(map<string, string>({
+                    {"oper", "OPER"},
+                    {"recipe", "B/D#"},
+                    {"model", "MODEL"},
+                    {"uph", "G.UPH"}
+                }));
+    bool retval = 0;
+    vector<lot_t> result;
+    iter(lots, i){
+        retval = lots[i].setUph(uph_csv); 
+        if(!retval) {
+            faulty_lots.push_back(lots[i]); 
+        }else{
+            result.push_back(lots[i]);
+        }
+    }
+    lots = result;
+}
+
 vector<lot_t> createLots(string wip_file_name,
                          string prod_pid_filename,
                          string eim,
@@ -538,6 +560,12 @@ vector<lot_t> createLots(string wip_file_name,
     // filter, check if lot is in scheduling plan
     lots = wb_7_filter(alllots, dontcare, routes);
 
+    // route traversal and sum the queue time
+    lots =
+        queueTimeAndQueue(lots, faulty_lots, dontcare, das, routes, wip_report);
+
+
+
     // setPartId
     setPartId(bomlist_filename, lots, faulty_lots, wip_report);
     setAmountofWire(gw_filename, lots, faulty_lots, wip_report);
@@ -545,12 +573,11 @@ vector<lot_t> createLots(string wip_file_name,
     setPartNo(heatblock_filename, lots, faulty_lots, wip_report);
     setAmountOfTools(ems_filename, lots, faulty_lots, wip_report);
 
-    // route traversal and sum the queue time
-    lots =
-        queueTimeAndQueue(lots, faulty_lots, dontcare, das, routes, wip_report);
-
     setupCanRunModels("wb_bdid_models.csv",
                       lots, faulty_lots);
+    
+    
+    setupUph("uph.csv", lots, faulty_lots);
 
 
     // output faulty lots

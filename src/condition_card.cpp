@@ -33,7 +33,9 @@ std::string condition_cards_h::formated(std::string _text)
     for (unsigned int i = 0; i < _text.length(); ++i) {
         if (_text[i] == ' ')
             _text[i] = '-';
-        _text[i] |= 0x20;
+        else if(_text[i] & 0x40){
+            _text[i] &= 0xDF;
+        }
     }
     return _text;
 }
@@ -44,7 +46,9 @@ char *condition_cards_h::formated(char *text)
     for (; *ptr; ++ptr) {
         if (*ptr == ' ')
             *ptr = '-';
-        *ptr |= 0x20;
+        else if(*ptr & 0x40){
+            *ptr &= 0xDF;
+        }
     }
     return text;
 }

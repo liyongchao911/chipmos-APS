@@ -130,3 +130,29 @@ std::map<std::string, std::string> lot_t::data()
     d["CAN_RUN_MODELS"] = join(models, ",");
     return d;
 }
+
+bool lot_t::setUph(csv_t _uph_csv){
+    _uph_csv = _uph_csv.filter("recipe", _recipe);
+    _uph_csv = _uph_csv.filter("oper", std::to_string(this->tmp_oper));
+    double retval = true;
+    if(_uph_csv.nrows() == 0){
+        return false;
+    } else {
+        int nrows = _uph_csv.nrows();
+        for(int i = 0; i < nrows; ++i){
+            std::map<std::string, std::string> elements = _uph_csv.getElements(i);
+            if(_uphs.count(elements["model"]) != 0){
+                setUph(elements["model"], std::stof(elements["uph"]));
+            }
+        }
+    }
+
+    for(std::map<std::string, double>::iterator it = _uphs.begin(); it != _uphs.end(); it++){
+        if(it->second == 0){
+            addLog("The uph of model " + it->first + " is 0"); 
+            retval = false;
+        } 
+    }
+
+    return retval;
+}
