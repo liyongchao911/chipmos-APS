@@ -1,8 +1,10 @@
 #include <include/arrival.h>
+#include <cstdlib>
 #include <ctime>
 #include <exception>
 #include <ios>
 #include <iostream>
+#include <assert.h>
 #include <iterator>
 #include <map>
 #include <set>
@@ -13,7 +15,6 @@
 #include <include/condition_card.h>
 #include <include/csv.h>
 #include <include/da.h>
-#include <include/job.h>
 #include <include/route.h>
 
 using namespace std;
@@ -358,11 +359,11 @@ void setAmountofWire(string filename,
     map<string, int> part_roll;
     for (unsigned int i = 0; i < gw.nrows(); ++i) {
         map<string, string> tmp = gw.getElements(i);
-        if (part_roll.find(tmp["gw_part_no"]) == part_roll.end()) {
+        if (part_roll.count(tmp["gw_part_no"]) == 0) {
             part_roll[tmp["gw_part_no"]] = 0;
         }
         if (stod(tmp["roll_length"]) >= 1000.0) {
-            part_roll[tmp["gw_part_no"]] = part_roll[tmp["gw_part_no"]] + 1;
+            part_roll[tmp["gw_part_no"]] += 1;
         }
     }
 
@@ -374,7 +375,13 @@ void setAmountofWire(string filename,
     {
         try {
             int amountOfWires = part_roll.at(lots[i].part_id());
-            lots[i].setAmountOfWires(amountOfWires);
+            if(amountOfWires > 0){
+                lots[i].setAmountOfWires(amountOfWires);
+                result.push_back(lots[i]);
+            }else{
+                lots[i].addLog("There is no wire.");
+                faulty_lots.push_back(lots[i]);
+            }
         } catch (std::out_of_range &e) {
             err_msg = "Lot Entry " + to_string(i + 2) + ": " +
                       lots[i].lotNumber() +
@@ -383,10 +390,8 @@ void setAmountofWire(string filename,
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
             wip_report.push_back(err_msg);
-            continue;
         }
 
-        result.push_back(lots[i]);
     }
 
     lots = result;
@@ -468,17 +473,23 @@ void setAmountOfTools(string filename,
     vector<lot_t> result;
 
     string err_msg;
-
+    
+    int amountOfTool;
     iter(lots, i)
     {
         try {
-            int amountOfTool = pno_qty.at(lots[i].part_no());
-            lots[i].setAmountOfTools(amountOfTool);
+            amountOfTool = pno_qty.at(lots[i].part_no());
+
+            if(amountOfTool > 0){
+                lots[i].setAmountOfTools(amountOfTool);
+                result.push_back(lots[i]);
+            }else{
+                lots[i].addLog("There is no tool for this lot.");
+                faulty_lots.push_back(lots[i]);
+            }
         } catch (std::out_of_range &e) {
             // if part_no has no mapping qty1 and qty3, its number of tool
             // should be 0, and should be recorded which one it is.
-            lots[i].setAmountOfTools(0);
-            result.push_back(lots[i]);
 
             err_msg = "Lot Entry " + to_string(i + 2) + ": " +
                       lots[i].lotNumber() +
@@ -487,13 +498,12 @@ void setAmountOfTools(string filename,
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
             wip_report.push_back(err_msg);
-            continue;
         }
 
-        result.push_back(lots[i]);
     }
 
     lots = result;
+    return;
 }
 
 void setupUph(string uph_file_name, vector<lot_t> & lots, vector<lot_t> & faulty_lots){

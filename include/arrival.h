@@ -1,7 +1,7 @@
 #ifndef __ARRIVAL_H__
 #define __ARRIVAL_H__
 
-#include <include/job.h>
+#include <include/lot.h>
 #include <string>
 #include <vector>
 /**

@@ -13,7 +13,7 @@
 #include <include/condition_card.h>
 #include <include/csv.h>
 #include <include/da.h>
-#include <include/job.h>
+#include <include/lot.h>
 #include <include/machine.h>
 #include <include/route.h>
 
@@ -24,15 +24,16 @@ using namespace std;
 
 int main(int argc, const char *argv[])
 {
-    vector<lot_t> lots =
-        createLots("WipOutPlanTime_.csv", "product_find_process_id.csv",
+    lots_t lots;
+    lots.addLots(createLots("WipOutPlanTime_.csv", "product_find_process_id.csv",
                    "process_find_lot_size_and_entity.csv", "fcst.csv",
                    "routelist.csv", "newqueue_time.csv",
                    "BOM List_20210521.csv", "Process find heatblock.csv",
-                   "EMS Heatblock data.csv", "GW Inventory.csv");
-    csv_t out("out.csv", "w");
-    iter(lots, i) { out.addData(lots[i].data()); }
-    out.write();
+                   "EMS Heatblock data.csv", "GW Inventory.csv"));
+    
+    // csv_t out("out.csv", "w");
+    // iter(lots, i) { out.addData(lots[i].data()); }
+    // out.write();
 
     csv_t machine_csv("machines.csv", "r", true, true);
     machine_csv.trim(" ");
@@ -40,14 +41,18 @@ int main(int argc, const char *argv[])
                                                 {"model", "MODEL"},
                                                 {"recover_time", "OUTPLAN"}}));
 
-    csv_t location_csv("location.csv", "r", true, true);
+    csv_t location_csv("locations.csv", "r", true, true);
     location_csv.trim(" ");
     location_csv.setHeaders(
-        map<string, string>({{"entity", "entity"}, {"location", "location"}}));
+        map<string, string>({{"entity", "Entity"}, {"location", "Location"}}));
 
 
     char *text = strdup("2020/12/19 10:50");
     machines_t machines(text);
     machines.addMachines(machine_csv, location_csv);
+    
+    lots.round(machines);
+     
+
     return 0;
 }

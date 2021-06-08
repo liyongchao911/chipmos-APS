@@ -9,23 +9,32 @@
 
 typedef struct {
     double recover_time;
+    double outplan_time;
     std::string entity_name;
     std::string model_name;
     std::string location;
+    bool hold;
 } entity_t;
-
 
 class machines_t
 {
 private:
-    std::map<std::string, std::string> _entity_location;
 
+    std::vector<entity_t *> ents;
+    
     // _entities[MODEL][AREA] is a vector of entity_t object.
-    std::map<std::string, std::map<std::string, std::vector<entity_t> > >
+    std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
         _entities;
 
+    std::map<std::string, std::vector<std::string> > model_locations;
+
+    std::map<std::string, std::vector<entity_t *> > loc_ents;
+
     std::vector<std::map<std::string, std::string> > faulty_machine;
+
+
     time_t time;
+    time_t min_outplan_time;
 
 public:
     /**
@@ -33,8 +42,8 @@ public:
      *
      * The constructor will convert @b _time to time_t type
      */
-    machines_t(const char *_time);
-
+    machines_t(std::string _time);
+    
     /**
      * addMachine() - add a machine
      *
@@ -52,12 +61,27 @@ public:
      */
     void addMachines(csv_t machines_csv, csv_t location_csv);
 
+    // /**
+    //  * randomlyGetEntities () - randomly get the entities by model and area
+    //  */
+    // std::vector<entity_t> randomlyGetEntities(std::string model_name,
+    //                                           std::string area,
+    //                                           int amount);
+    
     /**
-     * randomlyGetEntities () - randomly get the entities by model and area
+     * randomlyGetEntitiesByLocations
      */
-    std::vector<entity_t> randomlyGetEntities(std::string model_name,
-                                              std::string area,
-                                              int amount);
+    std::vector<entity_t *> randomlyGetEntitiesByLocations(std::map<std::string, int> statistic, int amount);
+
+    void setTime(std::string text);
+    
+    std::map<std::string, std::map<std::string, std::vector<entity_t *> > > getEntities();
+
+    std::map<std::string, std::vector<entity_t *> > getLocEntity();
+
+    std::map<std::string, std::vector<std::string> > getModelLocation();
+
+    void reset();
 };
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#ifndef __INFRA_H__
+#define __INFRA_H__
 
 #include <cstdio>
 #include <ctime>

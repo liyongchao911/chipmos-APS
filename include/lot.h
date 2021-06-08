@@ -1,5 +1,5 @@
-#ifndef __JOB_H__
-#define __JOB_H__
+#ifndef __LOT_H__
+#define __LOT_H__
 
 #include <include/infra.h>
 #include <map>
@@ -7,10 +7,8 @@
 #include <string>
 #include <vector>
 #include <include/csv.h>
-
-typedef struct job_t{
-
-}job_t;
+#include <algorithm>
+#include <include/machine.h>
 
 class lot_t
 {
@@ -42,9 +40,12 @@ protected:
     bool _finish_traversal;
 
     std::vector<std::string> _log;
+    std::vector<std::string> _can_run_models;
+    std::vector<std::string> _can_run_locations;
 
     std::map<std::string, double> _uphs;
     std::map<std::string, double> _process_times;
+
 
 public:
     int tmp_oper;
@@ -202,11 +203,18 @@ public:
      */
     void setCanRunModels(std::vector<std::string> models);
 
-    /**
-     * getAmountOfMachines () - get the amount of machines which can process
-     * this lot
-     */
-    int getAmountOfMachines();
+    
+    int getAmountOfTools();
+    
+    int getAmountOfWires();
+
+    std::vector<std::string> getCanRunModels();
+
+    // /**
+    //  * getAmountOfMachines () - get the amount of machines which can process
+    //  * this lot
+    //  */
+    // int getAmountOfMachines();
 
     /**
      * oper () - current oper of this lot
@@ -316,6 +324,13 @@ public:
      * @return std::string type data
      */
     std::string bomId();
+    
+    /**
+     * pin_package () - get the pin_package of the lot
+     *
+     * pin_package, an information of lot, is used to 
+     */
+    std::string pin_package();
 
     /**
      * info () - get the infomation of the lot
@@ -363,7 +378,17 @@ public:
     void setUph(std::string name, double uph);
 
     bool setUph(csv_t uph);
+
+    void setCanRunLocation(std::map<std::string, std::vector<std::string> > model_locations);
+
+    std::vector<std::string> can_run_locations();
+
+    bool isEntityCanRun(std::string model, std::string location);
 };
+
+inline std::vector<std::string> lot_t::can_run_locations(){
+    return _can_run_locations;
+}
 
 inline void lot_t::setBomId(std::string bom_id)
 {
@@ -385,9 +410,16 @@ inline int lot_t::oper()
     return _oper;
 }
 
-inline int lot_t::getAmountOfMachines()
-{
-    return std::min(_amount_of_tools, _amount_of_wires);
+// inline int lot_t::getAmountOfMachines()
+// {
+//     return std::min(_amount_of_tools, _amount_of_wires);
+// }
+inline int lot_t::getAmountOfTools(){
+    return _amount_of_tools;
+}
+
+inline int lot_t::getAmountOfWires(){
+    return _amount_of_wires;
 }
 
 inline std::string lot_t::route()
@@ -536,16 +568,69 @@ inline void lot_t::setAmountOfWires(int amount)
 inline void lot_t::setCanRunModel(std::string model)
 {
     _uphs[model] = 0;
+    _process_times[model] = 0;
+    if(find(_can_run_models.begin(), _can_run_models.end(), model) != _can_run_models.end())
+        _can_run_models.push_back(model);
 }
 
 inline void lot_t::setCanRunModels(std::vector<std::string> models)
 {
-    iter(models, i) { _uphs[models[i]] = 0; }
+    iter(models, i) { 
+        _uphs[models[i]] = 0; 
+        _process_times[models[i]] = 0;
+    }
+    _can_run_models = models;
 }
     
 inline void lot_t::setUph(std::string model, double uph){
     _uphs.at(model) = uph;
     _process_times[model] = (_qty / uph) * 60;
 }
+
+inline std::vector<std::string> lot_t::getCanRunModels(){
+    return _can_run_models;
+}
+
+inline std::string lot_t::pin_package(){
+    return _pin_package;
+}
+
+typedef struct{
+    std::string wire_tools_name;
+    std::string wire_name;
+    std::string tool_name;
+    unsigned long lot_amount;
+    int tool_amount;
+    int wire_amount;
+    int machine_amount;
+    std::map<std::string, int> models_statistic;
+    std::vector<entity_t *> entities;
+    std::vector<lot_t *> lots;
+} lot_group_t;
+
+bool lot_group_comparision(lot_group_t g1, lot_group_t g2);
+
+
+class lots_t{
+protected:
+    std::vector<lot_t> lots;
+    std::map<std::string, std::vector<lot_t*> > wire_lots;
+    std::map<std::string, std::vector<lot_t*> > tool_lots;
+    std::map<std::string, std::vector<lot_t*> > tool_wire_lots;
+    std::map<std::string, int> amount_of_wires;
+    std::map<std::string, int> amount_of_tools;
+
+    std::map<std::string, int> sta_models(std::map<std::string, std::map<std::string, std::vector<entity_t *> > > ents); //location -> amount
+    std::map<std::string, int> sta_models(std::map<std::string, std::vector<entity_t *> > loc_ents);
+public:
+    void addLots(std::vector<lot_t> lots);
+
+    // void round(std::map<std::string, std::map<std::string, int> > machine_numbers, std::vector<lot_t> & result);
+    // void round(std::map<std::string, std::map<std::string, std::vector<entity_t *> > > entities,std::map<std::string, std::vector<entity_t *> > loc_ents);
+    std::vector<lot_group_t> round(machines_t machines);
+
+};
+
+
 
 #endif

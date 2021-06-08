@@ -8,7 +8,7 @@
 
 
 #include <include/csv.h>
-#include <include/job.h>
+#include <include/lot.h>
 
 #define WB1 2200
 #define WB2 3200

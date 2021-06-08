@@ -1,26 +1,62 @@
 #include <include/machine.h>
+#include <algorithm>
+#include <iterator>
 #include <stdexcept>
+#include <limits.h>
 
 using namespace std;
 
-machines_t::machines_t(const char *_time){
-    time = timeConverter(_time);
+machines_t::machines_t(string _time){
+    time = 0;
+    min_outplan_time = LONG_LONG_MAX;
+    setTime(_time); 
 }
+
+void machines_t::setTime(string _time){
+    if(_time.length()){
+        time = timeConverter(_time);
+    }
+}
+
 
 void machines_t::addMachine(map<string, string> elements){
     if(elements["recover_time"].length() == 0){
         throw std::invalid_argument("recover time is empty");
     }
     double recover_time = timeConverter(elements["recover_time"]);
+
     
-    recover_time -= time;
-     
-    _entities[elements["model"]][elements["location"]].push_back(entity_t{
-                .recover_time = recover_time,
-                .entity_name = elements["entity"],
-                .model_name = elements["model"],
-                .location = elements["location"]
-            });
+    entity_t * ent = new entity_t();
+    string model, location;
+    model = elements["model"];
+    location = elements["location"];
+    if(ent){
+        *ent = entity_t{
+            .recover_time = recover_time,
+            .outplan_time = recover_time,
+            .entity_name = elements["entity"],
+            .model_name = model,
+            .location = location,
+            .hold = false
+        };
+        if(ent->recover_time < min_outplan_time)
+            min_outplan_time = ent->recover_time;
+
+        ents.push_back(ent);
+        
+        _entities[model][location].push_back(ent);
+        loc_ents[location].push_back(ent);
+        if(model_locations.count(model) == 0){
+            model_locations[model] = vector<string>();
+        } 
+
+        if(find(model_locations[model].begin(), model_locations[model].end(), location) == model_locations[model].end()){
+            model_locations[model].push_back(location); 
+        }
+         
+    }else {
+        perror("addMachine");
+    }
 }
 
 void machines_t::addMachines(csv_t _machines, csv_t _location){
@@ -49,4 +85,52 @@ void machines_t::addMachines(csv_t _machines, csv_t _location){
         }
     }
     
+    iter(ents, i){
+        ents[i]->recover_time = (ents[i]->recover_time - min_outplan_time) / 60.0;
+    }
+}
+
+
+std::map<std::string, std::map<std::string, std::vector<entity_t *> > > machines_t::getEntities(){
+    return _entities;
+}
+
+std::map<std::string, std::vector<entity_t *> > machines_t::getLocEntity(){
+    return loc_ents;
+}
+
+std::vector<entity_t *> machines_t::randomlyGetEntitiesByLocations(std::map<std::string, int> statistic, int amount){
+    vector<entity_t *> ret;
+
+    vector<entity_t *> pool;
+    for(std::map<std::string, int>::iterator it = statistic.begin(); it != statistic.end(); it++){
+        for(unsigned int i = 0; i < loc_ents[it->first].size(); ++i){
+            if(!loc_ents[it->first][i]->hold){
+                pool.push_back(loc_ents[it->first][i]);
+            }
+        }
+    }
+
+    random_shuffle(pool.begin(), pool.end());
+    
+    if((unsigned)amount < pool.size()){
+        ret = vector<entity_t*>(pool.begin(), pool.begin() + amount); 
+    }else{
+        ret = vector<entity_t*>(pool.begin(), pool.end());
+    }
+
+    iter(ret, i){
+        ret[i]->hold = true;
+    }
+    return ret;
+}
+
+void machines_t::reset(){
+    iter(ents, i){
+        ents[i]->hold = false;
+    }
+}
+
+std::map<std::string, std::vector<std::string> > machines_t::getModelLocation(){
+    return model_locations;
 }
