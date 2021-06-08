@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(ChipmosWb LANGUAGES CXX)
+project(ChipmosWb LANGUAGES CXX CUDA)
 include_directories(${CMAKE_SOURCE_DIR})
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")
@@ -9,6 +9,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
-
 file(GLOB_RECURSE src ./src/*.cpp)
 add_executable(main main.cpp ${src})
+add_subdirectory(lib)
+# add_subdirectory(tests)
+# add_subdirectory(examples)
