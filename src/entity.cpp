@@ -105,6 +105,8 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(std::map<std:
 
     vector<entity_t *> pool;
     for(std::map<std::string, int>::iterator it = statistic.begin(); it != statistic.end(); it++){
+        if(it->second == 0)
+            continue;
         for(unsigned int i = 0; i < loc_ents[it->first].size(); ++i){
             if(!loc_ents[it->first][i]->hold){
                 pool.push_back(loc_ents[it->first][i]);

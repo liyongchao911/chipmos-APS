@@ -8,10 +8,6 @@
 #include <vector>
 
 typedef struct {
-
-}machine_t;
-
-typedef struct {
     double recover_time;
     double outplan_time;
     std::string entity_name;

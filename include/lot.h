@@ -47,7 +47,8 @@ protected:
     std::vector<std::string> _can_run_entities;
 
     std::map<std::string, double> _uphs;
-    std::map<std::string, double> _process_times;
+    std::map<std::string, double> _model_process_times;
+    std::map<std::string, double> _entity_process_times;
 
 public:
     int tmp_oper;
@@ -392,7 +393,15 @@ public:
     std::vector<std::string> getCanRunEntities();
     
     job_t job();
+
+    std::map<std::string, double> getEntitiyProcessTime();
+
+    void clearCanRunLocation();
 };
+
+inline void lot_t::clearCanRunLocation(){
+    _can_run_locations.clear();
+}
 
 inline std::vector<std::string> lot_t::getCanRunEntities(){
     return _can_run_entities;
@@ -580,7 +589,7 @@ inline void lot_t::setAmountOfWires(int amount)
 inline void lot_t::setCanRunModel(std::string model)
 {
     _uphs[model] = 0;
-    _process_times[model] = 0;
+    _model_process_times[model] = 0;
     if(find(_can_run_models.begin(), _can_run_models.end(), model) != _can_run_models.end())
         _can_run_models.push_back(model);
 }
@@ -588,15 +597,15 @@ inline void lot_t::setCanRunModel(std::string model)
 inline void lot_t::setCanRunModels(std::vector<std::string> models)
 {
     iter(models, i) { 
-        _uphs[models[i]] = 0; 
-        _process_times[models[i]] = 0;
+        _uphs[models[i]] = 0;
+        _model_process_times[models[i]] = 0;
     }
     _can_run_models = models;
 }
     
 inline void lot_t::setUph(std::string model, double uph){
     _uphs.at(model) = uph;
-    _process_times[model] = (_qty / uph) * 60;
+    _model_process_times[model] = (_qty / uph) * 60;
 }
 
 inline std::vector<std::string> lot_t::getCanRunModels(){
@@ -634,13 +643,13 @@ protected:
 
     std::map<std::string, int> sta_models(std::map<std::string, std::map<std::string, std::vector<entity_t *> > > ents); //location -> amount
     std::map<std::string, int> sta_models(std::map<std::string, std::vector<entity_t *> > loc_ents);
+
+    bool toolWireLotsHasLots(); 
 public:
     void addLots(std::vector<lot_t> lots);
 
-    // void round(std::map<std::string, std::map<std::string, int> > machine_numbers, std::vector<lot_t> & result);
-    // void round(std::map<std::string, std::map<std::string, std::vector<entity_t *> > > entities,std::map<std::string, std::vector<entity_t *> > loc_ents);
     std::vector<lot_group_t> round(entities_t machines);
-
+    std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
 };
 
 
