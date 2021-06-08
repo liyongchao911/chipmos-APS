@@ -1,25 +1,25 @@
-#include <include/machine.h>
+#include <include/entity.h>
+#include <limits.h>
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
-#include <limits.h>
 
 using namespace std;
 
-machines_t::machines_t(string _time){
+entities_t::entities_t(string _time){
     time = 0;
     min_outplan_time = LONG_LONG_MAX;
     setTime(_time); 
 }
 
-void machines_t::setTime(string _time){
+void entities_t::setTime(string _time){
     if(_time.length()){
         time = timeConverter(_time);
     }
 }
 
 
-void machines_t::addMachine(map<string, string> elements){
+void entities_t::addMachine(map<string, string> elements){
     if(elements["recover_time"].length() == 0){
         throw std::invalid_argument("recover time is empty");
     }
@@ -59,7 +59,7 @@ void machines_t::addMachine(map<string, string> elements){
     }
 }
 
-void machines_t::addMachines(csv_t _machines, csv_t _location){
+void entities_t::addMachines(csv_t _machines, csv_t _location){
     int mrows = _machines.nrows();
     int lrows = _location.nrows();
     map<string, string> locations; // entity->location 
@@ -91,15 +91,16 @@ void machines_t::addMachines(csv_t _machines, csv_t _location){
 }
 
 
-std::map<std::string, std::map<std::string, std::vector<entity_t *> > > machines_t::getEntities(){
+std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
+entities_t::getEntities(){
     return _entities;
 }
 
-std::map<std::string, std::vector<entity_t *> > machines_t::getLocEntity(){
+std::map<std::string, std::vector<entity_t *> > entities_t::getLocEntity(){
     return loc_ents;
 }
 
-std::vector<entity_t *> machines_t::randomlyGetEntitiesByLocations(std::map<std::string, int> statistic, int amount){
+std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(std::map<std::string, int> statistic, int amount){
     vector<entity_t *> ret;
 
     vector<entity_t *> pool;
@@ -125,12 +126,12 @@ std::vector<entity_t *> machines_t::randomlyGetEntitiesByLocations(std::map<std:
     return ret;
 }
 
-void machines_t::reset(){
+void entities_t::reset(){
     iter(ents, i){
         ents[i]->hold = false;
     }
 }
 
-std::map<std::string, std::vector<std::string> > machines_t::getModelLocation(){
+std::map<std::string, std::vector<std::string> > entities_t::getModelLocation(){
     return model_locations;
 }

@@ -9,12 +9,12 @@
 #include <system_error>
 
 #include <include/arrival.h>
-#include <include/infra.h>
 #include <include/condition_card.h>
 #include <include/csv.h>
 #include <include/da.h>
+#include <include/entity.h>
+#include <include/infra.h>
 #include <include/lot.h>
-#include <include/machine.h>
 #include <include/route.h>
 
 
@@ -48,7 +48,7 @@ int main(int argc, const char *argv[])
 
 
     char *text = strdup("2020/12/19 10:50");
-    machines_t machines(text);
+    entities_t machines(text);
     machines.addMachines(machine_csv, location_csv);
     
     vector<lot_group_t> group = lots.round(machines);

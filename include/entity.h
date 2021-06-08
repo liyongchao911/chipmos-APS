@@ -1,11 +1,15 @@
-#ifndef __MACHINE_H__
-#define __MACHINE_H__
+#ifndef __ENTITY_H__
+#define __ENTITY_H__
 
 #include <include/csv.h>
 #include <time.h>
 #include <map>
 #include <string>
 #include <vector>
+
+typedef struct {
+
+}machine_t;
 
 typedef struct {
     double recover_time;
@@ -16,7 +20,8 @@ typedef struct {
     bool hold;
 } entity_t;
 
-class machines_t
+
+class entities_t
 {
 private:
 
@@ -38,11 +43,11 @@ private:
 
 public:
     /**
-     * machines_t () - constructor of machines_t
+     * entities_t () - constructor of entities_t
      *
      * The constructor will convert @b _time to time_t type
      */
-    machines_t(std::string _time);
+    entities_t(std::string _time);
     
     /**
      * addMachine() - add a machine

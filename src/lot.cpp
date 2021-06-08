@@ -2,10 +2,10 @@
 #include <pthread.h>
 #include <cmath>
 #include <exception>
+#include <set>
 #include <stdexcept>
 #include <utility>
-#include <set>
-#include "include/machine.h"
+#include "include/entity.h"
 
 lot_t::lot_t(std::map<std::string, std::string> elements)
 {
@@ -282,7 +282,7 @@ std::map<std::string, int> lots_t::sta_models(std::map<std::string, std::vector<
 }
 
 
-std::vector<lot_group_t> lots_t::round(machines_t machines){
+std::vector<lot_group_t> lots_t::round(entities_t machines){
     
     std::map<std::string, std::map<std::string, std::vector<entity_t *> > > entities = machines.getEntities();
     std::map<std::string, std::vector<entity_t*> > loc_ents = machines.getLocEntity();

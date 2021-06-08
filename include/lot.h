@@ -1,15 +1,15 @@
 #ifndef __LOT_H__
 #define __LOT_H__
 
+#include <include/csv.h>
+#include <include/entity.h>
 #include <include/infra.h>
+#include <include/job.h>
+#include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <include/csv.h>
-#include <algorithm>
-#include <include/machine.h>
-#include <include/job.h>
 
 class lot_t
 {
@@ -639,7 +639,7 @@ public:
 
     // void round(std::map<std::string, std::map<std::string, int> > machine_numbers, std::vector<lot_t> & result);
     // void round(std::map<std::string, std::map<std::string, std::vector<entity_t *> > > entities,std::map<std::string, std::vector<entity_t *> > loc_ents);
-    std::vector<lot_group_t> round(machines_t machines);
+    std::vector<lot_group_t> round(entities_t machines);
 
 };
 
