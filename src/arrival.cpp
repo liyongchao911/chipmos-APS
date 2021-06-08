@@ -32,7 +32,8 @@ void readWip(string filename, vector<lot_t> &lots, vector<lot_t> &faulty_lots)
                                         {"oper", "wlot_oper"},
                                         {"mvin", "wlot_mvin_perfmd"},
                                         {"recipe", "bd_id"},
-                                        {"prod_id", "wlot_prod"}}));
+                                        {"prod_id", "wlot_prod"},
+                                        {"urgent_code", "urgent_code"}}));
     lot_t lot_tmp;
     for (unsigned int i = 0, size = wip.nrows(); i < size; ++i) {
         lot_tmp = lot_t(wip.getElements(i));

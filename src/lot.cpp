@@ -14,6 +14,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _pin_package = elements["pin_package"];
     _recipe = elements["bd_id"];
     _prod_id = elements["prod_id"];
+    _urgent = elements["urgent_code"];
 
     _qty = std::stoi(elements["qty"]);
     _oper = std::stoi(elements["oper"]);
@@ -204,6 +205,43 @@ bool lot_t::isEntityCanRun(std::string model, std::string location){
     return false;
 }
 
+bool lot_t::addCanRunEntity(entity_t * ent){
+    bool ret = isEntityCanRun(ent->model_name, ent->location);
+    if(ret){
+        _can_run_entities.push_back(ent->entity_name);
+    }
+    return ret;
+}
+
+job_t lot_t::job(){
+    job_t j;
+    memset(j.part_no.data.number, 0, sizeof(unsigned int)*8);
+    j.part_no.text_size = j.part_no.number_size = 0;
+    memset(j.pin_package.data.number, 0, sizeof(unsigned int)*8);
+    j.pin_package.text_size = j.pin_package.number_size = 0;
+
+    size_t lprt_no = _part_no.length();
+    size_t lppkg = _pin_package.length();
+
+    lprt_no = (lprt_no > 32 ? 32 : lprt_no);
+    lppkg = (lppkg > 32 ? 32 : lppkg);
+
+    strncpy(j.part_no.data.text, _part_no.c_str(), lprt_no);
+    strncpy(j.pin_package.data.text, _pin_package.c_str(), lppkg);
+        
+    j.part_no.text_size = lprt_no;
+    j.part_no.number_size = 32 - __builtin_clz(lprt_no >> 2) + 1;
+    j.pin_package.text_size = lppkg;
+    j.pin_package.number_size = 32 - __builtin_clz(lppkg >> 2) + 1;
+    
+    if(_urgent.length()){
+        j.urgent_code = _urgent[0];
+    }else
+        j.urgent_code = '\0';
+
+    return j;
+}
+
 bool lot_group_comparision(lot_group_t g1, lot_group_t g2){
     return g1.lot_amount > g2.lot_amount;
 }
@@ -347,13 +385,13 @@ std::vector<lot_group_t> lots_t::round(machines_t machines){
         bool found = false;
         iter(lots, j){
             iter(selected_groups[i].entities, k){
-                if(lots[j]->isEntityCanRun(selected_groups[i].entities[k]->model_name, selected_groups[i].entities[k]->location)){
-                    successful.push_back(lots[j]);
+                if(lots[j]->addCanRunEntity(selected_groups[i].entities[k])){
                     found = true;
-                    break;
                 }            
             }
-            if(!found)
+            if(found)
+                successful.push_back(lots[j]);
+            else
                 failed.push_back(lots[j]);
         }
         tool_wire_lots[tool_wire_name] = failed;
@@ -361,3 +399,5 @@ std::vector<lot_group_t> lots_t::round(machines_t machines){
     }
     return selected_groups;
 }
+
+

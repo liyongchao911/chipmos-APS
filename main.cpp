@@ -51,8 +51,16 @@ int main(int argc, const char *argv[])
     machines_t machines(text);
     machines.addMachines(machine_csv, location_csv);
     
-    lots.round(machines);
-     
+    vector<lot_group_t> group = lots.round(machines);
+    vector<job_t> jobs;
+    vector<vector<string> > can_run_entities;
+    iter(group, i){
+        iter(group[i].lots, j){
+            jobs.push_back(group[i].lots[j]->job());
+            can_run_entities.push_back(group[i].lots[j]->getCanRunEntities());
+        }
+    }
+    
 
     return 0;
 }

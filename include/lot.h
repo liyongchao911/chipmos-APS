@@ -9,6 +9,7 @@
 #include <include/csv.h>
 #include <algorithm>
 #include <include/machine.h>
+#include <include/job.h>
 
 class lot_t
 {
@@ -22,6 +23,7 @@ protected:
     std::string _bom_id;
     std::string _part_id;
     std::string _part_no;
+    std::string _urgent;
 
     int _qty;
     int _oper;
@@ -42,10 +44,10 @@ protected:
     std::vector<std::string> _log;
     std::vector<std::string> _can_run_models;
     std::vector<std::string> _can_run_locations;
+    std::vector<std::string> _can_run_entities;
 
     std::map<std::string, double> _uphs;
     std::map<std::string, double> _process_times;
-
 
 public:
     int tmp_oper;
@@ -384,7 +386,17 @@ public:
     std::vector<std::string> can_run_locations();
 
     bool isEntityCanRun(std::string model, std::string location);
+
+    bool addCanRunEntity(entity_t * ent);
+
+    std::vector<std::string> getCanRunEntities();
+    
+    job_t job();
 };
+
+inline std::vector<std::string> lot_t::getCanRunEntities(){
+    return _can_run_entities;
+}
 
 inline std::vector<std::string> lot_t::can_run_locations(){
     return _can_run_locations;
