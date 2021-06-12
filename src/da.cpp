@@ -22,8 +22,8 @@ int da_stations_t::setFcst(csv_t _fcst, bool strict)
             // overwrite
             fcst = std::stod(elements["da_out"]) * 1000;
 
-            // if (fcst == 0)
-            //     continue;
+            if (fcst == 0)
+                continue;
 
             act = std::stod(elements["da_act"]) * 1000;
             remain = fcst;  // FIXME : remain = fcst - act may less than 0
@@ -44,11 +44,18 @@ int da_stations_t::setFcst(csv_t _fcst, bool strict)
             _da_stations_container[bd_id] = da_station_t{.fcst = fcst,
                                                          .act = act,
                                                          .remain = remain,
-                                                         .upm = fcst / 1440,
+                                                         .upm = fcst / 1440, // upm -> unit per minute
                                                          .time = 0,
                                                          .finished = false};
         }
     }
+    
+    // std::vector<std::string> wrong_bdid;
+    // for(std::map<std::string, da_station_t>::iterator it = _da_stations_container.begin(); it != _da_stations_container.end(); it ++){
+    //     if
+    // }
+
+
     return retval;
 }
 
@@ -122,7 +129,7 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
         if (!da.finished) {
             tmp = (double) arrived_lots[i].qty() / da.upm;
             da.time += tmp;
-            arrived_lots[i].addLog("Lot pass DA station");
+            arrived_lots[i].addLog("Lot passes DA station");
             result.push_back(arrived_lots[i]);
             if (da.time >
                 1440) {  // FIXME : should be 1440 ? or a variable number?

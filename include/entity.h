@@ -1,21 +1,29 @@
 #ifndef __ENTITY_H__
 #define __ENTITY_H__
 
-#include <include/csv.h>
 #include <time.h>
 #include <map>
 #include <string>
 #include <vector>
 
-typedef struct {
+#include <include/csv.h>
+#include <include/machine.h>
+
+unsigned int convertEntityNameToUInt(std::string name);
+
+typedef struct{
     double recover_time;
     double outplan_time;
     std::string entity_name;
+    machine_info_t name;
     std::string model_name;
     std::string location;
     bool hold;
+    tool_t * tool;
+    wire_t * wire;
 } entity_t;
 
+machine_t to_machine(entity_t ent);
 
 class entities_t
 {
@@ -83,6 +91,30 @@ public:
     std::map<std::string, std::vector<std::string> > getModelLocation();
 
     void reset();
+
+    std::vector<machine_t> machines();
+
+    std::vector<entity_t *> getAllEntity();
 };
+
+
+class ancillary_resources_t{
+private:
+    std::map<std::string, std::vector<ares_t *> > _tools;
+public:
+    ancillary_resources_t(std::map<std::string, int> tools);
+    std::vector<tool_t *> aRound(std::map<std::string, int> amount);
+    std::vector<tool_t *> aRound(std::string, int);
+};
+
+class machines_t{
+private:
+    std::map<std::string, machine_t *> _machines;
+public:
+    void addMachines(std::vector<entity_t *> ents);
+
+    std::map<std::string, machine_t *> getMachines();
+};
+
 
 #endif

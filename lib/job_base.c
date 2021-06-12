@@ -96,6 +96,7 @@ __qualifier__ void job_base_init(void *_self)
 {
     job_base_t *self = (job_base_t *) _self;
     self->ms_gene = self->os_seq_gene = NULL;
+    self->ptr_derived_object = NULL;
     self->process_time = NULL;
 }
 

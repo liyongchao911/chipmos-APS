@@ -33,7 +33,8 @@ void readWip(string filename, vector<lot_t> &lots, vector<lot_t> &faulty_lots)
                                         {"mvin", "wlot_mvin_perfmd"},
                                         {"recipe", "bd_id"},
                                         {"prod_id", "wlot_prod"},
-                                        {"urgent_code", "urgent_code"}}));
+                                        {"urgent_code", "urgent_code"},
+                                        {"customer", "wlot_crt_dat_al_1"}}));
     lot_t lot_tmp;
     for (unsigned int i = 0, size = wip.nrows(); i < size; ++i) {
         lot_tmp = lot_t(wip.getElements(i));
@@ -310,14 +311,15 @@ void setPartId(string filename,
     bomlist.trim(" ");
     bomlist.setHeaders(map<string, string>(
         {{"bom_id", "bom_id"}, {"oper", "oper"}, {"part_id", "part_id"}}));
-    map<string, string> bom_part;
+    map<int, map<string, string> > bom_oper_part;
     for (unsigned int i = 0; i < bomlist.nrows(); ++i) {
         map<string, string> tmp = bomlist.getElements(i);
         // if "oper" is WB, then get its part_id.
         std::set<int> opers = {WB1, WB2, WB3, WB4};
         int oper_int = stoi(tmp["oper"]);
         if (opers.count(oper_int) != 0) {
-            bom_part[tmp["bom_id"]] = tmp["part_id"];
+            bom_oper_part[oper_int][tmp["bom_id"]] = tmp["part_id"];
+            // bom_part[tmp["bom_id"]] = tmp["part_id"];
         }
     }
 
@@ -328,13 +330,13 @@ void setPartId(string filename,
     iter(lots, i)
     {
         try {
-            string part_id = bom_part.at(lots[i].bomId());
+            string part_id = bom_oper_part.at(lots[i].tmp_oper).at(lots[i].bomId());;
             lots[i].setPartId(part_id);
         } catch (std::out_of_range &e) {
             err_msg = "Lot Entry " + to_string(i + 2) + ": " +
                       lots[i].lotNumber() +
-                      " has no mapping relationship between its bom id(" +
-                      lots[i].bomId() + ") and its part_id";
+                      " has no mapping relationship between its oper :" + to_string(lots[i].tmp_oper) + 
+                      " bom id(" + lots[i].bomId() + ") and its part_id";
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
             wip_report.push_back(err_msg);
@@ -517,15 +519,18 @@ void setupUph(string uph_file_name, vector<lot_t> & lots, vector<lot_t> & faulty
                     {"uph", "G.UPH"}
                 }));
     bool retval = 0;
+    vector<lot_t> temp;
+    vector<lot_t> maybe_faulty;
     vector<lot_t> result;
     iter(lots, i){
         retval = lots[i].setUph(uph_csv); 
-        if(!retval) {
-            faulty_lots.push_back(lots[i]); 
-        }else{
+        if(retval) {
             result.push_back(lots[i]);
+        }else{
+            faulty_lots.push_back(lots[i]);
         }
     }
+
     lots = result;
 }
 
@@ -548,17 +553,6 @@ vector<lot_t> createLots(string wip_file_name,
     std::vector<lot_t> lots;
     vector<lot_t> dontcare;
 
-    readWip(wip_file_name, alllots, faulty_lots);
-    wip_report.clear();
-
-    setPidBomId(prod_pid_filename, alllots, faulty_lots, wip_report);
-    setLotSize(eim, alllots, faulty_lots, wip_report);
-
-    // TODO : setPartId, setPartNo, setAmountOfTools, setAmountOfWires
-
-
-    /*************************************************************************************/
-
     // setup da_stations_t
     csv_t fcst(fcst_filename, "r", true, true);
     fcst.trim(" ");
@@ -567,16 +561,24 @@ vector<lot_t> createLots(string wip_file_name,
     route_t routes;
     setupRoute(routelist_filename, queue_time_filename, routes);
 
+    // start creating lots
 
+    readWip(wip_file_name, alllots, faulty_lots);
+    wip_report.clear();
+
+    setPidBomId(prod_pid_filename, alllots, faulty_lots, wip_report);
+    setLotSize(eim, alllots, faulty_lots, wip_report);
+
+    // TODO : setPartId, setPartNo, setAmountOfTools, setAmountOfWires
+    //
     // filter, check if lot is in scheduling plan
     lots = wb_7_filter(alllots, dontcare, routes);
-
+    
+    /*************************************************************************************/
     // route traversal and sum the queue time
     lots =
         queueTimeAndQueue(lots, faulty_lots, dontcare, das, routes, wip_report);
-
-
-
+    
     // setPartId
     setPartId(bomlist_filename, lots, faulty_lots, wip_report);
     setAmountofWire(gw_filename, lots, faulty_lots, wip_report);

@@ -49,6 +49,6 @@ struct __info_t{
 };
 
 
-
+bool isSameInfo(struct __info_t info1, struct __info_t info2);
 
 #endif

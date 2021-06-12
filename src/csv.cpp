@@ -244,9 +244,9 @@ void csv_t::setFileName(std::string filename)
     _filename = filename;
 }
 
-void csv_t::setHeader(std::string old, std::string n, bool replace)
+void csv_t::setHeader(std::string old, std::string neun, bool replace)
 {
-    _head[n] = _head[old];
+    _head[neun] = _head[old];
     if (replace) {
         _head.erase(old);
     }

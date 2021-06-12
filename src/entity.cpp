@@ -1,10 +1,24 @@
 #include <include/entity.h>
+#include <include/machine.h>
 #include <limits.h>
+#include <sched.h>
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
 
 using namespace std;
+
+machine_t to_machine(entity_t ent){
+    return machine_t{
+            .base = {
+                .machine_no = convertEntityNameToUInt(ent.entity_name),
+                .size_of_jobs = 0,
+                .avaliable_time = (unsigned int)ent.recover_time
+            },
+            .tool = ent.tool,
+            .wire = ent.wire
+        };
+}
 
 entities_t::entities_t(string _time){
     time = 0;
@@ -31,14 +45,20 @@ void entities_t::addMachine(map<string, string> elements){
     model = elements["model"];
     location = elements["location"];
     if(ent){
+        unsigned int no = convertEntityNameToUInt(elements["entity"]);
         *ent = entity_t{
             .recover_time = recover_time,
             .outplan_time = recover_time,
             .entity_name = elements["entity"],
             .model_name = model,
             .location = location,
-            .hold = false
+            .hold = false,
+            .tool = NULL,
+            .wire = NULL
         };
+        ent->name.data.number[0] = no;
+        ent->name.text_size = 4;
+        ent->name.number_size = 1;
         if(ent->recover_time < min_outplan_time)
             min_outplan_time = ent->recover_time;
 
@@ -134,6 +154,84 @@ void entities_t::reset(){
     }
 }
 
+std::vector<entity_t *> entities_t::getAllEntity(){
+    return ents;
+}
+
 std::map<std::string, std::vector<std::string> > entities_t::getModelLocation(){
     return model_locations;
+}
+unsigned int convertEntityNameToUInt(string name){
+    union{
+        char text[4];
+        unsigned int number;
+    }data;
+    string substr = name.substr(name.length() - 4);
+    strncpy(data.text, substr.c_str(), 4);
+    return data.number;
+}
+
+
+vector<machine_t> entities_t::machines(){
+    vector<machine_t> ms;
+    iter(ents, i){
+        machine_t m = machine_t{
+            .base = {
+                .machine_no = convertEntityNameToUInt(ents[i]->entity_name),
+                .size_of_jobs = 0,
+                .avaliable_time = (unsigned int)ents[i]->recover_time
+            },
+            .tool = ents[i]->tool,
+            .wire = ents[i]->wire
+        };
+        ms.push_back(m);
+    }
+    return ms;
+}
+
+std::map<std::string, machine_t *> machines_t::getMachines(){
+    return _machines;
+}
+
+ancillary_resources_t::ancillary_resources_t(std::map<std::string, int> data){
+    tool_t * t;
+    for(std::map<std::string, int>::iterator it = data.begin(); it != data.end(); it ++){
+        for(int i = 0; i < it->second; ++i){
+            t = new tool_t;
+            t->time = 0;
+            t->machine_no = 0;
+            _tools[it->first].push_back(t);
+        }
+    }
+}
+
+std::vector<tool_t *> ancillary_resources_t::aRound(std::map<std::string, int> amounts){
+    std::vector<tool_t *> ts;
+    for(std::map<std::string, int>::iterator it = amounts.begin(); it != amounts.end(); it ++){
+        std::vector<tool_t *> tmp = aRound(it->first, it->second);
+        ts += tmp;
+    }
+    
+    return ts;
+}
+
+std::vector<tool_t *> ancillary_resources_t::aRound(std::string name, int amount){
+    sort(_tools[name].begin(), _tools[name].end(), ares_ptr_comp);
+    std::vector<tool_t *> ts(_tools[name].begin(), _tools[name].begin() + amount);
+    return ts;
+}
+
+
+
+void machines_t::addMachines(std::vector<entity_t *> ents){
+    iter(ents, i){
+        machine_t m = to_machine(*ents[i]);
+        machine_t *m_ptr = new machine_t;
+        *m_ptr = m;
+        //FIXME : the base time isn't clear
+        //the base time of the machine is 0
+        m_ptr->base.avaliable_time = 0;
+        _machines[ents[i]->entity_name] = m_ptr;
+        
+    } 
 }

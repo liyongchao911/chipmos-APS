@@ -31,6 +31,7 @@ __qualifier__ void _list_init(void *_self)
     list_ele_t *self = (list_ele_t *) _self;
     self->next = self->prev = NULL;
     self->get_value = NULL;
+    self->ptr_derived_object = NULL;
 }
 
 list_ele_t *list_ele_new()

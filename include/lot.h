@@ -24,6 +24,7 @@ protected:
     std::string _part_id;
     std::string _part_no;
     std::string _urgent;
+    std::string _customer;
 
     int _qty;
     int _oper;
@@ -49,7 +50,6 @@ protected:
     std::map<std::string, double> _uphs;
     std::map<std::string, double> _model_process_times;
     std::map<std::string, double> _entity_process_times;
-
 public:
     int tmp_oper;
     bool tmp_mvin;
@@ -378,7 +378,7 @@ public:
 
     std::map<std::string, std::string> data();
 
-    void setUph(std::string name, double uph);
+    bool setUph(std::string name, double uph);
 
     bool setUph(csv_t uph);
 
@@ -397,10 +397,16 @@ public:
     std::map<std::string, double> getEntitiyProcessTime();
 
     void clearCanRunLocation();
+
+    std::map<std::string, double> uphs();
 };
 
 inline void lot_t::clearCanRunLocation(){
     _can_run_locations.clear();
+}
+
+inline std::map<std::string, double> lot_t::uphs(){
+    return _uphs;
 }
 
 inline std::vector<std::string> lot_t::getCanRunEntities(){
@@ -603,13 +609,19 @@ inline void lot_t::setCanRunModels(std::vector<std::string> models)
     _can_run_models = models;
 }
     
-inline void lot_t::setUph(std::string model, double uph){
-    _uphs.at(model) = uph;
-    _model_process_times[model] = (_qty / uph) * 60;
+inline bool lot_t::setUph(std::string model, double uph){
+    if(uph == 0){
+       _uphs.erase(model);
+       _model_process_times.erase(model);
+       return false;
+    }else{
+        _uphs.at(model) = uph;
+        _model_process_times[model] = (_qty / uph) * 60;
+    }
+    return true;
 }
 
-inline std::vector<std::string> lot_t::getCanRunModels(){
-    return _can_run_models;
+inline std::vector<std::string> lot_t::getCanRunModels(){ return _can_run_models;
 }
 
 inline std::string lot_t::pin_package(){
@@ -626,6 +638,7 @@ typedef struct{
     int machine_amount;
     std::map<std::string, int> models_statistic;
     std::vector<entity_t *> entities;
+    std::vector<std::string> entity_names;
     std::vector<lot_t *> lots;
 } lot_group_t;
 
@@ -650,8 +663,9 @@ public:
 
     std::vector<lot_group_t> round(entities_t machines);
     std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
+
+    inline std::map<std::string, int> amountOfWires() { return amount_of_wires; } 
+    inline std::map<std::string, int> amountOfTools() { return amount_of_tools; } 
 };
-
-
 
 #endif

@@ -28,6 +28,7 @@
 
 #include <include/def.h>
 #include <include/linked_list.h>
+#include <include/infra.h>
 #include <stddef.h>
 
 
@@ -82,12 +83,14 @@ struct job_base_t {
     unsigned int size_of_process_time;
 
     // job information
-    unsigned int job_no;
+    // unsigned int job_no;
+    struct __info_t job_info;
     unsigned int qty;
     unsigned int machine_no;
     double arriv_t;
     double start_time;
     double end_time;
+    double ptime;
 };
 
 struct job_base_operations_t {

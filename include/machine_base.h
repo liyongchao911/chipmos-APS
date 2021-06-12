@@ -78,7 +78,7 @@ struct machine_base_t {
     unsigned int size_of_jobs;
 
     /// the time the machine can start being used.
-    unsigned int avaliable_time;
+    double avaliable_time;
 };
 
 /**
@@ -95,7 +95,7 @@ struct machine_base_t {
  * to set machine_base_operations_t object to point on the functions provided by
  * this  library.
  *
- * @b set_up_times has an incomplete type declaration which can be use to store
+ * @b setup_times has an incomplete type declaration which can be use to store
  * lots of functions to evaluate the setup time between two jobs.
  *
  * @var init : pointer to a function to initialize object
@@ -153,8 +153,10 @@ struct machine_base_operations_t {
 
     /// pointers to functions which are used to compute the setup time between
     /// two jobs.
-    double (*set_up_times[])(job_base_t *job1, job_base_t *job2);
+    double (*setup_times[])(job_base_t *job1, job_base_t *job2);
 };
+
+typedef double(*setup_time_t)(job_base_t *, job_base_t *);
 
 /**
  * machine_base_reset () - Reset machine_base_t object
