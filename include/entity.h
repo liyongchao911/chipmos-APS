@@ -10,6 +10,7 @@
 #include <include/machine.h>
 
 unsigned int convertEntityNameToUInt(std::string name);
+std::string convertUIntToEntityName(unsigned int);
 
 typedef struct{
     double recover_time;

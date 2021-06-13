@@ -18,4 +18,6 @@ void copyChromosome(chromosome_base_t c1, chromosome_base_t c2);
 
 double decoding(chromosome_base_t chromosome, job_t * jobs, std::map<unsigned int, machine_t *>machines, machine_base_operations_t *machine_ops, list_operations_t *list_ops, int AMOUNT_OF_JOBS);
 
+int chromosomeCmpr(const void *_c1, const void *_c2);
+
 #endif

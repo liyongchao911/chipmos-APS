@@ -235,3 +235,15 @@ void machines_t::addMachines(std::vector<entity_t *> ents){
         
     } 
 }
+
+std::string convertUIntToEntityName(unsigned int mno){
+    std::string text = "B";
+    union{
+        char text[4];
+        unsigned int number;
+    }data;
+
+    data.number = mno;
+    text += data.text;
+    return text;
+}

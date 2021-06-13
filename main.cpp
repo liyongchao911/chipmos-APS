@@ -38,6 +38,7 @@ void geneticAlgorithm(population_t * pop);
 
 int main(int argc, const char *argv[])
 {
+    // srand(time(NULL));
     csv_t lot_csv("lots.csv", "r", true, true);
     lot_csv.setHeaders(map<string, string>({
                     {"route", "route"},
@@ -103,6 +104,13 @@ int main(int argc, const char *argv[])
     vector<vector<lot_group_t> > round_groups = lots.rounds(entities);
     
     population_t pop = population_t{ 
+        .parameters = {
+            .AMOUNT_OF_CHROMOSOMES = 100,
+            .AMOUNT_OF_R_CHROMOSOMES = 200,
+            .EVOLUTION_RATE = 0.8,
+            .SELECTION_RATE = 0.2,
+            .GENERATIONS = 100
+        },
         .groups = round_groups,
         .current_round_no = 0,
     };
@@ -112,15 +120,6 @@ int main(int argc, const char *argv[])
     geneticAlgorithm(&pop);
     
     return 0;
-}
-
-
-int chromosomeCmpr(const void *_c1, const void *_c2){
-    chromosome_base_t *c1 = (chromosome_base_t *)_c1;
-    chromosome_base_t *c2 = (chromosome_base_t *)_c2;
-    if(c1->fitnessValue > c2->fitnessValue)
-        return true;
-    return false;
 }
 
 void geneticAlgorithm(population_t * pop){
@@ -147,29 +146,31 @@ void geneticAlgorithm(population_t * pop){
     machine_ops->add_job = _machine_base_add_job;
     machine_ops->reset = machine_reset;
 
-    for(int k = 0; k < 100; ++k){
-        for(int i = 0; i < 100; ++i){ // chromosomes
+    for(int k = 0; k < pop->parameters.GENERATIONS; ++k){
+        for(int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++i){ // chromosomes
             chromosomes[i].fitnessValue = decoding(chromosomes[i], jobs, machines, machine_ops, &list_ops, AMOUNT_OF_JOBS);
         }
         // sort the chromosomes
-        qsort(chromosomes, 100, sizeof(chromosome_base_t), chromosomeCmpr);
-        printf("[%d]worst fitness value is %.3f\n", k, chromosomes[99].fitnessValue);
+        qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES, sizeof(chromosome_base_t), chromosomeCmpr);
+        printf("[%d]best fitness value is %.3f\n", k, chromosomes[0].fitnessValue);
 
         // statistic
         double sum = 0;
         double sum2 = 0;
         double accumulate = 0;
+        int elites_amount = pop->parameters.AMOUNT_OF_R_CHROMOSOMES * pop->parameters.SELECTION_RATE;
+        int random_amount = pop->parameters.AMOUNT_OF_R_CHROMOSOMES - elites_amount;
         vector<chromosome_linker_t> linkers;
-        for(int l = 10; l < 100; ++l){
+        for(int l = elites_amount; l < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++l){
             sum += chromosomes[l].fitnessValue;
         }
 
-        for(int l = 10; l < 100; ++l){
+        for(int l = elites_amount; l < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++l){
             chromosomes[l].fitnessValue = sum / chromosomes[l].fitnessValue;
             sum2 += chromosomes[l].fitnessValue;
         }
         
-        for(int l = 10; l < 100; ++l){
+        for(int l = elites_amount; l < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++l){
             linkers.push_back(chromosome_linker_t{
                         .chromosome = chromosomes[l],
                         .value = accumulate += chromosomes[l].fitnessValue / sum2
@@ -178,10 +179,10 @@ void geneticAlgorithm(population_t * pop){
 
         // selection
         // perform shallow copy
-        for(int l = 10; l < 50; ++l){
+        for(int l = elites_amount; l < pop->parameters.AMOUNT_OF_CHROMOSOMES; ++l){
             double rnd = (double) rand() / (double) RAND_MAX; 
             // search
-            for(int j = 0; j < 90; ++j){
+            for(int j = 0; j < random_amount; ++j){
                 if(linkers[j].value > rnd){
                     copyChromosome(chromosomes[l], linkers[j].chromosome);
                     break;
@@ -191,44 +192,38 @@ void geneticAlgorithm(population_t * pop){
 
         // evolution
         // crossover
-        for(int l = 50; l < 80; l += 2){
-            int rnd1 = random_range(0, 50, -1);
-            int rnd2 = random_range(0, 50, rnd1);
+        int crossover_amount = pop->parameters.AMOUNT_OF_CHROMOSOMES * pop->parameters.EVOLUTION_RATE;
+        for(int l = pop->parameters.AMOUNT_OF_CHROMOSOMES; l < crossover_amount + pop->parameters.AMOUNT_OF_CHROMOSOMES; l += 2){
+            int rnd1 = random_range(0, pop->parameters.AMOUNT_OF_CHROMOSOMES, -1);
+            int rnd2 = random_range(0, pop->parameters.AMOUNT_OF_CHROMOSOMES, rnd1);
+            // printf("l = %d\n", l);
+            printf("(%d, %d)\n", rnd1, rnd2);
             crossover(chromosomes[rnd1], chromosomes[rnd2], chromosomes[l], chromosomes[l+1]);
         }
         // mutation
-        for(int l = 80; l < 100; ++l){
-            int rnd = random_range(0, 50, -1);
+        for(int l = pop->parameters.AMOUNT_OF_CHROMOSOMES + crossover_amount; l < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++l){
+            int rnd = random_range(0, pop->parameters.AMOUNT_OF_CHROMOSOMES, -1);
             mutation(chromosomes[rnd], chromosomes[l]);
         }
     }
     
-
-    decoding(chromosomes[0], jobs, machines, machine_ops, &list_ops, AMOUNT_OF_JOBS);
-    double threshold = 10000;
-    for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it ++){
-        if(it->second->makespan > threshold){
-            list_ele_t *list_it = it->second->base.root;
-            printf("hold\n");
-            while(list_it){
-                job_t * tmp = (job_t *)list_it->ptr_derived_object;
-                printf("%s : %.3f\n",tmp->base.job_info.data.text, tmp->base.ptime);
-                list_it = list_it->next;
-            }
-            printf("%s, %s\n", it->second->tool->name.data.text, it->second->wire->name.data.text);
-            exit(-1);
-        }
+    // output   
+    FILE * file = fopen("result.txt", "w");
+    for(int i = 0; i < AMOUNT_OF_JOBS; ++i){
+        machine_t *m = machines[jobs[i].base.machine_no];
+        // lot_number, part_no, part_id, entity_name, start time, end_time
+        string ent_name = convertUIntToEntityName(m->base.machine_no);
+        fprintf(file, "%s, %s, %s, %s, %.3f, %.3f\n", jobs[i].base.job_info.data.text, m->tool->name.data.text, m->wire->name.data.text, ent_name.c_str(), jobs[i].base.start_time, jobs[i].base.end_time);
     }
-     
-    printf("end\n");
+    fclose(file);
 }
 
 
 void initializePopulation(population_t *pop, machines_t & machines, ancillary_resources_t & tools, ancillary_resources_t & wires){
     pop->round = createARound(pop->groups[pop->current_round_no], machines, tools, wires);
-    pop->chromosomes = (chromosome_base_t *)malloc(sizeof(chromosome_base_t)*100);
+    pop->chromosomes = (chromosome_base_t *)malloc(sizeof(chromosome_base_t)*pop->parameters.AMOUNT_OF_R_CHROMOSOMES);
     
-    for(int i = 0; i < 100; ++i){
+    for(int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++i){
         pop->chromosomes[i].chromosome_no = i;
         pop->chromosomes[i].gene_size = pop->round.AMOUNT_OF_JOBS << 1;
         pop->chromosomes[i].genes = (double*)malloc(sizeof(double)*pop->chromosomes[i].gene_size); 

@@ -26,7 +26,6 @@ typedef struct round_t{
 struct population_t{
     unsigned int no;
     struct {
-        int AMOUNT_OF_MACHINES;
         int AMOUNT_OF_CHROMOSOMES;
         int AMOUNT_OF_R_CHROMOSOMES;
         double EVOLUTION_RATE;
@@ -40,21 +39,6 @@ struct population_t{
     round_t round;
 
     chromosome_base_t * chromosomes; 
-
-    // struct {
-    //     job_t ** jobs;
-    //     machine_t **machines;
-    //     tool_t ** tools;
-    //     wire_t ** wires;
-    // }device_objects;
-
-    // struct {
-    //     job_t ** address_of_cujobs;
-    //     machine_t ** address_of_cumachines;
-    //     tool_t ** address_of_tools;
-    //     wire_t ** address_of_wires;
-    //     process_time_t **address_of_process_time_entry;
-    // }host_objects;
 
 };
 

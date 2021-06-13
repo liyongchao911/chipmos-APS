@@ -46,7 +46,6 @@ typedef struct __machine_t{
 bool ares_ptr_comp(ares_t *, ares_t *);
 bool ares_comp(ares_t , ares_t);
 
-
 void machine_reset(machine_base_t * base);
 
 double setup_time_CWN(job_base_t *, job_base_t*);
