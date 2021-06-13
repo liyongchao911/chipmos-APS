@@ -78,3 +78,23 @@ bool isSameInfo(struct __info_t info1, struct __info_t info2){
 }
 
 
+void random(double *genes, int size)
+{
+    for (int i = 0; i < size; ++i) {
+        genes[i] = (double) rand() / (double) RAND_MAX;
+    }
+}
+
+int random_range(int start, int end, int different_num)
+{
+    if (different_num < 0) {
+        return start + rand() % (end - start);
+    } else {
+        int rnd = start + (rand() % (end - start));
+        while (rnd == different_num) {
+            rnd = start + (rand() % (end - start));
+        }
+        return rnd;
+    }
+}
+

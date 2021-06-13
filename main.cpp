@@ -21,6 +21,7 @@
 #include <include/lot.h>
 #include <include/route.h>
 #include <include/population.h>
+#include <include/chromosome.h>
 
 
 using namespace std;
@@ -114,120 +115,12 @@ int main(int argc, const char *argv[])
 }
 
 
-
-double setup_time_CWN(job_base_t * _prev, job_base_t * _next){
-    if(_prev){
-        job_t * prev = (job_t*)_prev->ptr_derived_object;
-        job_t * next = (job_t*)_next->ptr_derived_object;
-        if(isSameInfo(prev->part_no, next->part_no))
-            return 0.0;
-        else
-           return 30.0;
-
-    }
-    return 0;
-}
-
-double setup_time_CK(job_base_t * _prev, job_base_t * _next){
-    if(_prev){
-        job_t * prev = (job_t*)_prev->ptr_derived_object;
-        job_t * next = (job_t*)_next->ptr_derived_object;
-        if(prev->part_no.data.text[5] == next->part_no.data.text[5]){
-            return 0.0;
-        }else{
-            return 0;
-        }
-    }
-    return 0; 
-}
-
-double setup_time_EU(job_base_t *_prev, job_base_t * _next){
-    if(_next){
-        job_t * next = (job_t *)_next->ptr_derived_object;
-        if(next->urgent_code)
-            return 0; // FIXME
-        else
-            return 0;
-    }
-    return -1;
-}
-
-double setup_time_MC_SC(job_base_t * _prev, job_base_t *_next){
-    if(_prev && _next){
-        job_t *prev = (job_t*)_prev->ptr_derived_object;
-        job_t *next = (job_t *)_next->ptr_derived_object;
-        if(prev->pin_package.data.number[0] == next->pin_package.data.number[0]){
-            return 84;
-        }else{
-            return 90;
-        }
-    }
-    return 0;
-}
-
-double setup_time_CSC(job_base_t * _prev, job_base_t *_next){
-    if(_next){
-        job_t *next = (job_t*)_next->ptr_derived_object;
-        if(next->part_no.data.text[5] != 'A')
-            return 0;
-    }
-    return 0;
-}
-
-double setup_time_USC(job_base_t * _prev, job_base_t *_next){
-    if(_next){
-        job_t *next = (job_t*)_next->ptr_derived_object;
-        if(next->part_no.data.text[5] != 'A' && next->urgent_code == 'Y')
-            return 72;
-        else
-            return 0;
-
-    }
-    return -1;
-}
-
-double calculateSetupTime(job_t *prev, job_t *next, machine_base_operations_t * ops){
-    // first 3 jobcode : CWN->CK->EU
-    double time = 0;
-    for(unsigned int i = 0; i < ops->sizeof_setup_time_function_array; ++i){
-        if(prev)
-            time += ops->setup_times[i](&prev->base,&next->base);
-        else
-            time += ops->setup_times[i](NULL, &next->base);
-    }
-    return time;
-}
-
-void scheduling(machine_t * machine, machine_base_operations_t * ops){
-    list_ele_t *it;
-    job_t *job;
-    job_t *prev_job = NULL;
-    it = machine->base.root;
-    double arrival_time; 
-    double setup_time;
-    bool hasICSI = false;
-    double start_time = machine->base.avaliable_time;
-    while(it){
-        job = (job_t *)it->ptr_derived_object;
-        arrival_time = job->base.arriv_t;
-        setup_time = calculateSetupTime(prev_job, job, ops);
-        if(!hasICSI){
-            if(strncmp(job->customer.data.text, "ICSI", 4) == 0){
-                setup_time += 54;
-                hasICSI = true;
-            }
-        }  
-
-        start_time = (start_time + setup_time) > arrival_time ? start_time + setup_time : arrival_time;
-        set_start_time(&job->base, start_time);
-        start_time = get_end_time(&job->base);
-
-        prev_job = job;
-        it = it->next;
-    }
-    machine->makespan = start_time;
-    machine->tool->time = start_time;
-    machine->wire->time = start_time;
+int chromosomeCmpr(const void *_c1, const void *_c2){
+    chromosome_base_t *c1 = (chromosome_base_t *)_c1;
+    chromosome_base_t *c2 = (chromosome_base_t *)_c2;
+    if(c1->fitnessValue > c2->fitnessValue)
+        return true;
+    return false;
 }
 
 void geneticAlgorithm(population_t * pop){
@@ -236,10 +129,6 @@ void geneticAlgorithm(population_t * pop){
     job_t * jobs = pop->round.jobs;
     chromosome_base_t * chromosomes = pop->chromosomes; 
     map<unsigned int, machine_t *> machines = pop->round.machines;
-    int machine_idx;
-    unsigned int machine_no;
-    process_time_t tmp;
-    
     list_operations_t list_ops = LINKED_LIST_OPS;
 
     // initialize machine_op
@@ -254,65 +143,98 @@ void geneticAlgorithm(population_t * pop){
     machine_ops->setup_times[4] = setup_time_CSC;
     machine_ops->setup_times[5] = setup_time_USC;
     machine_ops->sizeof_setup_time_function_array = 6;
+    machine_ops->sort_job = _machine_base_sort_job;
+    machine_ops->add_job = _machine_base_add_job;
+    machine_ops->reset = machine_reset;
 
+    for(int k = 0; k < 100; ++k){
+        for(int i = 0; i < 100; ++i){ // chromosomes
+            chromosomes[i].fitnessValue = decoding(chromosomes[i], jobs, machines, machine_ops, &list_ops, AMOUNT_OF_JOBS);
+        }
+        // sort the chromosomes
+        qsort(chromosomes, 100, sizeof(chromosome_base_t), chromosomeCmpr);
+        printf("[%d]worst fitness value is %.3f\n", k, chromosomes[99].fitnessValue);
 
-    for(int i = 0; i < 100; ++i){ // chromosomes
-        printf("decoding chromosomes[%d]\n", i);
-        //machine selection
-        for(int j = 0; j < AMOUNT_OF_JOBS; ++j){
-            set_ms_gene_addr(&jobs[j].base, chromosomes[i].ms_genes + j);
-            set_os_gene_addr(&jobs[j].base, chromosomes[i].os_genes + j);
-            machine_idx = get_ms_gene(&jobs[j].base) / jobs[j].base.partition;
-
-            tmp = jobs[j].base.process_time[machine_idx];
-            jobs[j].base.ptime = tmp.process_time;
-            machine_no = tmp.machine_no;
-            _machine_base_add_job(&machines[machine_no]->base, &jobs[j].list);
+        // statistic
+        double sum = 0;
+        double sum2 = 0;
+        double accumulate = 0;
+        vector<chromosome_linker_t> linkers;
+        for(int l = 10; l < 100; ++l){
+            sum += chromosomes[l].fitnessValue;
         }
 
-        // sorting;
-        for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
-            _machine_base_sort_job(&it->second->base, &list_ops);
-            // machine_base_reset(&it->second->base);
-        } 
-
-        //scheduling
-        for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
-            scheduling(it->second, machine_ops); 
-            machine_base_reset(&it->second->base);
+        for(int l = 10; l < 100; ++l){
+            chromosomes[l].fitnessValue = sum / chromosomes[l].fitnessValue;
+            sum2 += chromosomes[l].fitnessValue;
         }
-        printf("end of a generation!\n"); 
-    } 
-}
+        
+        for(int l = 10; l < 100; ++l){
+            linkers.push_back(chromosome_linker_t{
+                        .chromosome = chromosomes[l],
+                        .value = accumulate += chromosomes[l].fitnessValue / sum2
+                    }); 
+        }
 
-void random(double *genes, int size)
-{
-    for (int i = 0; i < size; ++i) {
-        genes[i] = (double) rand() / (double) RAND_MAX;
+        // selection
+        // perform shallow copy
+        for(int l = 10; l < 50; ++l){
+            double rnd = (double) rand() / (double) RAND_MAX; 
+            // search
+            for(int j = 0; j < 90; ++j){
+                if(linkers[j].value > rnd){
+                    copyChromosome(chromosomes[l], linkers[j].chromosome);
+                    break;
+                }
+            }
+        }
+
+        // evolution
+        // crossover
+        for(int l = 50; l < 80; l += 2){
+            int rnd1 = random_range(0, 50, -1);
+            int rnd2 = random_range(0, 50, rnd1);
+            crossover(chromosomes[rnd1], chromosomes[rnd2], chromosomes[l], chromosomes[l+1]);
+        }
+        // mutation
+        for(int l = 80; l < 100; ++l){
+            int rnd = random_range(0, 50, -1);
+            mutation(chromosomes[rnd], chromosomes[l]);
+        }
     }
+    
+
+    decoding(chromosomes[0], jobs, machines, machine_ops, &list_ops, AMOUNT_OF_JOBS);
+    double threshold = 10000;
+    for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it ++){
+        if(it->second->makespan > threshold){
+            list_ele_t *list_it = it->second->base.root;
+            printf("hold\n");
+            while(list_it){
+                job_t * tmp = (job_t *)list_it->ptr_derived_object;
+                printf("%s : %.3f\n",tmp->base.job_info.data.text, tmp->base.ptime);
+                list_it = list_it->next;
+            }
+            printf("%s, %s\n", it->second->tool->name.data.text, it->second->wire->name.data.text);
+            exit(-1);
+        }
+    }
+     
+    printf("end\n");
 }
 
-int random_range(int start, int end, int different_num)
-{
-    if (different_num < 0) {
-        return start + rand() % (end - start);
-    } else {
-        int rnd = start + (rand() % (end - start));
-        while (rnd == different_num) {
-            rnd = start + (rand() % (end - start));
-        }
-        return rnd;
-    }
-}
 
 void initializePopulation(population_t *pop, machines_t & machines, ancillary_resources_t & tools, ancillary_resources_t & wires){
     pop->round = createARound(pop->groups[pop->current_round_no], machines, tools, wires);
     pop->chromosomes = (chromosome_base_t *)malloc(sizeof(chromosome_base_t)*100);
+    
     for(int i = 0; i < 100; ++i){
-        pop->chromosomes[i].genes = (double*)malloc(sizeof(double)*pop->round.AMOUNT_OF_JOBS * 2); 
+        pop->chromosomes[i].chromosome_no = i;
+        pop->chromosomes[i].gene_size = pop->round.AMOUNT_OF_JOBS << 1;
+        pop->chromosomes[i].genes = (double*)malloc(sizeof(double)*pop->chromosomes[i].gene_size); 
         pop->chromosomes[i].ms_genes = pop->chromosomes[i].genes;
         pop->chromosomes[i].os_genes = pop->chromosomes[i].genes + pop->round.AMOUNT_OF_JOBS;
-        random(pop->chromosomes[i].genes, pop->round.AMOUNT_OF_JOBS * 2);
+        random(pop->chromosomes[i].genes, pop->chromosomes[i].gene_size);
     }
 
 }
@@ -334,8 +256,11 @@ round_t prepareResources(vector<lot_group_t> group, machines_t & machines, ancil
         ws = wires.aRound(group[i].wire_name, group[i].machine_amount);
         iter(group[i].entities, j){
             machine_t * m = allmachines[group[i].entities[j]->entity_name];
+            m->base.ptr_derived_object = m;
             m->tool = ts[j];
             m->wire = ws[j];
+            strcpy(ts[j]->name.data.text, group[i].tool_name.c_str());
+            strcpy(ws[j]->name.data.text, group[i].wire_name.c_str());
             ts[j]->machine_no = convertEntityNameToUInt(group[i].entities[j]->entity_name);
             ws[j]->machine_no = convertEntityNameToUInt(group[i].entities[j]->entity_name);
 
@@ -352,6 +277,11 @@ round_t prepareResources(vector<lot_group_t> group, machines_t & machines, ancil
             allwires.push_back(ws[j]);
             AMOUNT_OF_MACHINES += 1;
         }
+
+        // if(group[i].tool_name.compare("A0803CB1087") == 0 && group[i].wire_name.compare("1091A07T21") == 0){
+
+        //     exit(-1);
+        // }
     }
     
     // machine_t ** machines_ptr = (machine_t**)malloc(sizeof(machine_t*)*AMOUNT_OF_MACHINES);
@@ -383,10 +313,6 @@ round_t prepareJobs(vector<lot_group_t> group){
    int AMOUNT_OF_JOBS = 0;
     vector<lot_t *> lots;
     iter(group, i){
-        // iter(group[i].lots, j){
-        //     counter++;
-        //     lots.push_back(group[i].lots[j]);
-        // }
         lots += group[i].lots;
     }
 

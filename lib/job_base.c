@@ -42,8 +42,7 @@ __qualifier__ void set_start_time(job_base_t *self, double start_time)
 {
     self->start_time = start_time;
     if (self->process_time) {
-        self->end_time = self->start_time +
-                         self->process_time[self->machine_no].process_time;
+        self->end_time = self->start_time + self->ptime;
     }
 }
 
@@ -85,9 +84,10 @@ __qualifier__ unsigned int machine_selection(job_base_t *self)
     // partition
 
     double ms_gene = get_ms_gene(self);
-    unsigned int val = ms_gene / self->partition + 0.0001;  // 0.0001 is bias
+    unsigned int val = ms_gene / self->partition;  // 0.0001 is bias
     if (self->process_time) {
         self->machine_no = self->process_time[val].machine_no;
+        self->ptime = self->process_time[val].process_time;
     }
     return val;
 }

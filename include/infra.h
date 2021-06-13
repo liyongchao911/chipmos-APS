@@ -51,4 +51,9 @@ struct __info_t{
 
 bool isSameInfo(struct __info_t info1, struct __info_t info2);
 
+
+void random(double *genes, int size);
+
+int random_range(int start, int end, int different_num);
+
 #endif

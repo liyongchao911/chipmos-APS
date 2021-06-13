@@ -1,6 +1,7 @@
 #ifndef __MACHINE_H__
 #define __MACHINE_H__
 
+#include <include/job.h>
 #include <include/machine_base.h>
 #include <include/infra.h>
 
@@ -44,5 +45,17 @@ typedef struct __machine_t{
 
 bool ares_ptr_comp(ares_t *, ares_t *);
 bool ares_comp(ares_t , ares_t);
+
+
+void machine_reset(machine_base_t * base);
+
+double setup_time_CWN(job_base_t *, job_base_t*);
+double setup_time_CK(job_base_t*, job_base_t *);
+double setup_time_EU(job_base_t*, job_base_t *);
+double setup_time_MC_SC(job_base_t*, job_base_t *);
+double setup_time_CSC(job_base_t*, job_base_t *);
+double setup_time_USC(job_base_t*, job_base_t *);
+
+void scheduling(machine_t *mahcine, machine_base_operations_t *ops);
 
 #endif
