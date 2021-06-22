@@ -9,22 +9,6 @@ typedef struct __info_t machine_info_t;
 typedef struct __info_t tool_info_t;
 typedef struct __info_t wire_info_t;
 
-// typedef struct __tool_t{
-//     unsigned int no;
-//     tool_info_t name;
-//     tool_info_t entity_name;
-//     time_t time;
-// }tool_t;
-// 
-// typedef struct __wire_t{
-//     unsigned int no;
-//     wire_info_t name;
-//     wire_info_t entity_name;
-//     time_t time;
-// }wire_t;
-
-
-
 typedef struct ancillary_resource_t{
     unsigned int no;
     struct __info_t name;

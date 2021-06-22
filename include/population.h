@@ -2,6 +2,7 @@
 #define __POPULATION_H__
 #include <vector>
 #include "include/lot.h"
+#include "include/machine_base.h"
 #include <include/common.h>
 #include <include/job.h>
 #include <include/job_base.h>
@@ -32,7 +33,13 @@ struct population_t{
         double SELECTION_RATE;
         int GENERATIONS;
     }parameters;
-    
+
+    struct {
+        list_operations_t * list_ops;
+        job_base_operations_t * job_ops;
+        machine_base_operations_t * machine_ops;
+    }operations;
+   
     std::vector<std::vector<lot_group_t> > groups;
 
     unsigned int current_round_no;

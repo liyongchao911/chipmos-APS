@@ -1,4 +1,5 @@
 #include <include/infra.h>
+#include <cstdlib>
 
 
 std::vector<std::string> split(char *text, char delimiter)
@@ -98,3 +99,6 @@ int random_range(int start, int end, int different_num)
     }
 }
 
+double randomDouble(){
+    return (double) rand() / (double) RAND_MAX;
+}

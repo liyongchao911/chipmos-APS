@@ -189,6 +189,7 @@ std::map<std::string, std::string> lot_t::data()
 bool lot_t::setUph(csv_t _uph_csv){
     _uph_csv = _uph_csv.filter("recipe", _recipe);
     _uph_csv = _uph_csv.filter("oper", std::to_string(this->tmp_oper));
+    _uph_csv = _uph_csv.filter("cust", _customer);
     if(_uph_csv.nrows() == 0){
         this->addLog("(" + std::to_string(this->tmp_oper) + ", "+ _recipe + ") is not in uph file");
         return false;
@@ -492,7 +493,7 @@ std::vector<lot_group_t> lots_t::round(entities_t machines){
             if(found)
                 successful.push_back(lots[j]);
             else{
-                printf("has no machine\n");
+                // printf("has no machine\n");
                 failed.push_back(lots[j]);
             }
         }

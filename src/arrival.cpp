@@ -514,6 +514,7 @@ void setupUph(string uph_file_name, vector<lot_t> & lots, vector<lot_t> & faulty
     uph_csv.trim(" ");
     uph_csv.setHeaders(map<string, string>({
                     {"oper", "OPER"},
+                    {"cust", "CUST"},
                     {"recipe", "B/D#"},
                     {"model", "MODEL"},
                     {"uph", "G.UPH"}

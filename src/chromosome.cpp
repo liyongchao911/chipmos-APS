@@ -1,6 +1,7 @@
 #include <include/chromosome.h>
 #include <cstdlib>
 #include "include/infra.h"
+#include "include/job_base.h"
 #include "include/linked_list.h"
 
 using namespace std;
@@ -33,7 +34,7 @@ void mutation(chromosome_base_t p, chromosome_base_t c){
     c.genes[pos] = rnd;
 }
 
-double decoding(chromosome_base_t chromosome, job_t * jobs, std::map<unsigned int, machine_t *>machines, machine_base_operations_t *machine_ops, list_operations_t *list_ops, int AMOUNT_OF_JOBS){
+double decoding(chromosome_base_t chromosome, job_t * jobs, std::map<unsigned int, machine_t *>machines, machine_base_operations_t *machine_ops, list_operations_t *list_ops, job_base_operations_t *job_ops, int AMOUNT_OF_JOBS){
     
     unsigned int machine_idx, machine_no;
     for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
@@ -41,9 +42,9 @@ double decoding(chromosome_base_t chromosome, job_t * jobs, std::map<unsigned in
     } 
     // machine selection
     for(int j = 0; j < AMOUNT_OF_JOBS; ++j){
-        set_ms_gene_addr(&jobs[j].base, chromosome.ms_genes + j);
-        set_os_gene_addr(&jobs[j].base, chromosome.os_genes + j);
-        machine_idx = machine_selection(&jobs[j].base);
+        job_ops->set_ms_gene_addr(&jobs[j].base, chromosome.ms_genes + j);
+        job_ops->set_os_gene_addr(&jobs[j].base, chromosome.os_genes + j);
+        machine_idx = job_ops->machine_selection(&jobs[j].base);
         machine_no = jobs[j].base.machine_no;
         machine_ops->add_job(&machines[machine_no]->base, &jobs[j].list);
     }
@@ -60,7 +61,6 @@ double decoding(chromosome_base_t chromosome, job_t * jobs, std::map<unsigned in
         if(it->second->makespan > makespan)
             makespan = it->second->makespan;
     }
-    // chromosome.fitnessValue = makespan;
     return makespan;
 }
 

@@ -56,4 +56,6 @@ void random(double *genes, int size);
 
 int random_range(int start, int end, int different_num);
 
+double randomDouble();
+
 #endif
