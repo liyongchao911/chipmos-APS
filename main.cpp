@@ -109,7 +109,7 @@ int main(int argc, const char *argv[])
             .AMOUNT_OF_R_CHROMOSOMES = 200,
             .EVOLUTION_RATE = 0.5,
             .SELECTION_RATE = 0.2,
-            .GENERATIONS = 50
+            .GENERATIONS = 60
         },
         .groups = round_groups,
         .current_round_no = 0,
@@ -135,7 +135,9 @@ void geneticAlgorithm(population_t * pop){
     job_base_operations_t *job_ops = pop->operations.job_ops;
 
     // initialize machine_op
-    for(int k = 0; k < pop->parameters.GENERATIONS; ++k){
+    clock_t q1 = clock();
+    clock_t q2 = q1 + pop->parameters.GENERATIONS * CLOCKS_PER_SEC;
+    for(int k = 0; q1 < q2; ++k, q1 = clock()){
         for(int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++i){ // for all chromosomes
             chromosomes[i].fitnessValue = decoding(chromosomes[i], jobs, machines, machine_ops, list_ops, job_ops, AMOUNT_OF_JOBS);
         }
@@ -226,8 +228,8 @@ void geneticAlgorithm(population_t * pop){
 
 
 void initializePopulation(population_t *pop, machines_t & machines, ancillary_resources_t & tools, ancillary_resources_t & wires){
-    vector<lot_group_t> test_g(pop->groups[0].begin(), pop->groups[0].begin() + 2);
-    pop->round = createARound(test_g, machines, tools, wires);
+    // vector<lot_group_t> test_g(pop->groups[0].begin(), pop->groups[0].begin() + 2);
+    pop->round = createARound(pop->groups[0], machines, tools, wires);
     pop->chromosomes = (chromosome_base_t *)malloc(sizeof(chromosome_base_t)*pop->parameters.AMOUNT_OF_R_CHROMOSOMES);
     
     for(int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++i){

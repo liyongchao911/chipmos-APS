@@ -13,6 +13,7 @@ void machine_reset(machine_base_t * base){
     machine_t * m = (machine_t *)base->ptr_derived_object;
     machine_base_reset(base);
     m->makespan = 0;
+    m->total_completion_time = 0;
     m->tool->time = 0;
     m->wire->time = 0;
 }
@@ -109,6 +110,7 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops){
     double setup_time;
     bool hasICSI = false;
     double start_time = machine->base.avaliable_time;
+    double total_completion_time = 0;
     while(it){
         job = (job_t *)it->ptr_derived_object;
         arrival_time = job->base.arriv_t;
@@ -123,12 +125,12 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops){
         start_time = (start_time + setup_time) > arrival_time ? start_time + setup_time : arrival_time;
         set_start_time(&job->base, start_time);
         start_time = get_end_time(&job->base);
-
+        total_completion_time += start_time;
         prev_job = job;
         it = it->next;
     }
     machine->makespan = start_time;
     machine->tool->time = start_time;
     machine->wire->time = start_time;
-
+    machine->total_completion_time = total_completion_time;
 }
