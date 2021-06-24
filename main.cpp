@@ -143,7 +143,7 @@ void geneticAlgorithm(population_t * pop){
         }
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES, sizeof(chromosome_base_t), chromosomeCmpr);
-        printf("[%d]best fitness value is %.3f\n", k, chromosomes[0].fitnessValue);
+        printf("%d,%.3f\n", k, chromosomes[0].fitnessValue);
 
         // statistic
         double sum = 0;
@@ -198,21 +198,21 @@ void geneticAlgorithm(population_t * pop){
         }
     }
 
-    decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops, AMOUNT_OF_JOBS);
+    // decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops, AMOUNT_OF_JOBS);
 
-    //outlier
-    for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
-        if(it->second->makespan > 10000){
-            list_ele_t * list_it = it->second->base.root;
-            printf("%s, %s\n", it->second->tool->name.data.text, it->second->wire->name.data.text);
-            while(list_it){
-                job_t * j = (job_t *)list_it->ptr_derived_object;
-                printf("%s : (%.2f, %.2f, %.2f)\n", j->base.job_info.data.text, j->base.start_time, j->base.ptime, j->base.end_time);
-                list_it = list_it->next;
-            }
-            printf("=================================\n");
-        }
-    }
+    // //outlier
+    // for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
+    //     if(it->second->makespan > 10000){
+    //         list_ele_t * list_it = it->second->base.root;
+    //         printf("%s, %s\n", it->second->tool->name.data.text, it->second->wire->name.data.text);
+    //         while(list_it){
+    //             job_t * j = (job_t *)list_it->ptr_derived_object;
+    //             printf("%s : (%.2f, %.2f, %.2f)\n", j->base.job_info.data.text, j->base.start_time, j->base.ptime, j->base.end_time);
+    //             list_it = list_it->next;
+    //         }
+    //         printf("=================================\n");
+    //     }
+    // }
     
     // output   
     FILE * file = fopen("result.txt", "w");
