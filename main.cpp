@@ -38,7 +38,6 @@ void geneticAlgorithm(population_t * pop);
 
 int main(int argc, const char *argv[])
 {
-    srand(time(NULL));
     csv_t lot_csv("lots.csv", "r", true, true);
     lot_csv.setHeaders(map<string, string>({
                     {"route", "route"},
@@ -109,7 +108,7 @@ int main(int argc, const char *argv[])
             .AMOUNT_OF_R_CHROMOSOMES = 200,
             .EVOLUTION_RATE = 0.5,
             .SELECTION_RATE = 0.2,
-            .GENERATIONS = 60
+            .GENERATIONS = 180
         },
         .groups = round_groups,
         .current_round_no = 0,
@@ -117,6 +116,7 @@ int main(int argc, const char *argv[])
 
     initializePopulation(&pop, machines, tools, wires);
     
+    srand(time(NULL));
     geneticAlgorithm(&pop);
     
     return 0;
@@ -137,13 +137,14 @@ void geneticAlgorithm(population_t * pop){
     // initialize machine_op
     clock_t q1 = clock();
     clock_t q2 = q1 + pop->parameters.GENERATIONS * CLOCKS_PER_SEC;
-    for(int k = 0; q1 < q2; ++k, q1 = clock()){
+    int k;
+    for(k = 0; q1 < q2; ++k, q1 = clock()){
         for(int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++i){ // for all chromosomes
             chromosomes[i].fitnessValue = decoding(chromosomes[i], jobs, machines, machine_ops, list_ops, job_ops, AMOUNT_OF_JOBS);
         }
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES, sizeof(chromosome_base_t), chromosomeCmpr);
-        printf("%d,%.3f\n", k, chromosomes[0].fitnessValue);
+        // printf("%d,%.3f\n", k, chromosomes[0].fitnessValue);
 
         // statistic
         double sum = 0;
@@ -214,7 +215,11 @@ void geneticAlgorithm(population_t * pop){
     //     }
     // }
     
-    // output   
+    // output  
+    printf("best solution total completion time : %f\n", chromosomes[0].fitnessValue);
+    printf("job amount = %d\n", AMOUNT_OF_JOBS);
+    printf("machine amount = %lu\n", machines.size());
+    printf("generations = %d\n", k);
     FILE * file = fopen("result.txt", "w");
     for(int i = 0; i < AMOUNT_OF_JOBS; ++i){
         machine_t *m = machines[jobs[i].base.machine_no];
