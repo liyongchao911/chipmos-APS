@@ -99,7 +99,8 @@ int main(int argc, const char *argv[])
     entities.addMachines(machine_csv, location_csv);
     machines_t machines;
     machines.addMachines(entities.getAllEntity());
-
+    
+    srand(20000000);
     vector<vector<lot_group_t> > round_groups = lots.rounds(entities);
     
     population_t pop = population_t{ 
@@ -108,7 +109,7 @@ int main(int argc, const char *argv[])
             .AMOUNT_OF_R_CHROMOSOMES = 200,
             .EVOLUTION_RATE = 0.5,
             .SELECTION_RATE = 0.2,
-            .GENERATIONS = 180
+            .GENERATIONS = 60
         },
         .groups = round_groups,
         .current_round_no = 0,
@@ -216,17 +217,18 @@ void geneticAlgorithm(population_t * pop){
     // }
     
     // output  
-    printf("best solution total completion time : %f\n", chromosomes[0].fitnessValue);
+    // printf("best solution total completion time : %f\n", chromosomes[0].fitnessValue);
     printf("job amount = %d\n", AMOUNT_OF_JOBS);
     printf("machine amount = %lu\n", machines.size());
-    printf("generations = %d\n", k);
-    FILE * file = fopen("result.txt", "w");
-    for(int i = 0; i < AMOUNT_OF_JOBS; ++i){
-        machine_t *m = machines[jobs[i].base.machine_no];
-        // lot_number, part_no, part_id, entity_name, start time, end_time
-        string ent_name = convertUIntToEntityName(m->base.machine_no);
-        fprintf(file, "%s, %s, %s, %s, %.3f, %.3f\n", jobs[i].base.job_info.data.text, m->tool->name.data.text, m->wire->name.data.text, ent_name.c_str(), jobs[i].base.start_time, jobs[i].base.end_time);
-    }
+    // printf("generations = %d\n", k);
+    FILE * file = fopen("result.txt", "a+");
+    fprintf(file, "%f\n", chromosomes[0].fitnessValue);
+    // for(int i = 0; i < AMOUNT_OF_JOBS; ++i){
+    //     machine_t *m = machines[jobs[i].base.machine_no];
+    //     // lot_number, part_no, part_id, entity_name, start time, end_time
+    //     string ent_name = convertUIntToEntityName(m->base.machine_no);
+    //     fprintf(file, "%s, %s, %s, %s, %.3f, %.3f\n", jobs[i].base.job_info.data.text, m->tool->name.data.text, m->wire->name.data.text, ent_name.c_str(), jobs[i].base.start_time, jobs[i].base.end_time);
+    // }
     fclose(file);
 
 }
