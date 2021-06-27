@@ -12,6 +12,21 @@ route_t::route_t()
                     DA9, DA10, DA11, DA12, DA13, DA14, DA15};
 }
 
+void route_t::setRoute(csv_t all_routes){
+    // first, get the set of route names
+    std::vector<std::string> route_names = all_routes.getColumn("route");
+    std::set<std::string> route_list_set(route_names.begin(), route_names.end());
+    route_names = std::vector<std::string>(route_list_set.begin(), route_list_set.end());
+
+    // second, call route_t::setRoute for each route respectively
+    csv_t df;
+    iter(route_names, i){
+        df = all_routes.filter("route", route_names[i]);
+        setRoute(route_names[i], df);
+    }
+
+}
+
 void route_t::setRoute(std::string routename, csv_t dataframe)
 {
     std::vector<std::vector<std::string> > data = dataframe.getData();
@@ -37,7 +52,6 @@ void route_t::setQueueTime(csv_t queue_time_df)
     unsigned int nrows = queue_time_df.nrows();
     std::map<std::string, std::string> elements;
     std::map<int, int> queue_time;
-
     int station;
     for (unsigned int i = 0; i < nrows; ++i) {
         elements = queue_time_df.getElements(i);

@@ -30,21 +30,20 @@ class entities_t
 {
 private:
 
-    std::vector<entity_t *> ents;
+    std::vector<entity_t *> _ents;
     
     // _entities[MODEL][AREA] is a vector of entity_t object.
     std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
         _entities;
 
-    std::map<std::string, std::vector<std::string> > model_locations;
+    std::map<std::string, std::vector<std::string> > _model_locations;
 
-    std::map<std::string, std::vector<entity_t *> > loc_ents;
+    std::map<std::string, std::vector<entity_t *> > _loc_ents;
 
-    std::vector<std::map<std::string, std::string> > faulty_machine;
+    std::vector<std::map<std::string, std::string> > _faulty_machine;
 
 
-    time_t time;
-    time_t min_outplan_time;
+    time_t _time;
 
 public:
     /**

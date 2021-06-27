@@ -96,6 +96,8 @@ private:
 public:
     route_t();
 
+    void setRoute(csv_t all_routes);
+
     /**
      * setRoute() - set routes from dataframe
      *

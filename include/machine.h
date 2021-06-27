@@ -24,6 +24,8 @@ typedef struct __machine_t{
     machine_base_t base;
     ares_t * tool;
     ares_t * wire;
+    struct __info_t part_no;
+    struct __info_t pin_package;
     double makespan;
     double total_completion_time;
 }machine_t;

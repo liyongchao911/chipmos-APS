@@ -20,15 +20,14 @@ machine_t to_machine(entity_t ent){
         };
 }
 
-entities_t::entities_t(string _time){
-    time = 0;
-    min_outplan_time = LONG_LONG_MAX;
-    setTime(_time); 
+entities_t::entities_t(string time){
+    _time = 0;
+    setTime(time); 
 }
 
-void entities_t::setTime(string _time){
-    if(_time.length()){
-        time = timeConverter(_time);
+void entities_t::setTime(string time){
+    if(time.length()){
+        _time = timeConverter(time);
     }
 }
 
@@ -59,19 +58,17 @@ void entities_t::addMachine(map<string, string> elements){
         ent->name.data.number[0] = no;
         ent->name.text_size = 4;
         ent->name.number_size = 1;
-        if(ent->recover_time < min_outplan_time)
-            min_outplan_time = ent->recover_time;
 
-        ents.push_back(ent);
+        _ents.push_back(ent);
         
         _entities[model][location].push_back(ent);
-        loc_ents[location].push_back(ent);
-        if(model_locations.count(model) == 0){
-            model_locations[model] = vector<string>();
+        _loc_ents[location].push_back(ent);
+        if(_model_locations.count(model) == 0){
+            _model_locations[model] = vector<string>();
         } 
 
-        if(find(model_locations[model].begin(), model_locations[model].end(), location) == model_locations[model].end()){
-            model_locations[model].push_back(location); 
+        if(find(_model_locations[model].begin(), _model_locations[model].end(), location) == _model_locations[model].end()){
+            _model_locations[model].push_back(location); 
         }
          
     }else {
@@ -98,15 +95,15 @@ void entities_t::addMachines(csv_t _machines, csv_t _location){
         }catch(std::out_of_range & e){
             // cout<<elements["entity"]<<endl;
             elements["log"] = "can't find the location of this entity";
-            faulty_machine.push_back(elements);
+            _faulty_machine.push_back(elements);
         }catch(std::invalid_argument & e){
             elements["log"] = "information is loss";
-            faulty_machine.push_back(elements);
+            _faulty_machine.push_back(elements);
         }
     }
     
-    iter(ents, i){
-        ents[i]->recover_time = (ents[i]->recover_time - min_outplan_time) / 60.0;
+    iter(_ents, i){
+        _ents[i]->recover_time = ((_ents[i]->recover_time - _time) > 0 ? (_ents[i]->recover_time - _time) : 0) / 60.0;
     }
 }
 
@@ -117,7 +114,7 @@ entities_t::getEntities(){
 }
 
 std::map<std::string, std::vector<entity_t *> > entities_t::getLocEntity(){
-    return loc_ents;
+    return _loc_ents;
 }
 
 std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(std::map<std::string, int> statistic, int amount){
@@ -127,9 +124,9 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(std::map<std:
     for(std::map<std::string, int>::iterator it = statistic.begin(); it != statistic.end(); it++){
         if(it->second == 0)
             continue;
-        for(unsigned int i = 0; i < loc_ents[it->first].size(); ++i){
-            if(!loc_ents[it->first][i]->hold){
-                pool.push_back(loc_ents[it->first][i]);
+        for(unsigned int i = 0; i < _loc_ents[it->first].size(); ++i){
+            if(!_loc_ents[it->first][i]->hold){
+                pool.push_back(_loc_ents[it->first][i]);
             }
         }
     }
@@ -149,17 +146,17 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(std::map<std:
 }
 
 void entities_t::reset(){
-    iter(ents, i){
-        ents[i]->hold = false;
+    iter(_ents, i){
+        _ents[i]->hold = false;
     }
 }
 
 std::vector<entity_t *> entities_t::getAllEntity(){
-    return ents;
+    return _ents;
 }
 
 std::map<std::string, std::vector<std::string> > entities_t::getModelLocation(){
-    return model_locations;
+    return _model_locations;
 }
 unsigned int convertEntityNameToUInt(string name){
     union{
@@ -174,15 +171,15 @@ unsigned int convertEntityNameToUInt(string name){
 
 vector<machine_t> entities_t::machines(){
     vector<machine_t> ms;
-    iter(ents, i){
+    iter(_ents, i){
         machine_t m = machine_t{
             .base = {
-                .machine_no = convertEntityNameToUInt(ents[i]->entity_name),
+                .machine_no = convertEntityNameToUInt(_ents[i]->entity_name),
                 .size_of_jobs = 0,
-                .avaliable_time = (unsigned int)ents[i]->recover_time
+                .avaliable_time = (unsigned int)_ents[i]->recover_time
             },
-            .tool = ents[i]->tool,
-            .wire = ents[i]->wire
+            .tool = _ents[i]->tool,
+            .wire = _ents[i]->wire
         };
         ms.push_back(m);
     }
