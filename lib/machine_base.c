@@ -10,33 +10,33 @@ __qualifier__ void machine_base_reset(machine_base_t *self)
 }
 
 
-__qualifier__ void _machine_base_add_job(machine_base_t *self, list_ele_t *job)
+__qualifier__ void machineBaseAddJob(machine_base_t *_self, list_ele_t *job)
 {
     job->next = job->prev = NULL;
     list_operations_t ops = LINKED_LIST_OPS;
-    if (self->size_of_jobs == 0) {
-        self->tail = self->root = job;
+    if (_self->size_of_jobs == 0) {
+        _self->tail = _self->root = job;
     } else {
-        ops.set_next(self->tail, job);
+        ops.set_next(_self->tail, job);
         // self->tail->set_next(self->tail, job); // add into the list
-        self->tail = job;  // move the tail
+        _self->tail = job;  // move the tail
     }
-    ++self->size_of_jobs;
+    ++_self->size_of_jobs;
 }
 
-__qualifier__ void _machine_base_sort_job(machine_base_t *self,
+__qualifier__ void machineBaseSortJob(machine_base_t *_self,
                                           list_operations_t *ops)
 {
-    if (self->size_of_jobs == 0) {
+    if (_self->size_of_jobs == 0) {
         return;
     }
     list_ele_t *ele = NULL;
-    self->root = list_merge_sort(self->root, ops);
-    ele = self->root;
+    _self->root = list_merge_sort(_self->root, ops);
+    ele = _self->root;
     while (ele && ele->next) {
         ele = (list_ele_t *) ele->next;
     }
-    self->tail = ele;
+    _self->tail = ele;
 }
 
 

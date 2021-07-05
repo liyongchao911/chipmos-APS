@@ -18,6 +18,6 @@
 #define PATH_SEPARATOR "\\"
 #else
 #define PATH_SEPARATOR "/"
-#endif 
+#endif
 
 #endif

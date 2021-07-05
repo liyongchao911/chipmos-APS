@@ -6,22 +6,21 @@
 
 using namespace std;
 
-void initializeOperations(population_t *pop){
+void initializeOperations(population_t *pop)
+{
     machine_base_operations_t *machine_ops;
     machine_ops = (machine_base_operations_t *) malloc(
         sizeof(machine_base_operations_t) + sizeof(setup_time_t) * 7);
-    machine_ops->add_job = _machine_base_add_job;
-    machine_ops->sort_job = _machine_base_sort_job;
-    machine_ops->setup_times[0] = setup_time_CWN;
-    machine_ops->setup_times[1] = setup_time_CK;
-    machine_ops->setup_times[2] = setup_time_EU;
-    machine_ops->setup_times[3] = setup_time_MC_SC;
-    machine_ops->setup_times[4] = setup_time_CSC;
-    machine_ops->setup_times[5] = setup_time_USC;
+    machine_ops->add_job = machineBaseAddJob;
+    machine_ops->sort_job = machineBaseSortJob;
+    machine_ops->setup_times[0] = setupTimeCWN;
+    machine_ops->setup_times[1] = setupTimeCK;
+    machine_ops->setup_times[2] = setupTimeEU;
+    machine_ops->setup_times[3] = setupTimeMCSC;
+    machine_ops->setup_times[4] = setupTimeCSC;
+    machine_ops->setup_times[5] = setupTimeUSC;
     machine_ops->sizeof_setup_time_function_array = 6;
-    machine_ops->sort_job = _machine_base_sort_job;
-    machine_ops->add_job = _machine_base_add_job;
-    machine_ops->reset = machine_reset;
+    machine_ops->reset = machineReset;
 
     list_operations_t *list_ops;
     list_ops = (list_operations_t *) malloc(sizeof(list_operations_t));
@@ -34,7 +33,6 @@ void initializeOperations(population_t *pop){
     pop->operations.machine_ops = machine_ops;
     pop->operations.list_ops = list_ops;
     pop->operations.job_ops = job_ops;
-
 }
 
 void initializePopulation(population_t *pop,
@@ -57,7 +55,6 @@ void initializePopulation(population_t *pop,
             pop->chromosomes[i].genes + pop->round.AMOUNT_OF_JOBS;
         random(pop->chromosomes[i].genes, pop->chromosomes[i].gene_size);
     }
-
 }
 
 
@@ -104,7 +101,6 @@ round_t prepareResources(vector<lot_group_t> group,
             allwires.push_back(ws[j]);
             AMOUNT_OF_MACHINES += 1;
         }
-
     }
 
     // prepare tool
@@ -121,9 +117,9 @@ round_t prepareResources(vector<lot_group_t> group,
 
 
     return round_t{.AMOUNT_OF_MACHINES = AMOUNT_OF_MACHINES,
-        .machines = machines_map,
-        .tools = tools_ar,
-        .wires = wires_ar};
+                   .machines = machines_map,
+                   .tools = tools_ar,
+                   .wires = wires_ar};
 }
 
 round_t prepareJobs(vector<lot_group_t> group)
@@ -159,37 +155,40 @@ round_t prepareJobs(vector<lot_group_t> group)
     }
 
     return round_t{.AMOUNT_OF_JOBS = AMOUNT_OF_JOBS,
-        .jobs = jobs,
-        .process_times = pts,
-        .size_of_process_times = size_of_pt};
+                   .jobs = jobs,
+                   .process_times = pts,
+                   .size_of_process_times = size_of_pt};
 }
 
-void freeJobs(round_t* round){
+void freeJobs(round_t *round)
+{
     free(round->jobs);
-    for(int i = 0; i < round->AMOUNT_OF_JOBS; ++i){
+    for (int i = 0; i < round->AMOUNT_OF_JOBS; ++i) {
         free(round->process_times[i]);
     }
     free(round->process_times);
     free(round->size_of_process_times);
 
-    round->jobs = NULL;
-    round->process_times = NULL;
-    round->size_of_process_times = NULL;
+    round->jobs = nullptr;
+    round->process_times = nullptr;
+    round->size_of_process_times = nullptr;
 }
 
-void freeResources(round_t *round){
+void freeResources(round_t *round)
+{
     free(round->tools);
     free(round->wires);
-    round->tools = NULL;
-    round->wires = NULL;
+    round->tools = nullptr;
+    round->wires = nullptr;
 }
 
-void freeChromosomes(population_t * pop){
-    for(int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++i){
+void freeChromosomes(population_t *pop)
+{
+    for (int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES; ++i) {
         free(pop->chromosomes[i].genes);
     }
     free(pop->chromosomes);
-    pop->chromosomes = NULL;
+    pop->chromosomes = nullptr;
 }
 
 round_t createARound(vector<lot_group_t> group,
@@ -229,7 +228,7 @@ void geneticAlgorithm(population_t *pop)
         }
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES,
-              sizeof(chromosome_base_t), chromosomeCmpr);
+              sizeof(chromosome_base_t), chromosomeCmp);
         printf("%d,%.3f\n", k, chromosomes[0].fitnessValue);
 
         // statistic
@@ -295,16 +294,18 @@ void geneticAlgorithm(population_t *pop)
         }
     }
 
-    decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops, AMOUNT_OF_JOBS);
+    decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops,
+             AMOUNT_OF_JOBS);
     // update machines' avaliable time and set the last job
-    for(map<unsigned int, machine_t *>::iterator it = machines.begin();  it != machines.end(); ++it){
+    for (map<unsigned int, machine_t *>::iterator it = machines.begin();
+         it != machines.end(); ++it) {
         it->second->base.avaliable_time = it->second->makespan;
         setLastJobInMachine(it->second);
     }
 
     // output
     FILE *file = fopen("result.csv", "a+");
-    for(int i = 0; i < AMOUNT_OF_JOBS; ++i){
+    for (int i = 0; i < AMOUNT_OF_JOBS; ++i) {
         machine_t *m = machines[jobs[i].base.machine_no];
         // lot_number, part_no, part_id, entity_name, start time, end_time
         string ent_name = convertUIntToEntityName(m->base.machine_no);

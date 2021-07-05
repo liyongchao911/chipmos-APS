@@ -156,7 +156,7 @@ struct machine_base_operations_t {
     double (*setup_times[])(job_base_t *job1, job_base_t *job2);
 };
 
-typedef double(*setup_time_t)(job_base_t *, job_base_t *);
+typedef double (*setup_time_t)(job_base_t *, job_base_t *);
 
 /**
  * machine_base_reset () - Reset machine_base_t object
@@ -179,27 +179,26 @@ __qualifier__ unsigned int machine_base_get_size_of_jobs(machine_base_t *_self);
 __qualifier__ void machine_base_init(machine_base_t *_self);
 
 /**
- * _machine_base_add_job () - Add new job into machine
+ * machineBaseAddJob () - Add new job into machine
  * Add new job into machine. The data structure used to store jobs is linked
  * list.
  * @b job should be list_ele_t type. The way to form the job linked list could
- * be re-defined. _machine_base_add_job provide default method to form the
+ * be re-defined. machineBaseAddJob provide default method to form the
  * linked list. The new job would be at the end of list.
  * @param _self : machine_base object
  * @param job : new job
  */
-__qualifier__ void _machine_base_add_job(machine_base_t *_self,
-                                         list_ele_t *job);
+__qualifier__ void machineBaseAddJob(machine_base_t *_self, list_ele_t *job);
 
 /**
- * _machine_base_sort_job - Sort the job sequence
+ * machineBaseSortJob - Sort the job sequence
  * Sort the job sequence in order. Merge sort algorithm is adopted to sort the
  * job sequence because its worst case complexity is O(nlogn).
  * @param _self : machine_base object
  * @param ops : operations for list element
  */
-__qualifier__ void _machine_base_sort_job(machine_base_t *_self,
-                                          list_operations_t *ops);
+__qualifier__ void machineBaseSortJob(machine_base_t *_self,
+                                      list_operations_t *ops);
 
 /**
  * @def MACHINE_BASE_OPS

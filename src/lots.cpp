@@ -1,66 +1,81 @@
+#include <assert.h>
 #include <cstdlib>
 #include <ctime>
 #include <exception>
 #include <ios>
 #include <iostream>
-#include <assert.h>
 #include <iterator>
 #include <map>
 #include <set>
 #include <stdexcept>
 #include <string>
 
-#include "include/infra.h"
 #include "include/condition_card.h"
 #include "include/csv.h"
 #include "include/da.h"
-#include "include/route.h"
+#include "include/infra.h"
 #include "include/lots.h"
+#include "include/route.h"
 
 using namespace std;
 
-void lots_t::addLots(std::vector<lot_t> lots){
+void lots_t::addLots(std::vector<lot_t> lots)
+{
     this->lots = lots;
     std::string part_id, part_no;
-    iter(this->lots, i){
+    iter(this->lots, i)
+    {
         part_id = this->lots[i].part_id();
         part_no = this->lots[i].part_no();
         this->tool_lots[part_no].push_back(&(this->lots[i]));
         this->wire_lots[part_id].push_back(&(this->lots[i]));
-        this->tool_wire_lots[part_no + "_" + part_id].push_back(&(this->lots[i]));
+        this->tool_wire_lots[part_no + "_" + part_id].push_back(
+            &(this->lots[i]));
 
-        amount_of_tools[this->lots[i].part_no()] = this->lots[i].getAmountOfTools();
-        amount_of_wires[this->lots[i].part_id()] = this->lots[i].getAmountOfWires();
+        amount_of_tools[this->lots[i].part_no()] =
+            this->lots[i].getAmountOfTools();
+        amount_of_wires[this->lots[i].part_id()] =
+            this->lots[i].getAmountOfWires();
     }
 }
 
-std::map<std::string, int> lots_t::getModelsDistribution(std::map<std::string, std::map<std::string, std::vector<entity_t *> > > ents){
+std::map<std::string, int> lots_t::getModelsDistribution(
+    std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
+        ents)
+{
     std::map<std::string, int> _;
-    for(auto & ent : ents){
-        for(auto & it2 : ent.second){
+    for (auto &ent : ents) {
+        for (auto &it2 : ent.second) {
             _[it2.first] = 0;
         }
     }
     return _;
 }
 
-std::map<std::string, int> lots_t::getModelsDistribution(std::map<std::string, std::vector<entity_t *> > loc_ents){
+std::map<std::string, int> lots_t::getModelsDistribution(
+    std::map<std::string, std::vector<entity_t *> > loc_ents)
+{
     std::map<std::string, int> _;
-    for(auto & loc_ent : loc_ents){
+    for (auto &loc_ent : loc_ents) {
         _[loc_ent.first] = 0;
     }
     return _;
 }
 
 
-std::vector<lot_group_t> lots_t::round(entities_t machines){
-    std::map<std::string, std::map<std::string, std::vector<entity_t *> > > entities = machines.getEntities();
-    std::map<std::string, std::vector<entity_t*> > loc_ents = machines.getLocEntity();
-    std::map<std::string, std::vector<std::string> > model_location = machines.getModelLocation();
+std::vector<lot_group_t> lots_t::round(entities_t machines)
+{
+    std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
+        entities = machines.getEntities();
+    std::map<std::string, std::vector<entity_t *> > loc_ents =
+        machines.getLocEntity();
+    std::map<std::string, std::vector<std::string> > model_location =
+        machines.getModelLocation();
     std::vector<lot_group_t> selected_groups;
 
     // initialize
-    iter(lots, i){
+    iter(lots, i)
+    {
         lots[i].clearCanRunLocation();
         lots[i].setCanRunLocation(model_location);
     }
@@ -69,16 +84,15 @@ std::vector<lot_group_t> lots_t::round(entities_t machines){
 
     // 30 sets;
     std::vector<lot_group_t> groups;
-    for(auto & tool_wire_lot : tool_wire_lots){
-        groups.push_back(lot_group_t{
-            .wire_tools_name = tool_wire_lot.first,
-            .lot_amount = tool_wire_lot.second.size()
-        });
+    for (auto &tool_wire_lot : tool_wire_lots) {
+        groups.push_back(
+            lot_group_t{.wire_tools_name = tool_wire_lot.first,
+                        .lot_amount = tool_wire_lot.second.size()});
     }
     std::sort(groups.begin(), groups.end(), lot_group_comparision);
 
-    for(unsigned int i = 0; i < 50; ++i){
-        if(groups[i].lot_amount > 0){
+    for (unsigned int i = 0; i < 50; ++i) {
+        if (groups[i].lot_amount > 0) {
             selected_groups.push_back(groups[i]);
         }
     }
@@ -87,16 +101,17 @@ std::vector<lot_group_t> lots_t::round(entities_t machines){
     std::map<std::string, int> sta_wires;
 
     std::string t, w, t_w;
-    iter(selected_groups, i){
+    iter(selected_groups, i)
+    {
         t_w = selected_groups[i].wire_tools_name;
         t = t_w.substr(0, t_w.find("_"));
         w = t_w.substr(t_w.find("_") + 1);
         selected_groups[i].wire_name = w;
         selected_groups[i].tool_name = t;
-        if(sta_tools.count(t) == 0){
+        if (sta_tools.count(t) == 0) {
             sta_tools[t] = 0;
         }
-        if(sta_wires.count(w) == 0){
+        if (sta_wires.count(w) == 0) {
             sta_wires[w] = 0;
         }
 
@@ -105,85 +120,108 @@ std::vector<lot_group_t> lots_t::round(entities_t machines){
     }
 
     double ratio;
-    iter(selected_groups, i){
-        ratio = selected_groups[i].lot_amount / (double)sta_tools.at(selected_groups[i].tool_name);
-        selected_groups[i].tool_amount = ratio * amount_of_tools.at(selected_groups[i].tool_name);
+    iter(selected_groups, i)
+    {
+        ratio = selected_groups[i].lot_amount /
+                (double) sta_tools.at(selected_groups[i].tool_name);
+        selected_groups[i].tool_amount =
+            ratio * amount_of_tools.at(selected_groups[i].tool_name);
 
-        ratio = selected_groups[i].lot_amount / (double)sta_wires.at(selected_groups[i].wire_name);
-        selected_groups[i].wire_amount = ratio * amount_of_wires.at(selected_groups[i].wire_name);
+        ratio = selected_groups[i].lot_amount /
+                (double) sta_wires.at(selected_groups[i].wire_name);
+        selected_groups[i].wire_amount =
+            ratio * amount_of_wires.at(selected_groups[i].wire_name);
 
-        selected_groups[i].machine_amount = selected_groups[i].tool_amount > selected_groups[i].wire_amount ? selected_groups[i].wire_amount : selected_groups[i].tool_amount;
+        selected_groups[i].machine_amount =
+            selected_groups[i].tool_amount > selected_groups[i].wire_amount
+                ? selected_groups[i].wire_amount
+                : selected_groups[i].tool_amount;
     }
 
     // models statistic
-    iter(selected_groups, k){
-        if(selected_groups[k].machine_amount > 0){
+    iter(selected_groups, k)
+    {
+        if (selected_groups[k].machine_amount > 0) {
             t_w = selected_groups[k].wire_tools_name;
-            std::vector<lot_t*> lots = this->tool_wire_lots[t_w];
+            std::vector<lot_t *> lots = this->tool_wire_lots[t_w];
             // std::map<std::string, int> getModelsDistribution;
 
-            std::map<std::string, int>  sta = getModelsDistribution(loc_ents);
-            for(unsigned int i = 0; i < lots.size(); ++i){
-                std::vector<std::string> can_run_locations = lots[i]->can_run_locations();
-                iter(can_run_locations, c){
-                    sta[can_run_locations[c]] += 1;
-                }
+            std::map<std::string, int> sta = getModelsDistribution(loc_ents);
+            for (unsigned int i = 0; i < lots.size(); ++i) {
+                std::vector<std::string> can_run_locations =
+                    lots[i]->can_run_locations();
+                iter(can_run_locations, c) { sta[can_run_locations[c]] += 1; }
             }
-            // for(std::map<std::string, int>::iterator it = sta.begin(); it != sta.end(); ++it){
+            // for(std::map<std::string, int>::iterator it = sta.begin(); it !=
+            // sta.end(); ++it){
             //     printf("%s : %d\n", it->first.c_str(), it->second);
             // }
             // printf("***********************************\n");
             selected_groups[k].models_statistic = sta;
-        }else{
+        } else {
             printf("Error!\n");
         }
     }
-    iter(selected_groups, i){
-        if(selected_groups[i].lot_amount < 10)
-            selected_groups[i].entities = machines.randomlyGetEntitiesByLocations(selected_groups[i].models_statistic, selected_groups[i].machine_amount > 10 ? 10 : selected_groups[i].machine_amount);
+    iter(selected_groups, i)
+    {
+        if (selected_groups[i].lot_amount < 10)
+            selected_groups[i].entities =
+                machines.randomlyGetEntitiesByLocations(
+                    selected_groups[i].models_statistic,
+                    selected_groups[i].machine_amount > 10
+                        ? 10
+                        : selected_groups[i].machine_amount);
         else
-            selected_groups[i].entities = machines.randomlyGetEntitiesByLocations(selected_groups[i].models_statistic, selected_groups[i].machine_amount);
+            selected_groups[i].entities =
+                machines.randomlyGetEntitiesByLocations(
+                    selected_groups[i].models_statistic,
+                    selected_groups[i].machine_amount);
     }
 
     // check
     std::set<entity_t *> s;
     std::vector<lot_group_t> ret;
-    iter(selected_groups, i){
-        iter(selected_groups[i].entities, j){
-            if(s.count(selected_groups[i].entities[j]) == 0){
+    iter(selected_groups, i)
+    {
+        iter(selected_groups[i].entities, j)
+        {
+            if (s.count(selected_groups[i].entities[j]) == 0) {
                 s.insert(selected_groups[i].entities[j]);
-            }else{
+            } else {
                 printf("group %d is duplicated!\n", i);
             }
         }
 
-        //update the machine_amount.
+        // update the machine_amount.
         selected_groups[i].machine_amount = selected_groups[i].entities.size();
-        // if(selected_groups[i].entities.size() < selected_groups[i].machine_amount){
+        // if(selected_groups[i].entities.size() <
+        // selected_groups[i].machine_amount){
         //     printf("machines are insufficient to the group %d\n", i);
         // }
 
         std::string tool_wire_name = selected_groups[i].wire_tools_name;
-        std::vector<lot_t*> lots = tool_wire_lots[tool_wire_name];
-        std::vector<lot_t*> failed;
-        std::vector<lot_t*> successful;
-        iter(lots, j){
+        std::vector<lot_t *> lots = tool_wire_lots[tool_wire_name];
+        std::vector<lot_t *> failed;
+        std::vector<lot_t *> successful;
+        iter(lots, j)
+        {
             bool found = false;
-            iter(selected_groups[i].entities, k){
-                if(lots[j]->addCanRunEntity(selected_groups[i].entities[k])){
+            iter(selected_groups[i].entities, k)
+            {
+                if (lots[j]->addCanRunEntity(selected_groups[i].entities[k])) {
                     found = true;
                 }
             }
-            if(found)
+            if (found)
                 successful.push_back(lots[j]);
-            else{
+            else {
                 // printf("has no machine\n");
                 failed.push_back(lots[j]);
             }
         }
         tool_wire_lots[tool_wire_name] = failed;
         selected_groups[i].lots = successful;
-        if(selected_groups[i].lots.size() > 0){
+        if (selected_groups[i].lots.size() > 0) {
             ret.push_back(selected_groups[i]);
         }
     }
@@ -191,23 +229,29 @@ std::vector<lot_group_t> lots_t::round(entities_t machines){
     return ret;
 }
 
-bool lots_t::toolWireLotsHasLots(){
-    for(std::map<std::string, std::vector<lot_t *> >::iterator it = tool_wire_lots.begin(); it != tool_wire_lots.end(); it++){
-        if(it->second.size())
+bool lots_t::toolWireLotsHasLots()
+{
+    for (std::map<std::string, std::vector<lot_t *> >::iterator it =
+             tool_wire_lots.begin();
+         it != tool_wire_lots.end(); it++) {
+        if (it->second.size())
             return true;
     }
     return false;
 }
 
-std::vector<std::vector<lot_group_t> > lots_t::rounds(entities_t ents){
+std::vector<std::vector<lot_group_t> > lots_t::rounds(entities_t ents)
+{
     std::vector<std::vector<lot_group_t> > round_groups;
-    while(toolWireLotsHasLots())
+    while (toolWireLotsHasLots())
         round_groups.push_back(round(ents));
     return round_groups;
 }
 
 
-void lots_t::readWip(string filename, vector<lot_t> &lots, vector<lot_t> &faulty_lots)
+void lots_t::readWip(string filename,
+                     vector<lot_t> &lots,
+                     vector<lot_t> &faulty_lots)
 {
     // setup wip
     // Step 1 : read wip.csv
@@ -370,8 +414,8 @@ void lots_t::setupRoute(string routelist, string queuetime, route_t &routes)
 }
 
 vector<lot_t> lots_t::wb7Filter(vector<lot_t> alllots,
-                          vector<lot_t> &dontcare,
-                          route_t routes)
+                                vector<lot_t> &dontcare,
+                                route_t routes)
 {
     vector<lot_t> lots;
     iter(alllots, i)
@@ -407,7 +451,7 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
         {
             // if(unfinished[i].lotNumber().compare(trace_lot_number) == 0){
             //     printf("hold");
-            // } 
+            // }
             try {
                 retval = routes.calculateQueueTime(unfinished[i]);
                 switch (retval) {
@@ -455,13 +499,12 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
 }
 
 void lots_t::setCanRunModels(string bdid_model_mapping_models_filename,
-                       vector<lot_t> &lots,
-                       vector<lot_t> &faulty_lots)
+                             vector<lot_t> &lots,
+                             vector<lot_t> &faulty_lots)
 {
-    condition_cards_h cards(12, "UTC1000", "UTC1000S", "UTC2000",
-                            "UTC2000S", "UTC3000", "UTC5000S", "Maxum Base",
-                            "Maxum Plus", "Maxum Ultra", "Iconn", "Iconn Plus",
-                            "RAPID");
+    condition_cards_h cards(12, "UTC1000", "UTC1000S", "UTC2000", "UTC2000S",
+                            "UTC3000", "UTC5000S", "Maxum Base", "Maxum Plus",
+                            "Maxum Ultra", "Iconn", "Iconn Plus", "RAPID");
     cards.addMapping("Maxum (Ultra)", 2, "Maxum", "Maxum-Ultra");
     cards.readBdIdModelsMappingFile(bdid_model_mapping_models_filename);
     vector<lot_t> result;
@@ -507,13 +550,16 @@ void lots_t::setPartId(string filename,
     iter(lots, i)
     {
         try {
-            string part_id = bom_oper_part.at(lots[i].tmp_oper).at(lots[i].bomId());;
+            string part_id =
+                bom_oper_part.at(lots[i].tmp_oper).at(lots[i].bomId());
+            ;
             lots[i].setPartId(part_id);
         } catch (std::out_of_range &e) {
             err_msg = "Lot Entry " + to_string(i + 2) + ": " +
                       lots[i].lotNumber() +
-                      " has no mapping relationship between its oper :" + to_string(lots[i].tmp_oper) + 
-                      " bom id(" + lots[i].bomId() + ") and its part_id";
+                      " has no mapping relationship between its oper :" +
+                      to_string(lots[i].tmp_oper) + " bom id(" +
+                      lots[i].bomId() + ") and its part_id";
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
             continue;
@@ -553,10 +599,10 @@ void lots_t::setAmountOfWire(string filename,
     {
         try {
             int amountOfWires = part_roll.at(lots[i].part_id());
-            if(amountOfWires > 0){
+            if (amountOfWires > 0) {
                 lots[i].setAmountOfWires(amountOfWires);
                 result.push_back(lots[i]);
-            }else{
+            } else {
                 lots[i].addLog("There is no wire.");
                 faulty_lots.push_back(lots[i]);
             }
@@ -568,7 +614,6 @@ void lots_t::setAmountOfWire(string filename,
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
         }
-
     }
 
     lots = result;
@@ -647,17 +692,17 @@ void lots_t::setAmountOfTools(string filename,
     vector<lot_t> result;
 
     string err_msg;
-    
+
     int amountOfTool;
     iter(lots, i)
     {
         try {
             amountOfTool = pno_qty.at(lots[i].part_no());
 
-            if(amountOfTool > 0){
+            if (amountOfTool > 0) {
                 lots[i].setAmountOfTools(amountOfTool);
                 result.push_back(lots[i]);
-            }else{
+            } else {
                 lots[i].addLog("There is no tool for this lot.");
                 faulty_lots.push_back(lots[i]);
             }
@@ -672,14 +717,15 @@ void lots_t::setAmountOfTools(string filename,
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
         }
-
     }
 
     lots = result;
     return;
 }
 
-void lots_t::setUph(string uph_file_name, vector<lot_t> & lots, vector<lot_t> & faulty_lots)
+void lots_t::setUph(string uph_file_name,
+                    vector<lot_t> &lots,
+                    vector<lot_t> &faulty_lots)
 {
     csv_t uph_csv(uph_file_name, "r", true, true);
     uph_csv.trim(" ");
@@ -705,35 +751,27 @@ void lots_t::setUph(string uph_file_name, vector<lot_t> & lots, vector<lot_t> & 
     lots = result;
 }
 
-void lots_t::createLots(map<string, string> files){
+void lots_t::createLots(map<string, string> files)
+{
     this->lots = createLots(
-            files["wip"],
-            files["pid_bomid"],
-            files["lot_size"],
-            files["fcst"],
-            files["routelist"],
-            files["queue_time"],
-            files["bom_list"],
-            files["pid_heatblock"],
-            files["ems_heatblock"],
-            files["gw_inventory"],
-            files["bdid_model_mapping"],
-            files["uph"]
-        );
+        files["wip"], files["pid_bomid"], files["lot_size"], files["fcst"],
+        files["routelist"], files["queue_time"], files["bom_list"],
+        files["pid_heatblock"], files["ems_heatblock"], files["gw_inventory"],
+        files["bdid_model_mapping"], files["uph"]);
     addLots(lots);
 }
 
 vector<lot_t> lots_t::createLots(
-    string wip_file_name, // wip
-    string prod_pid_bomid_filename, // pid_bomid
-    string eim_lot_size_filename, // lot_size
-    string fcst_filename, // fcst
-    string routelist_filename, // route list
-    string queue_time_filename, // queue time
-    string bomlist_filename, // bom list
-    string pid_heatblock_filename, // pid_heatblock mapping file
-    string ems_heatblock_filename, // ems heatblock for the number of tools
-    string gw_filename, // gw_inventory for the number of wires
+    string wip_file_name,            // wip
+    string prod_pid_bomid_filename,  // pid_bomid
+    string eim_lot_size_filename,    // lot_size
+    string fcst_filename,            // fcst
+    string routelist_filename,       // route list
+    string queue_time_filename,      // queue time
+    string bomlist_filename,         // bom list
+    string pid_heatblock_filename,   // pid_heatblock mapping file
+    string ems_heatblock_filename,   // ems heatblock for the number of tools
+    string gw_filename,              // gw_inventory for the number of wires
     string bdid_mapping_models_filename,
     string uph_filename)
 {
@@ -747,7 +785,7 @@ vector<lot_t> lots_t::createLots(
     // setup da_stations_t
     csv_t fcst(fcst_filename, "r", true, true);
     fcst.trim(" ");
-    da_stations_t das(fcst, false);
+    da_stations_t das(fcst);
 
     route_t routes;
     setupRoute(routelist_filename, queue_time_filename, routes);
@@ -759,7 +797,9 @@ vector<lot_t> lots_t::createLots(
     setLotSize(eim_lot_size_filename, alllots, faulty_lots);
 
     // TODO : setPartId, setPartNo, setAmountOfTools, setAmountOfWires
-    lots = wb7Filter(alllots, dontcare, routes); // check each lot if it is in scheduling plan (WB - 7)
+    lots = wb7Filter(
+        alllots, dontcare,
+        routes);  // check each lot if it is in scheduling plan (WB - 7)
 
     // route traversal
     // sum the queue time and distribute the production capacity

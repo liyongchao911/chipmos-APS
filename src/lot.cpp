@@ -24,16 +24,20 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _oper = std::stoi(elements["oper"]);
     _hold = (elements["hold"].compare("Y") == 0) ? true : false;
     _mvin = (elements["mvin"].compare("Y") == 0) ? true : false;
-    
-    if(elements.count("queue_time") == 0){
+
+    if (elements.count("queue_time") == 0) {
         _queue_time = 0;
-    }else{
+    } else {
         _queue_time = std::stod(elements["queue_time"]);
     }
-    
-    _queue_time = (elements.count("queue_time") == 0 ? 0 : std::stod(elements["queue_time"]));
 
-    _fcst_time =  (elements.count("fcst_time") == 0 ? 0 : std::stod(elements["fcst_time"]));
+    _queue_time =
+        (elements.count("queue_time") == 0 ? 0
+                                           : std::stod(elements["queue_time"]));
+
+    _fcst_time =
+        (elements.count("fcst_time") == 0 ? 0
+                                          : std::stod(elements["fcst_time"]));
     _outplan_time = 0;
 
     _finish_traversal = false;
@@ -42,24 +46,31 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     tmp_mvin = _mvin;
 
     _is_sub_lot = _lot_number.length() >= 8 ? true : false;
-    _amount_of_tools = elements.count("amount_of_tools") == 0 ? 0 : std::stoi(elements["amount_of_tools"]);
-    _amount_of_wires = elements.count("amount_of_wires") == 0 ? 0 : std::stoi(elements["amount_of_wires"]);
+    _amount_of_tools = elements.count("amount_of_tools") == 0
+                           ? 0
+                           : std::stoi(elements["amount_of_tools"]);
+    _amount_of_wires = elements.count("amount_of_wires") == 0
+                           ? 0
+                           : std::stoi(elements["amount_of_wires"]);
 
-    if(elements.count("CAN_RUN_MODELS") != 0 && elements.count("PROCESS_TIME") != 0 && elements.count("uphs")){
-        char * text = strdup(elements["CAN_RUN_MODELS"].c_str());
+    if (elements.count("CAN_RUN_MODELS") != 0 &&
+        elements.count("PROCESS_TIME") != 0 && elements.count("uphs")) {
+        char *text = strdup(elements["CAN_RUN_MODELS"].c_str());
         std::vector<std::string> models = split(text, ',');
         free(text);
         text = strdup(elements["PROCESS_TIME"].c_str());
         std::vector<std::string> ptimes = split(text, ',');
         free(text);
         text = strdup(elements["uphs"].c_str());
-        std::vector<std::string> uphs = split(text, ','); 
+        std::vector<std::string> uphs = split(text, ',');
         free(text);
         _can_run_models = models;
-        if(models.size() != ptimes.size()){
-            throw std::invalid_argument("vector size is not the same, lot_number : " + _lot_number);
-        }else{
-            iter(models, i){
+        if (models.size() != ptimes.size()) {
+            throw std::invalid_argument(
+                "vector size is not the same, lot_number : " + _lot_number);
+        } else {
+            iter(models, i)
+            {
                 _model_process_times[models[i]] = std::stod(ptimes[i]);
                 _uphs[models[i]] = std::stod(uphs[i]);
             }
@@ -67,7 +78,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     }
 
     _part_id = elements.count("part_id") == 0 ? "" : elements["part_id"];
-    _part_no = elements.count("part_no") == 0 ? "" : elements["part_no"]; 
+    _part_no = elements.count("part_no") == 0 ? "" : elements["part_no"];
 }
 
 bool lot_t::checkFormation()
@@ -169,113 +180,133 @@ std::map<std::string, std::string> lot_t::data()
          it != _uphs.end(); ++it) {
         models.push_back(it->first);
     }
-    
+
     std::vector<std::string> process_times;
-    for(std::map<std::string, double>::iterator it = _model_process_times.begin(); it != _model_process_times.end(); it++){
+    for (std::map<std::string, double>::iterator it =
+             _model_process_times.begin();
+         it != _model_process_times.end(); it++) {
         process_times.push_back(std::to_string(it->second));
     }
-    
+
     std::vector<std::string> uphs;
-    for(std::map<std::string, double>::iterator it = _uphs.begin(); it!= _uphs.end(); it++){
+    for (std::map<std::string, double>::iterator it = _uphs.begin();
+         it != _uphs.end(); it++) {
         uphs.push_back(std::to_string(it->second));
     }
-    
+
     d["CAN_RUN_MODELS"] = join(models, ",");
     d["PROCESS_TIME"] = join(process_times, ",");
     d["uphs"] = join(uphs, ",");
     return d;
 }
 
-bool lot_t::setUph(csv_t _uph_csv){
+bool lot_t::setUph(csv_t _uph_csv)
+{
     _uph_csv = _uph_csv.filter("recipe", _recipe);
     _uph_csv = _uph_csv.filter("oper", std::to_string(this->tmp_oper));
     _uph_csv = _uph_csv.filter("cust", _customer);
-    if(_uph_csv.nrows() == 0){
-        this->addLog("(" + std::to_string(this->tmp_oper) + ", "+ _recipe + ") is not in uph file");
+    if (_uph_csv.nrows() == 0) {
+        this->addLog("(" + std::to_string(this->tmp_oper) + ", " + _recipe +
+                     ") is not in uph file");
         return false;
     } else {
         int nrows = _uph_csv.nrows();
-        for(int i = 0; i < nrows; ++i){
-            std::map<std::string, std::string> elements = _uph_csv.getElements(i);
-            if(_uphs.count(elements["model"]) != 0){
+        for (int i = 0; i < nrows; ++i) {
+            std::map<std::string, std::string> elements =
+                _uph_csv.getElements(i);
+            if (_uphs.count(elements["model"]) != 0) {
                 setUph(elements["model"], std::stof(elements["uph"]));
             }
         }
     }
-    std::vector<std::string> invalid_models; 
-    for(std::map<std::string, double>::iterator it = _uphs.begin(); it != _uphs.end(); it++){
-        if(it->second == 0){
+    std::vector<std::string> invalid_models;
+    for (std::map<std::string, double>::iterator it = _uphs.begin();
+         it != _uphs.end(); it++) {
+        if (it->second == 0) {
             invalid_models.push_back(it->first);
         }
     }
-    iter(invalid_models, i){
+    iter(invalid_models, i)
+    {
         _uphs.erase(invalid_models[i]);
         _model_process_times.erase(invalid_models[i]);
     }
 
-    if(_uphs.size() == 0){
+    if (_uphs.size() == 0) {
         addLog("All of uph is 0");
         return false;
-    }else
+    } else
         return true;
 }
 
 
-void lot_t::setCanRunLocation(std::map<std::string, std::vector<std::string> > model_locations){
-    iter(_can_run_models, i){
-        std::vector<std::string> locations = model_locations[_can_run_models[i]];
-        iter(locations, j){
-            if(locations[j].compare("TA-P") == 0 || locations[j].compare("TA-U") == 0) {
-                if(_pin_package.find("DFN") != std::string::npos ||
-                   _pin_package.find("QFN") != std::string::npos ||
-                   _part_no[4] != 'A')
-                {
+void lot_t::setCanRunLocation(
+    std::map<std::string, std::vector<std::string> > model_locations)
+{
+    iter(_can_run_models, i)
+    {
+        std::vector<std::string> locations =
+            model_locations[_can_run_models[i]];
+        iter(locations, j)
+        {
+            if (locations[j].compare("TA-P") == 0 ||
+                locations[j].compare("TA-U") == 0) {
+                if (_pin_package.find("DFN") != std::string::npos ||
+                    _pin_package.find("QFN") != std::string::npos ||
+                    _part_no[4] != 'A') {
                     continue;
-                }else{
+                } else {
                     _can_run_locations.push_back(locations[j]);
                 }
-            } else if (locations[j].compare("TB-5B") == 0 || locations[j].compare("TB-5P") == 0){
-                if(_pin_package.find("FBGA") != std::string::npos){
+            } else if (locations[j].compare("TB-5B") == 0 ||
+                       locations[j].compare("TB-5P") == 0) {
+                if (_pin_package.find("FBGA") != std::string::npos) {
                     _can_run_locations.push_back(locations[j]);
-                }else{
+                } else {
                     continue;
                 }
-            } else if (locations[j].compare("TB-P") == 0){
-                if(_pin_package.find("TSOP1") != std::string::npos || _part_no[4] == 'A'){
+            } else if (locations[j].compare("TB-P") == 0) {
+                if (_pin_package.find("TSOP1") != std::string::npos ||
+                    _part_no[4] == 'A') {
                     continue;
-                }else{
+                } else {
                     _can_run_locations.push_back(locations[j]);
                 }
-            }else{
+            } else {
                 _can_run_locations.push_back(locations[j]);
             }
         }
-    }  
+    }
 }
 
-bool lot_t::isEntityCanRun(std::string model, std::string location){
-    if(_uphs.count(model) != 0){
-        if(find(_can_run_locations.begin(), _can_run_locations.end(), location) != _can_run_locations.end()){
+bool lot_t::isEntityCanRun(std::string model, std::string location)
+{
+    if (_uphs.count(model) != 0) {
+        if (find(_can_run_locations.begin(), _can_run_locations.end(),
+                 location) != _can_run_locations.end()) {
             return true;
         }
     }
     return false;
 }
 
-bool lot_t::addCanRunEntity(entity_t * ent){
+bool lot_t::addCanRunEntity(entity_t *ent)
+{
     bool ret = isEntityCanRun(ent->model_name, ent->location);
-    if(ret){
+    if (ret) {
         _can_run_entities.push_back(ent->entity_name);
-        _entity_process_times[ent->entity_name] = _model_process_times[ent->model_name];
+        _entity_process_times[ent->entity_name] =
+            _model_process_times[ent->model_name];
     }
     return ret;
 }
 
 
 
-job_t lot_t::job(){
+job_t lot_t::job()
+{
     job_t j;
-    job_base_init(&j.base); 
+    job_base_init(&j.base);
     _list_init(&j.list);
     j.list.get_value = jobGetValue;
 
@@ -287,25 +318,24 @@ job_t lot_t::job(){
     j.bdid = stringToInfo(_recipe);
 
 
-    if(_urgent.length()){
+    if (_urgent.length()) {
         j.urgent_code = _urgent[0];
-    }else
+    } else
         j.urgent_code = '\0';
 
     j.base.qty = _qty;
     j.base.start_time = j.base.end_time = 0;
     j.base.arriv_t = _queue_time;
-    
+
     return j;
 }
 
-std::map<std::string, double> lot_t::getEntitiyProcessTime(){
+std::map<std::string, double> lot_t::getEntitiyProcessTime()
+{
     return _entity_process_times;
 }
 
-bool lot_group_comparision(lot_group_t g1, lot_group_t g2){
+bool lot_group_comparision(lot_group_t g1, lot_group_t g2)
+{
     return g1.lot_amount > g2.lot_amount;
 }
-
-
-
