@@ -92,6 +92,8 @@ double setup_time_USC(job_base_t * _prev, job_base_t *_next){
 double calculateSetupTime(job_t *prev, job_t *next, machine_base_operations_t * ops){
     // for all setup time function
     double time = 0;
+    if(isSameInfo(prev->bdid, next->bdid))
+        return 0.0;
     for(unsigned int i = 0; i < ops->sizeof_setup_time_function_array; ++i){
         if(prev)
             time += ops->setup_times[i](&prev->base,&next->base);

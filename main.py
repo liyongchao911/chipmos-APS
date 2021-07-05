@@ -34,10 +34,10 @@ def preprocessing(conf:dict):
     csv_config = filePreprocessing(path, conf["nopreprocess_files"], csv_config)
 
     wip_filename = csv_config["wip"][0]
-    time = re.split(r"_|\.", wip_filename)[1]
+    time = re.split(r"_|\.csv", wip_filename)[1]
     dt = datetime.strptime(time, "%Y%m%d%H%M%S")
 
-    csv_config["std_time"] = ["%s/%d/%d %02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute) ]
+    csv_config["std_time"] = [ dt.strftime("%Y/%M/%d %H:%M")]
     df = pd.DataFrame(csv_config)
     df.to_csv(csv_config_file_path, index=False)
     # print(json.dumps(csv_config, indent=4))

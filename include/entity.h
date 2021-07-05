@@ -25,7 +25,7 @@ typedef struct{
     job_t job;
 } entity_t;
 
-machine_t to_machine(entity_t ent);
+machine_t entityToMachine(entity_t ent);
 
 class entities_t
 {
@@ -71,13 +71,6 @@ public:
      */
     void addMachines(csv_t machines_csv, csv_t location_csv);
 
-    // /**
-    //  * randomlyGetEntities () - randomly get the entities by model and area
-    //  */
-    // std::vector<entity_t> randomlyGetEntities(std::string model_name,
-    //                                           std::string area,
-    //                                           int amount);
-    
     /**
      * randomlyGetEntitiesByLocations
      */

@@ -76,7 +76,7 @@
         },
         {
             "filename" : "locations.csv",
-            "function" : "location",
+            "function" : "locations",
             "columns" : [ "Location", "Entity"]
         },
         {

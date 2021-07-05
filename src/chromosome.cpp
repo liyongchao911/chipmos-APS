@@ -14,8 +14,8 @@ void copyChromosome(chromosome_base_t c1, chromosome_base_t c2){
 void crossover(chromosome_base_t p1, chromosome_base_t p2, chromosome_base_t c1, chromosome_base_t c2){
     memcpy(c1.genes, p1.genes, sizeof(double)*p1.gene_size);
     memcpy(c2.genes, p2.genes, sizeof(double)*p2.gene_size);
-    int cutpoint1 = random_range(0, p1.gene_size, -1);
-    int cutpoint2 = random_range(0, p2.gene_size, cutpoint1); 
+    int cutpoint1 = randomRange(0, p1.gene_size, -1);
+    int cutpoint2 = randomRange(0, p2.gene_size, cutpoint1);
 
     if(cutpoint1 > cutpoint2)
         std::swap(cutpoint1, cutpoint2);
@@ -29,7 +29,7 @@ void crossover(chromosome_base_t p1, chromosome_base_t p2, chromosome_base_t c1,
 
 void mutation(chromosome_base_t p, chromosome_base_t c){
     memcpy(c.genes, p.genes, sizeof(double)*p.gene_size);
-    int pos = random_range(0, p.gene_size, -1);
+    int pos = randomRange(0, p.gene_size, -1);
     double rnd = (double)rand() / (double) RAND_MAX;
     c.genes[pos] = rnd;
 }

@@ -10,7 +10,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "include/arrival.h"
 #include "include/infra.h"
 #include "include/condition_card.h"
 #include "include/csv.h"
@@ -37,9 +36,9 @@ void lots_t::addLots(std::vector<lot_t> lots){
 
 std::map<std::string, int> lots_t::getModelsDistribution(std::map<std::string, std::map<std::string, std::vector<entity_t *> > > ents){
     std::map<std::string, int> _;
-    for(std::map<std::string, std::map<std::string, std::vector<entity_t *> > >::iterator it = ents.begin(); it != ents.end(); it++){
-        for(std::map<std::string, std::vector<entity_t*> >::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++){
-            _[it2->first] = 0;
+    for(auto & ent : ents){
+        for(auto & it2 : ent.second){
+            _[it2.first] = 0;
         }
     }
     return _;
@@ -47,8 +46,8 @@ std::map<std::string, int> lots_t::getModelsDistribution(std::map<std::string, s
 
 std::map<std::string, int> lots_t::getModelsDistribution(std::map<std::string, std::vector<entity_t *> > loc_ents){
     std::map<std::string, int> _;
-    for(std::map<std::string, std::vector<entity_t *> >::iterator it = loc_ents.begin(); it != loc_ents.end(); it ++){
-        _[it->first] = 0;
+    for(auto & loc_ent : loc_ents){
+        _[loc_ent.first] = 0;
     }
     return _;
 }
@@ -70,10 +69,10 @@ std::vector<lot_group_t> lots_t::round(entities_t machines){
 
     // 30 sets;
     std::vector<lot_group_t> groups;
-    for(std::map<std::string, std::vector<lot_t*> >::iterator it = tool_wire_lots.begin(); it != tool_wire_lots.end(); it++){
+    for(auto & tool_wire_lot : tool_wire_lots){
         groups.push_back(lot_group_t{
-            .wire_tools_name = it->first,
-            .lot_amount = it->second.size()
+            .wire_tools_name = tool_wire_lot.first,
+            .lot_amount = tool_wire_lot.second.size()
         });
     }
     std::sort(groups.begin(), groups.end(), lot_group_comparision);
@@ -236,9 +235,8 @@ void lots_t::readWip(string filename, vector<lot_t> &lots, vector<lot_t> &faulty
 }
 
 void lots_t::setPidBomId(string filename,
-                 vector<lot_t> &lots,
-                 vector<lot_t> &faulty_lots,
-                 vector<string> &wip_report)
+                         vector<lot_t> &lots,
+                         vector<lot_t> &faulty_lots)
 {
     // Step 2 : read product_find_process_id
     // csv_t prod_pid_mapping("product_find_process_id.csv", "r", true, true);
@@ -272,7 +270,6 @@ void lots_t::setPidBomId(string filename,
                       lots[i].prodId() + ") and its process_id";
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
-            wip_report.push_back(err_msg);
             continue;
         }
 
@@ -286,7 +283,6 @@ void lots_t::setPidBomId(string filename,
                       lots[i].prodId() + ") and its bom_id";
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
-            wip_report.push_back(err_msg);
             continue;
         }
         result.push_back(lots[i]);
@@ -296,9 +292,8 @@ void lots_t::setPidBomId(string filename,
 }
 
 void lots_t::setLotSize(string filename,
-                vector<lot_t> &lots,
-                vector<lot_t> &faulty_lots,
-                vector<string> &wip_report)
+                        vector<lot_t> &lots,
+                        vector<lot_t> &faulty_lots)
 {
     // Step 3 : sublot_size;
     // TODO : read sublot size
@@ -330,7 +325,6 @@ void lots_t::setLotSize(string filename,
                  "has no mapping relation between its process id(" +
                  lots[i].processId() + ") and its lot_size");
             lots[i].addLog(err_msg);
-            wip_report.push_back(err_msg);
             faulty_lots.push_back(lots[i]);
             continue;
         } catch (std::invalid_argument &e) {
@@ -338,7 +332,6 @@ void lots_t::setLotSize(string filename,
                       lots[i].lotNumber() + "the lot_size of process id(" +
                       lots[i].processId() + ") is" + to_string(lot_size) +
                       " which is less than 0";
-            wip_report.push_back(err_msg);
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
             continue;
@@ -397,11 +390,10 @@ vector<lot_t> lots_t::wb7Filter(vector<lot_t> alllots,
 }
 
 vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
-                                vector<lot_t> &faulty_lots,
-                                vector<lot_t> &dontcare,
-                                da_stations_t &das,
-                                route_t routes,
-                                vector<string> wip_report)
+                                        vector<lot_t> &faulty_lots,
+                                        vector<lot_t> &dontcare,
+                                        da_stations_t &das,
+                                        route_t routes)
 {
     int retval = 0;
     string err_msg;
@@ -425,8 +417,6 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
                         "reason is the lot can't reach W/B satation.";
                     unfinished[i].addLog(err_msg);
                     faulty_lots.push_back(unfinished[i]);
-                    wip_report.push_back(
-                        err_msg + "lot information : " + unfinished[i].info());
                     break;
                 case 0:  // lot is finished
                     unfinished[i].addLog("Lot finishes traversing the route");
@@ -450,15 +440,9 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
                                 // addArrivedLotToDA and addUnarrivedLotToDA
                 unfinished[i].addLog(e.what());
                 faulty_lots.push_back(unfinished[i]);
-                wip_report.push_back(e.what() +
-                                     std::string("lot information : ") +
-                                     unfinished[i].info());
             } catch (std::logic_error &e) {  // for calculateQueueTime
                 unfinished[i].addLog(e.what());
                 faulty_lots.push_back(unfinished[i]);
-                wip_report.push_back(e.what() +
-                                     std::string("lot information : ") +
-                                     unfinished[i].info());
             }
         }
         unfinished = das.distributeProductionCapacity();
@@ -470,7 +454,7 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
     return finished;
 }
 
-void lots_t::setupCanRunModels(string bdid_model_mapping_models_filename,
+void lots_t::setCanRunModels(string bdid_model_mapping_models_filename,
                        vector<lot_t> &lots,
                        vector<lot_t> &faulty_lots)
 {
@@ -496,9 +480,8 @@ void lots_t::setupCanRunModels(string bdid_model_mapping_models_filename,
 }
 
 void lots_t::setPartId(string filename,
-               vector<lot_t> &lots,
-               vector<lot_t> &faulty_lots,
-               vector<string> &wip_report)
+                       vector<lot_t> &lots,
+                       vector<lot_t> &faulty_lots)
 {
     // filename = "BomList"
     csv_t bomlist(filename, "r", true, true);
@@ -533,7 +516,6 @@ void lots_t::setPartId(string filename,
                       " bom id(" + lots[i].bomId() + ") and its part_id";
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
-            wip_report.push_back(err_msg);
             continue;
         }
 
@@ -544,9 +526,8 @@ void lots_t::setPartId(string filename,
 }
 
 void lots_t::setAmountOfWire(string filename,
-                     vector<lot_t> &lots,
-                     vector<lot_t> &faulty_lots,
-                     vector<string> &wip_report)
+                             vector<lot_t> &lots,
+                             vector<lot_t> &faulty_lots)
 {
     // filename = "GW Inventory.csv"
     csv_t gw(filename, "r", true, true);
@@ -586,7 +567,6 @@ void lots_t::setAmountOfWire(string filename,
                       lots[i].part_id() + ") and its roll_length";
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
-            wip_report.push_back(err_msg);
         }
 
     }
@@ -595,9 +575,8 @@ void lots_t::setAmountOfWire(string filename,
 }
 
 void lots_t::setPartNo(string filename,
-               vector<lot_t> &lots,
-               vector<lot_t> &faulty_lots,
-               vector<string> &wip_report)
+                       vector<lot_t> &lots,
+                       vector<lot_t> &faulty_lots)
 {
     // filename = "Process find heatblock.csv"
     csv_t heatblock(filename, "r", true, true);
@@ -635,7 +614,6 @@ void lots_t::setPartNo(string filename,
                       lots[i].processId() + ") and its remark";
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
-            wip_report.push_back(err_msg);
             continue;
         }
 
@@ -646,9 +624,8 @@ void lots_t::setPartNo(string filename,
 }
 
 void lots_t::setAmountOfTools(string filename,
-                      vector<lot_t> &lots,
-                      vector<lot_t> &faulty_lots,
-                      vector<string> &wip_report)
+                              vector<lot_t> &lots,
+                              vector<lot_t> &faulty_lots)
 {
     // filename = "EMS Heatblock data.csv"
     csv_t ems(filename, "r", true, true);
@@ -694,7 +671,6 @@ void lots_t::setAmountOfTools(string filename,
                       lots[i].part_no() + ") and its qty1 and qty3";
             lots[i].addLog(err_msg);
             faulty_lots.push_back(lots[i]);
-            wip_report.push_back(err_msg);
         }
 
     }
@@ -703,7 +679,7 @@ void lots_t::setAmountOfTools(string filename,
     return;
 }
 
-void lots_t::setupUph(string uph_file_name, vector<lot_t> & lots, vector<lot_t> & faulty_lots)
+void lots_t::setUph(string uph_file_name, vector<lot_t> & lots, vector<lot_t> & faulty_lots)
 {
     csv_t uph_csv(uph_file_name, "r", true, true);
     uph_csv.trim(" ");
@@ -744,7 +720,7 @@ void lots_t::createLots(map<string, string> files){
             files["bdid_model_mapping"],
             files["uph"]
         );
-
+    addLots(lots);
 }
 
 vector<lot_t> lots_t::createLots(
@@ -761,7 +737,6 @@ vector<lot_t> lots_t::createLots(
     string bdid_mapping_models_filename,
     string uph_filename)
 {
-    vector<string> wip_report;
     string err_msg;
 
     std::vector<lot_t> alllots;
@@ -779,32 +754,27 @@ vector<lot_t> lots_t::createLots(
 
     // start creating lots
     readWip(wip_file_name, alllots, faulty_lots);
-    wip_report.clear();
 
-    setPidBomId(prod_pid_bomid_filename, alllots, faulty_lots, wip_report);
-    setLotSize(eim_lot_size_filename, alllots, faulty_lots, wip_report);
+    setPidBomId(prod_pid_bomid_filename, alllots, faulty_lots);
+    setLotSize(eim_lot_size_filename, alllots, faulty_lots);
 
     // TODO : setPartId, setPartNo, setAmountOfTools, setAmountOfWires
-    // filter, check if lot is in scheduling plan
-    lots = wb7Filter(alllots, dontcare, routes);
-    
-    /*************************************************************************************/
-    // route traversal and sum the queue time
-    lots =
-        queueTimeAndQueue(lots, faulty_lots, dontcare, das, routes, wip_report);
-    
-    // setPartId
-    setPartId(bomlist_filename, lots, faulty_lots, wip_report);
-    setAmountOfWire(gw_filename, lots, faulty_lots, wip_report);
-    // setPartNo
-    setPartNo(pid_heatblock_filename, lots, faulty_lots, wip_report);
-    setAmountOfTools(ems_heatblock_filename, lots, faulty_lots, wip_report);
+    lots = wb7Filter(alllots, dontcare, routes); // check each lot if it is in scheduling plan (WB - 7)
 
-    setupCanRunModels(bdid_mapping_models_filename,
-                      lots, faulty_lots);
-    
-    
-    setupUph(uph_filename, lots, faulty_lots);
+    // route traversal
+    // sum the queue time and distribute the production capacity
+    lots = queueTimeAndQueue(lots, faulty_lots, dontcare, das, routes);
+    /*************************************************************************************/
+
+    // setPartId
+    setPartId(bomlist_filename, lots, faulty_lots);
+    setAmountOfWire(gw_filename, lots, faulty_lots);
+    // setPartNo
+    setPartNo(pid_heatblock_filename, lots, faulty_lots);
+    setAmountOfTools(ems_heatblock_filename, lots, faulty_lots);
+
+    setCanRunModels(bdid_mapping_models_filename, lots, faulty_lots);
+    setUph(uph_filename, lots, faulty_lots);
 
 
     // output faulty lots
@@ -828,19 +798,5 @@ vector<lot_t> lots_t::createLots(
     iter(lots, i) { wip_csv.addData(lots[i].data()); }
     wip_csv.write();
 
-    // outputReport("wip-report.txt", wip_report);
     return lots;
-}
-
-void outputReport(string filename, vector<string> report)
-{
-    FILE *file = fopen(filename.c_str(), "w");
-
-    if (file) {
-        for (unsigned int i = 0; i < report.size(); ++i) {
-            fprintf(file, "%s\n", report[i].c_str());
-        }
-    }
-
-    fclose(file);
 }

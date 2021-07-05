@@ -8,7 +8,7 @@
 
 using namespace std;
 
-machine_t to_machine(entity_t ent){
+machine_t entityToMachine(entity_t ent){
     return machine_t{
             .base = {
                 .machine_no = convertEntityNameToUInt(ent.entity_name),
@@ -47,10 +47,10 @@ void entities_t::addMachine(map<string, string> elements){
     if(ent){
         unsigned int no = convertEntityNameToUInt(elements["entity"]);
         job_t job = job_t{
-            .part_no = to_info(elements["prod_id"]),
-            .pin_package = to_info(elements["pin_pkg"]),
+            .part_no = stringToInfo(elements["prod_id"]),
+            .pin_package = stringToInfo(elements["pin_pkg"]),
             .base = {
-                .job_info = to_info(elements["lot_number"])
+                .job_info = stringToInfo(elements["lot_number"])
             }
         };
         *ent = entity_t{
@@ -126,6 +126,10 @@ std::map<std::string, std::vector<entity_t *> > entities_t::getLocEntity(){
     return _loc_ents;
 }
 
+bool entityComparisonByTime(entity_t * ent1, entity_t *ent2){
+   return ent1->recover_time < ent2->recover_time;
+}
+
 std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(std::map<std::string, int> statistic, int amount){
     vector<entity_t *> ret;
 
@@ -141,6 +145,7 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(std::map<std:
     }
 
     random_shuffle(pool.begin(), pool.end());
+    sort(pool.begin(), pool.end(), entityComparisonByTime);
     
     if((unsigned)amount < pool.size()){
         ret = vector<entity_t*>(pool.begin(), pool.begin() + amount); 
@@ -231,7 +236,7 @@ std::vector<tool_t *> ancillary_resources_t::aRound(std::string name, int amount
 
 void machines_t::addMachines(std::vector<entity_t *> ents){
     iter(ents, i){
-        machine_t m = to_machine(*ents[i]);
+        machine_t m = entityToMachine(*ents[i]);
         machine_t *m_ptr = new machine_t;
         *m_ptr = m;
         m_ptr->current_job.base.ptr_derived_object = &(m_ptr->current_job);

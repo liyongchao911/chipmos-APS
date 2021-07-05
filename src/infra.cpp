@@ -86,7 +86,7 @@ void random(double *genes, int size)
     }
 }
 
-int random_range(int start, int end, int different_num)
+int randomRange(int start, int end, int different_num)
 {
     if (different_num < 0) {
         return start + rand() % (end - start);
@@ -103,7 +103,7 @@ double randomDouble(){
     return (double) rand() / (double) RAND_MAX;
 }
 
-struct __info_t to_info(std::string s){
+struct __info_t stringToInfo(std::string s){
     struct __info_t info;
     unsigned text_size = s.length() > 32 ? 32 : s.length();
     memset(info.data.number, 0, sizeof(unsigned int) * 8);

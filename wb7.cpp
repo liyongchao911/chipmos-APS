@@ -3,7 +3,6 @@
 #include <string>
 #include <map>
 
-#include "include/arrival.h"
 #include "include/lot.h"
 #include "include/csv.h"
 #include "include/route.h"

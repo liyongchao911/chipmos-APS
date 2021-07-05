@@ -55,10 +55,10 @@ bool isSameInfo(struct __info_t info1, struct __info_t info2);
 
 void random(double *genes, int size);
 
-int random_range(int start, int end, int different_num);
+int randomRange(int start, int end, int different_num);
 
 double randomDouble();
 
-struct __info_t to_info(std::string s);
+struct __info_t stringToInfo(std::string s);
 
 #endif

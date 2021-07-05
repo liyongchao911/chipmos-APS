@@ -14,6 +14,8 @@ typedef struct job_t{
     char urgent_code;
     job_base_t base;
     list_ele_t list;
+    job_info_t part_id;
+    job_info_t  bdid;
 }job_t;
 
 

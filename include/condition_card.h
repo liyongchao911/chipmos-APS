@@ -213,8 +213,6 @@ public:
      */
     virtual std::string formated(std::string text);
     virtual char *formated(char *);
-
-
 };
 
 #endif
