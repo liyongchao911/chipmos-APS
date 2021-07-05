@@ -7,21 +7,24 @@
 #include <stdexcept>
 #include <string>
 #include <system_error>
+
 #include "include/chromosome_base.h"
 #include "include/job_base.h"
 #include "include/linked_list.h"
+#include "include/machine.h"
 #include "include/machine_base.h"
 
-#include <include/arrival.h>
-#include <include/chromosome.h>
-#include <include/condition_card.h>
-#include <include/csv.h>
-#include <include/da.h>
-#include <include/entity.h>
-#include <include/infra.h>
-#include <include/lot.h>
-#include <include/population.h>
-#include <include/route.h>
+#include "include/arrival.h"
+#include "include/chromosome.h"
+#include "include/condition_card.h"
+#include "include/csv.h"
+#include "include/da.h"
+#include "include/entity.h"
+#include "include/infra.h"
+#include "include/lot.h"
+#include "include/population.h"
+#include "include/route.h"
+#include "include/lots.h"
 
 
 using namespace std;
@@ -51,94 +54,103 @@ void freeChromosomes(population_t *pop);
 
 int main(int argc, const char *argv[])
 {
-    csv_t lot_csv("lots.csv", "r", true, true);
-    lot_csv.setHeaders(
-        map<string, string>({{"route", "route"},
-                             {"lot_number", "lot_number"},
-                             {"pin_package", "pin_package"},
-                             {"bd_id", "recipe"},
-                             {"prod_id", "prod_id"},
-                             {"part_id", "part_id"},
-                             {"part_no", "part_no"},
-                             {"urgent_code", "urgent_code"},
-                             {"qty", "qty"},
-                             {"dest_oper", "dest_oper"},
-                             {"oper", "dest_oper"},
-                             {"hold", "hold"},
-                             {"mvin", "mvin"},
-                             {"queue_time", "queue_time"},
-                             {"fcst_time", "fcst_time"},
-                             {"amount_of_tools", "amount_of_tools"},
-                             {"amount_of_wires", "amount_of_wires"},
-                             {"CAN_RUN_MODELS", "CAN_RUN_MODELS"},
-                             {"PROCESS_TIME", "PROCESS_TIME"},
-                             {"uphs", "uphs"},
-                             {"customer", "customer"}}));
-    lot_csv.trim(" ");
-    vector<lot_t> allots;
-    for (int i = 0, nrows = lot_csv.nrows(); i < nrows; ++i) {
-        allots.push_back(lot_t(lot_csv.getElements(i)));
+    if(argc < 2){
+        printf("Please specify the path of configuration file\n");
+        exit(1);
     }
+    // csv_t lot_csv("lots.csv", "r", true, true);
+    // lot_csv.setHeaders(
+    //     map<string, string>({{"route", "route"},
+    //                          {"lot_number", "lot_number"},
+    //                          {"pin_package", "pin_package"},
+    //                          {"bd_id", "recipe"},
+    //                          {"prod_id", "prod_id"},
+    //                          {"part_id", "part_id"},
+    //                          {"part_no", "part_no"},
+    //                          {"urgent_code", "urgent_code"},
+    //                          {"qty", "qty"},
+    //                          {"dest_oper", "dest_oper"},
+    //                          {"oper", "dest_oper"},
+    //                          {"hold", "hold"},
+    //                          {"mvin", "mvin"},
+    //                          {"queue_time", "queue_time"},
+    //                          {"fcst_time", "fcst_time"},
+    //                          {"amount_of_tools", "amount_of_tools"},
+    //                          {"amount_of_wires", "amount_of_wires"},
+    //                          {"CAN_RUN_MODELS", "CAN_RUN_MODELS"},
+    //                          {"PROCESS_TIME", "PROCESS_TIME"},
+    //                          {"uphs", "uphs"},
+    //                          {"customer", "customer"}}));
+    // lot_csv.trim(" ");
+    // vector<lot_t> allots;
+    // for (int i = 0, nrows = lot_csv.nrows(); i < nrows; ++i) {
+    //     allots.push_back(lot_t(lot_csv.getElements(i)));
+    // }
+
+    csv_t cfg(argv[1], "r", true, true);
+    vector<vector<string> > values = cfg.getData();
 
     lots_t lots;
-    lots.addLots(allots);
+    lots.createLots(cfg.getElements(0));
+
+    // lots.addLots(createLots(
+    //     "WipOutPlanTime*.csv", "product_find_process_id.csv",
+    //     "process_find_lot_size_and_entity.csv", "fcst.csv", "routelist.csv",
+    //     "newqueue_time.csv", "BOM List_20210521.csv",
+    //     "Process find heatblock.csv", "EMS Heatblock data.csv",
+    //     "GW Inventory.csv", std::string(), std::string()));
 
 
-    // lots.addLots(createLots("WipOutPlanTime_.csv",
-    // "product_find_process_id.csv",
-    //                "process_find_lot_size_and_entity.csv", "fcst.csv",
-    //                "routelist.csv", "newqueue_time.csv",
-    //                "BOM List_20210521.csv", "Process find heatblock.csv",
-    //                "EMS Heatblock data.csv", "GW Inventory.csv"));
+    // ancillary_resources_t tools(lots.amountOfTools());
+    // ancillary_resources_t wires(lots.amountOfWires());
+
+    // csv_t machine_csv("machines.csv", "r", true, true);
+    // machine_csv.trim(" ");
+    // machine_csv.setHeaders(map<string, string>({{"entity", "ENTITY"},
+    //                                             {"model", "MODEL"},
+    //                                             {"recover_time", "OUTPLAN"},
+    //                                             {"prod_id", "PRODUCT"},
+    //                                             {"pin_pkg", "PIN_PKG"},
+    //                                             {"lot_number", "LOT#"}}));
+
+    // csv_t location_csv("locations.csv", "r", true, true);
+    // location_csv.trim(" ");
+    // location_csv.setHeaders(
+    //     map<string, string>({{"entity", "Entity"}, {"location", "Location"}}));
 
 
-    ancillary_resources_t tools(lots.amountOfTools());
-    ancillary_resources_t wires(lots.amountOfWires());
+    // char *text = strdup("2021/4/17 8:30");
+    // entities_t entities(text);
+    // entities.addMachines(machine_csv, location_csv);
+    // machines_t machines;
+    // machines.addMachines(entities.getAllEntity());
 
-    csv_t machine_csv("machines.csv", "r", true, true);
-    machine_csv.trim(" ");
-    machine_csv.setHeaders(map<string, string>({{"entity", "ENTITY"},
-                                                {"model", "MODEL"},
-                                                {"recover_time", "OUTPLAN"}}));
+    // vector<entity_t *> test_ents = entities.getAllEntity();
+    // iter(test_ents, i){
+    //     printf("%s : %f\n", test_ents[i]->entity_name.c_str(), test_ents[i]->recover_time);
+    // }
 
-    csv_t location_csv("locations.csv", "r", true, true);
-    location_csv.trim(" ");
-    location_csv.setHeaders(
-        map<string, string>({{"entity", "Entity"}, {"location", "Location"}}));
+    // vector<vector<lot_group_t> > round_groups = lots.rounds(entities);
 
+    // population_t pop = population_t{
+    //     .parameters = {.AMOUNT_OF_CHROMOSOMES = 100,
+    //                    .AMOUNT_OF_R_CHROMOSOMES = 200,
+    //                    .EVOLUTION_RATE = 0.8,
+    //                    .SELECTION_RATE = 0.2,
+    //                    .GENERATIONS = 20},
+    //     .groups = round_groups,
+    //     .current_round_no = 0
+    // };
 
-    char *text = strdup("2021/4/17 8:30");
-    entities_t entities(text);
-    entities.addMachines(machine_csv, location_csv);
-    machines_t machines;
-    machines.addMachines(entities.getAllEntity());
-
-    vector<entity_t *> test_ents = entities.getAllEntity();  
-    iter(test_ents, i){
-        printf("%s : %f\n", test_ents[i]->entity_name.c_str(), test_ents[i]->recover_time);
-    }
-
-    vector<vector<lot_group_t> > round_groups = lots.rounds(entities);
-
-    population_t pop = population_t{
-        .parameters = {.AMOUNT_OF_CHROMOSOMES = 100,
-                       .AMOUNT_OF_R_CHROMOSOMES = 200,
-                       .EVOLUTION_RATE = 0.8,
-                       .SELECTION_RATE = 0.2,
-                       .GENERATIONS = 500},
-        .groups = round_groups,
-        .current_round_no = 0
-    };
-
-    // srand(time(NULL));
-    initializeOperations(&pop);
-    iter(pop.groups, i){
-        initializePopulation(&pop, machines, tools, wires, i);
-        geneticAlgorithm(&pop);
-        freeJobs(&pop.round);
-        freeResources(&pop.round);
-        freeChromosomes(&pop);
-    }
+    // // srand(time(NULL));
+    // initializeOperations(&pop);
+    // iter(pop.groups, i){
+    //     initializePopulation(&pop, machines, tools, wires, i);
+    //     geneticAlgorithm(&pop);
+    //     freeJobs(&pop.round);
+    //     freeResources(&pop.round);
+    //     freeChromosomes(&pop);
+    // }
 
     return 0;
 }
@@ -434,9 +446,10 @@ void geneticAlgorithm(population_t *pop)
     }
 
     decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops, AMOUNT_OF_JOBS);
-    // update machines' avaliable time
+    // update machines' avaliable time and set the last job
     for(map<unsigned int, machine_t *>::iterator it = machines.begin();  it != machines.end(); ++it){
         it->second->base.avaliable_time = it->second->makespan;
+        setLastJobInMachine(it->second);
     }
    
     // output

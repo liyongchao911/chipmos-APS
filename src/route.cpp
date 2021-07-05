@@ -201,6 +201,9 @@ int route_t::calculateQueueTime(lot_t &lot)
         if (lot.tmp_mvin) {                       // lot is in DA and mvin
             idx += 1;                             // advance
             lot.tmp_mvin = false;
+            if(!lot.isSubLot()){
+                throw std::logic_error("Lot is in da but it isn't sublot");
+            }
         } else {  // lot is in D/A and hasn't moved in
             lot.tmp_oper = _routes[routename][++idx].oper;  // advance
             return 2;  // advance and dispatch

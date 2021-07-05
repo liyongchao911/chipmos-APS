@@ -22,6 +22,7 @@ typedef struct{
     bool hold;
     tool_t * tool;
     wire_t * wire;
+    job_t job;
 } entity_t;
 
 machine_t to_machine(entity_t ent);

@@ -104,7 +104,7 @@ double calculateSetupTime(job_t *prev, job_t *next, machine_base_operations_t * 
 void scheduling(machine_t *machine, machine_base_operations_t *ops){
     list_ele_t *it;
     job_t *job;
-    job_t *prev_job = NULL;
+    job_t *prev_job = &machine->current_job;
     it = machine->base.root;
     double arrival_time; 
     double setup_time;
@@ -133,4 +133,15 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops){
     machine->tool->time = start_time;
     machine->wire->time = start_time;
     machine->total_completion_time = total_completion_time;
+}
+
+
+void setLastJobInMachine(machine_t *machine){
+    list_ele_t *it = machine->base.root;
+    job_t *job;
+    while(it){
+        job = (job_t *)it->ptr_derived_object;
+        it = it->next;
+    } 
+    machine->current_job = *job;
 }

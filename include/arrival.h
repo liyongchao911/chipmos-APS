@@ -4,8 +4,10 @@
 #include <include/lot.h>
 #include <string>
 #include <vector>
+
+// #include "include/lots.h"
 /**
- * createLots () - create lot by reading a bunch of file
+ * createLots () - creates lot by reading a bunch of file
  *
  * ****************************************************************
  *                         prod_pid         pid_bomId
@@ -18,7 +20,7 @@
  *
  * ****************************************************************
  *
- *      pid_lotSize         wb_7_filter         queueTimeAndQ
+ *      pid_lotSize         wb7Filter         queueTimeAndQ
  * lots-------------> lots --------------> lots -------------->lots
  *          |                   |                       |
  *          |                   |                       |
@@ -36,16 +38,18 @@
  *
  * ****************************************************************
  */
-std::vector<lot_t> createLots(std::string wip_file_name,
-                              std::string prod_pid_filename,
-                              std::string eim,
-                              std::string fcst_filename,
-                              std::string routelist_filename,
-                              std::string queue_time_filename,
-                              std::string bomlist_filename,
-                              std::string heatblock_filename,
-                              std::string ems_filename,
-                              std::string gw_filename);
+// std::vector<lot_t> createLots(std::string wip_file_name,
+//                               std::string prod_pid_filename,
+//                               std::string eim,
+//                               std::string fcst_filename,
+//                               std::string routelist_filename,
+//                               std::string queue_time_filename,
+//                               std::string bomlist_filename,
+//                               std::string heatblock_filename,
+//                               std::string ems_filename,
+//                               std::string gw_filename,
+//                               std::string bdid_mapping_models_filename,
+//                               std::string uph_filename);
 
 
 void outputReport(std::string filename, std::vector<std::string> report);

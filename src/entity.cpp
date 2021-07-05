@@ -16,7 +16,8 @@ machine_t to_machine(entity_t ent){
                 .avaliable_time = (unsigned int)ent.recover_time
             },
             .tool = ent.tool,
-            .wire = ent.wire
+            .wire = ent.wire,
+            .current_job = ent.job
         };
 }
 
@@ -45,6 +46,13 @@ void entities_t::addMachine(map<string, string> elements){
     location = elements["location"];
     if(ent){
         unsigned int no = convertEntityNameToUInt(elements["entity"]);
+        job_t job = job_t{
+            .part_no = to_info(elements["prod_id"]),
+            .pin_package = to_info(elements["pin_pkg"]),
+            .base = {
+                .job_info = to_info(elements["lot_number"])
+            }
+        };
         *ent = entity_t{
             .recover_time = recover_time,
             .outplan_time = recover_time,
@@ -53,7 +61,8 @@ void entities_t::addMachine(map<string, string> elements){
             .location = location,
             .hold = false,
             .tool = NULL,
-            .wire = NULL
+            .wire = NULL,
+            .job = job
         };
         ent->name.data.number[0] = no;
         ent->name.text_size = 4;
@@ -225,11 +234,8 @@ void machines_t::addMachines(std::vector<entity_t *> ents){
         machine_t m = to_machine(*ents[i]);
         machine_t *m_ptr = new machine_t;
         *m_ptr = m;
-        //FIXME : the base time isn't clear
-        //the base time of the machine is 0
-        m_ptr->base.avaliable_time = 0;
+        m_ptr->current_job.base.ptr_derived_object = &(m_ptr->current_job);
         _machines[ents[i]->entity_name] = m_ptr;
-        
     } 
 }
 

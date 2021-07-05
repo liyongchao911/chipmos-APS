@@ -645,27 +645,6 @@ typedef struct{
 bool lot_group_comparision(lot_group_t g1, lot_group_t g2);
 
 
-class lots_t{
-protected:
-    std::vector<lot_t> lots;
-    std::map<std::string, std::vector<lot_t*> > wire_lots;
-    std::map<std::string, std::vector<lot_t*> > tool_lots;
-    std::map<std::string, std::vector<lot_t*> > tool_wire_lots;
-    std::map<std::string, int> amount_of_wires;
-    std::map<std::string, int> amount_of_tools;
 
-    std::map<std::string, int> sta_models(std::map<std::string, std::map<std::string, std::vector<entity_t *> > > ents); //location -> amount
-    std::map<std::string, int> sta_models(std::map<std::string, std::vector<entity_t *> > loc_ents);
-
-    bool toolWireLotsHasLots(); 
-public:
-    void addLots(std::vector<lot_t> lots);
-
-    std::vector<lot_group_t> round(entities_t machines);
-    std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
-
-    inline std::map<std::string, int> amountOfWires() { return amount_of_wires; } 
-    inline std::map<std::string, int> amountOfTools() { return amount_of_tools; } 
-};
 
 #endif

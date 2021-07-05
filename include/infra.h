@@ -5,6 +5,7 @@
 #include <ctime>
 #include <string>
 #include <vector>
+#include <cstring>
 
 #define iter(vec, id) for (unsigned int id = 0; id < vec.size(); ++id)
 
@@ -57,5 +58,7 @@ void random(double *genes, int size);
 int random_range(int start, int end, int different_num);
 
 double randomDouble();
+
+struct __info_t to_info(std::string s);
 
 #endif

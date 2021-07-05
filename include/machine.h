@@ -24,8 +24,7 @@ typedef struct __machine_t{
     machine_base_t base;
     ares_t * tool;
     ares_t * wire;
-    struct __info_t part_no;
-    struct __info_t pin_package;
+    job_t current_job;
     double makespan;
     double total_completion_time;
 }machine_t;
@@ -43,5 +42,7 @@ double setup_time_CSC(job_base_t*, job_base_t *);
 double setup_time_USC(job_base_t*, job_base_t *);
 
 void scheduling(machine_t *mahcine, machine_base_operations_t *ops);
+
+void setLastJobInMachine(machine_t *machine);
 
 #endif
