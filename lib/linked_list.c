@@ -1,8 +1,8 @@
-#include <features.h>
-#include <include/linked_list.h>
 #include <stdio.h>
 #include <stdlib.h>
-// #define DEBUG
+
+#include "include/linked_list.h"
+
 #define show(list)                                                  \
     for (LinkedListElement *iter = list; iter; iter = iter->next) { \
         printf("%.2f ", iter->get_value(iter));                     \

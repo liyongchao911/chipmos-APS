@@ -50,19 +50,20 @@ int main(int argc, const char *argv[])
     entities.addMachines(machine_csv, location_csv);
     machines_t machines;
     machines.addMachines(entities.getAllEntity());
-
+    
+    srand(time(NULL));
     vector<vector<lot_group_t> > round_groups = lots.rounds(entities);
     population_t pop = population_t{
         .parameters = {.AMOUNT_OF_CHROMOSOMES = 100,
                        .AMOUNT_OF_R_CHROMOSOMES = 200,
                        .EVOLUTION_RATE = 0.8,
                        .SELECTION_RATE = 0.2,
-                       .GENERATIONS = 500},
+                       .GENERATIONS = 50},
         .groups = round_groups,
         .current_round_no = 0
     };
 
-    srand(time(nullptr));
+    // srand(time(nullptr));
     initializeOperations(&pop);
     iter(pop.groups, i){
         initializePopulation(&pop, machines, tools, wires, i);

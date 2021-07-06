@@ -91,10 +91,10 @@ round_t prepareResources(vector<lot_group_t> group,
                 convertEntityNameToUInt(group[i].entities[j]->entity_name);
 
             // set the recover time max(machine, tool, wire);
-            double mx = max(m->base.avaliable_time, m->tool->time);
+            double mx = max(m->base.available_time, m->tool->time);
             mx = max(mx, m->wire->time);
             // TODO: calculate setup time
-            m->base.avaliable_time = mx;
+            m->base.available_time = mx;
 
             machines_map[m->base.machine_no] = m;
             alltools.push_back(ts[j]);
@@ -299,7 +299,7 @@ void geneticAlgorithm(population_t *pop)
     // update machines' avaliable time and set the last job
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
          it != machines.end(); ++it) {
-        it->second->base.avaliable_time = it->second->makespan;
+        it->second->base.available_time = it->second->makespan;
         setLastJobInMachine(it->second);
     }
 

@@ -166,10 +166,11 @@ bool csv_t::read(std::string filename,
     if (_file) {
         close();
     }
-
+    
+    _file = nullptr;
     _file = fopen(filename.c_str(), mode.c_str());
 
-    if (errno != 0) {
+    if (_file == nullptr) {
         if (errno == ENOENT) {
             throw std::ios_base::failure("No such file or directory");
         } else if (errno == EINVAL) {

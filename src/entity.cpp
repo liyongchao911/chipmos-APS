@@ -13,7 +13,7 @@ machine_t entityToMachine(entity_t ent)
     return machine_t{
         .base = {.machine_no = convertEntityNameToUInt(ent.entity_name),
                  .size_of_jobs = 0,
-                 .avaliable_time = (unsigned int) ent.recover_time},
+                 .available_time = ent.recover_time},
         .tool = ent.tool,
         .wire = ent.wire,
         .current_job = ent.job};
@@ -201,7 +201,7 @@ vector<machine_t> entities_t::machines()
             .base = {.machine_no =
                          convertEntityNameToUInt(_ents[i]->entity_name),
                      .size_of_jobs = 0,
-                     .avaliable_time = (unsigned int) _ents[i]->recover_time},
+                     .available_time = _ents[i]->recover_time},
             .tool = _ents[i]->tool,
             .wire = _ents[i]->wire};
         ms.push_back(m);

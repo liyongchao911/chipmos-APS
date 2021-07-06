@@ -37,7 +37,7 @@ def preprocessing(conf:dict):
     time = re.split(r"_|\.csv", wip_filename)[1]
     dt = datetime.strptime(time, "%Y%m%d%H%M%S")
 
-    csv_config["std_time"] = [ dt.strftime("%Y/%M/%d %H:%M")]
+    csv_config["std_time"] = [ dt.strftime("%Y/%m/%d %H:%M")]
     df = pd.DataFrame(csv_config)
     df.to_csv(csv_config_file_path, index=False)
     # print(json.dumps(csv_config, indent=4))
