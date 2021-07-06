@@ -46,6 +46,7 @@ struct population_t {
     round_t round;
 
     chromosome_base_t *chromosomes;
+    chromosome_base_t *tmp_chromosomes;
 };
 
 void initializePopulation(population_t *pop);
