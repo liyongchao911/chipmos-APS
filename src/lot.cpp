@@ -54,14 +54,14 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
                            : std::stoi(elements["amount_of_wires"]);
 
     if (elements.count("CAN_RUN_MODELS") != 0 &&
-        elements.count("PROCESS_TIME") != 0 && elements.count("uphs")) {
+        elements.count("PROCESS_TIME") != 0 && elements.count("getUphs")) {
         char *text = strdup(elements["CAN_RUN_MODELS"].c_str());
         std::vector<std::string> models = split(text, ',');
         free(text);
         text = strdup(elements["PROCESS_TIME"].c_str());
         std::vector<std::string> ptimes = split(text, ',');
         free(text);
-        text = strdup(elements["uphs"].c_str());
+        text = strdup(elements["getUphs"].c_str());
         std::vector<std::string> uphs = split(text, ',');
         free(text);
         _can_run_models = models;
@@ -196,7 +196,7 @@ std::map<std::string, std::string> lot_t::data()
 
     d["CAN_RUN_MODELS"] = join(models, ",");
     d["PROCESS_TIME"] = join(process_times, ",");
-    d["uphs"] = join(uphs, ",");
+    d["getUphs"] = join(uphs, ",");
     return d;
 }
 
@@ -330,12 +330,12 @@ job_t lot_t::job()
     return j;
 }
 
-std::map<std::string, double> lot_t::getEntitiyProcessTime()
+std::map<std::string, double> lot_t::getEntityProcessTime()
 {
     return _entity_process_times;
 }
 
-bool lot_group_comparision(lot_group_t g1, lot_group_t g2)
+bool lotGroupCmp(lot_group_t g1, lot_group_t g2)
 {
     return g1.lot_amount > g2.lot_amount;
 }

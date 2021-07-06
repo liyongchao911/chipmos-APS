@@ -154,7 +154,7 @@ public:
     void setLotSize(int lotsize) noexcept(false);
 
     /**
-     * setFcstTime () - setup forcast time
+     * setFcstTime () - setup forecast time
      *
      * forcast time is used to predict the queue time in D/A station
      *
@@ -165,7 +165,7 @@ public:
     /**
      * setPartId () - setup part_id
      *
-     * part id is used to determine what kind of tool should be used for this
+     * part id is used to determine what kind of wire should be used for this
      * lot
      *
      * @param partid : a std::string type of variable.
@@ -175,7 +175,7 @@ public:
     /**
      * setPartNo () - setup part_no
      *
-     * part_no is used to determine what kind of wire should be used for this
+     * part_no is used to determine what kind of tool should be used for this
      * lot
      *
      * @param part_no : a std::string type of variable
@@ -207,18 +207,24 @@ public:
      */
     void setCanRunModels(std::vector<std::string> models);
 
-
+    /**
+     * getAmountOfTools () - return the number of available tools for this lot
+     * @return  integer
+     */
     int getAmountOfTools();
 
+    /**
+     * getAmountOfWires () - return the number of available wires for this lot
+     * @return
+     */
     int getAmountOfWires();
 
+    /**
+     * getCanRunModels () - return a vector of string which represents can run
+     * models
+     * @return
+     */
     std::vector<std::string> getCanRunModels();
-
-    // /**
-    //  * getAmountOfMachines () - get the amount of machines which can process
-    //  * this lot
-    //  */
-    // int getAmountOfMachines();
 
     /**
      * oper () - current oper of this lot
@@ -377,30 +383,99 @@ public:
      */
     double queueTime();
 
+    /**
+     * data () - return all attribute of this lot
+     * The function can be used to output the information of this lot to csv
+     * file. The return value is a map container mapping string, attribute name,
+     * to another string, attribute value.
+     * @return map<string, string> type data
+     */
     std::map<std::string, std::string> data();
 
+    /**
+     * setUph () - set the uph for specific model
+     *  The function is used to set the uph for specific model. If the uph is 0,
+     *  the model will be removed because uph==0 is illegal.
+     * @param name :  the model name
+     * @param uph : double type value
+     * @return true if uph isn't 0, otherwise, return false.
+     */
     bool setUph(std::string name, double uph);
 
+    /**
+     * setUph () - set the uph by dataframe
+     * In this function, correct uph is filtered by recipe, oper, and cust. The
+     * function will call setUph(std::string, double) to setup uph for each
+     * model.
+     * @param uph : csv_t type dataframe
+     * @return true if setup uph successfully, return false if there is no
+     * model's uph is set.
+     */
     bool setUph(csv_t uph);
 
+    /**
+     * setCanRunLocation () - set the can run location
+     * This function will setup the lot's can run location. The can run location
+     * is determined by its pin package.
+     * @param model_locations : model_locations is a map container mapping
+     * model's name to it's locations.
+     */
     void setCanRunLocation(
         std::map<std::string, std::vector<std::string> > model_locations);
 
-    std::vector<std::string> can_run_locations();
+    /**
+     * getCanRunLocation () - get the can run locations of lot
+     * @return a vector of string which represents a location
+     */
+    std::vector<std::string> getCanRunLocations();
 
+    /**
+     * isEntityCanRun () - check if the lot can run on this model and location
+     * @param model : model's name of this entity.
+     * @param location : location of this entity.
+     * @return
+     */
     bool isEntityCanRun(std::string model, std::string location);
 
+    /**
+     * addCanRunEntity () - add can run entity's name to can run entity vector
+     * @param ent
+     * @return
+     */
     bool addCanRunEntity(entity_t *ent);
 
+    /**
+     * getCanRunEntities () - get can run entities vector
+     * @return
+     */
     std::vector<std::string> getCanRunEntities();
 
+    /**
+     * job () - generate job_t instance by lot
+     * In this function, job_t fields are initialized to its variable. The field
+     * includes list.getValue, part_no, pin_package, job_info, customer,
+     * part_id, bdid, urgent_code qty, start_time, end_time, arriv_t
+     * @return job_t instance
+     */
     job_t job();
 
-    std::map<std::string, double> getEntitiyProcessTime();
+    /**
+     * getEntityProcessTime () - get can run entity and their process time.
+     * @return map<string, double> type data mapping entity's name to its
+     * process time
+     */
+    std::map<std::string, double> getEntityProcessTime();
 
+    /**
+     * clearCanRunLocation () clear all can run locations
+     */
     void clearCanRunLocation();
 
-    std::map<std::string, double> uphs();
+    /**
+     * getUphs () - get all models' uph
+     * @return map<string, double> data mapping model's name to its uph
+     */
+    std::map<std::string, double> getUphs();
 };
 
 inline void lot_t::clearCanRunLocation()
@@ -408,7 +483,7 @@ inline void lot_t::clearCanRunLocation()
     _can_run_locations.clear();
 }
 
-inline std::map<std::string, double> lot_t::uphs()
+inline std::map<std::string, double> lot_t::getUphs()
 {
     return _uphs;
 }
@@ -418,7 +493,7 @@ inline std::vector<std::string> lot_t::getCanRunEntities()
     return _can_run_entities;
 }
 
-inline std::vector<std::string> lot_t::can_run_locations()
+inline std::vector<std::string> lot_t::getCanRunLocations()
 {
     return _can_run_locations;
 }
@@ -656,7 +731,13 @@ typedef struct {
     std::vector<lot_t *> lots;
 } lot_group_t;
 
-bool lot_group_comparision(lot_group_t g1, lot_group_t g2);
+/**
+ * lotGroupCmp () - compare two group by its lot amount
+ * @param g1 : group 1
+ * @param g2 : group 2
+ * @return true if g1.lot_amount > g2.lot_amount
+ */
+bool lotGroupCmp(lot_group_t g1, lot_group_t g2);
 
 
 

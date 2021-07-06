@@ -39,20 +39,20 @@ void lots_t::addLots(std::vector<lot_t> lots)
     }
 }
 
-std::map<std::string, int> lots_t::getModelsDistribution(
-    std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
-        ents)
-{
-    std::map<std::string, int> _;
-    for (auto &ent : ents) {
-        for (auto &it2 : ent.second) {
-            _[it2.first] = 0;
-        }
-    }
-    return _;
-}
+//std::map<std::string, int> lots_t::initializeModelDistribution(
+//    std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
+//        ents)
+//{
+//    std::map<std::string, int> _;
+//    for (auto &ent : ents) {
+//        for (auto &it2 : ent.second) {
+//            _[it2.first] = 0;
+//        }
+//    }
+//    return _;
+//}
 
-std::map<std::string, int> lots_t::getModelsDistribution(
+std::map<std::string, int> lots_t::initializeModelDistribution(
     std::map<std::string, std::vector<entity_t *> > loc_ents)
 {
     std::map<std::string, int> _;
@@ -89,7 +89,7 @@ std::vector<lot_group_t> lots_t::round(entities_t machines)
             lot_group_t{.wire_tools_name = tool_wire_lot.first,
                         .lot_amount = tool_wire_lot.second.size()});
     }
-    std::sort(groups.begin(), groups.end(), lot_group_comparision);
+    std::sort(groups.begin(), groups.end(), lotGroupCmp);
 
     for (unsigned int i = 0; i < 50; ++i) {
         if (groups[i].lot_amount > 0) {
@@ -144,12 +144,13 @@ std::vector<lot_group_t> lots_t::round(entities_t machines)
         if (selected_groups[k].machine_amount > 0) {
             t_w = selected_groups[k].wire_tools_name;
             std::vector<lot_t *> lots = this->tool_wire_lots[t_w];
-            // std::map<std::string, int> getModelsDistribution;
+            // std::map<std::string, int> initializeModelDistribution;
 
-            std::map<std::string, int> sta = getModelsDistribution(loc_ents);
+            std::map<std::string, int> sta =
+                initializeModelDistribution(loc_ents);
             for (unsigned int i = 0; i < lots.size(); ++i) {
                 std::vector<std::string> can_run_locations =
-                    lots[i]->can_run_locations();
+                    lots[i]->getCanRunLocations();
                 iter(can_run_locations, c) { sta[can_run_locations[c]] += 1; }
             }
             // for(std::map<std::string, int>::iterator it = sta.begin(); it !=
@@ -449,9 +450,6 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
     while (unfinished.size()) {
         iter(unfinished, i)
         {
-            // if(unfinished[i].lotNumber().compare(trace_lot_number) == 0){
-            //     printf("hold");
-            // }
             try {
                 retval = routes.calculateQueueTime(unfinished[i]);
                 switch (retval) {

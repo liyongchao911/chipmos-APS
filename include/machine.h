@@ -30,7 +30,7 @@ typedef struct __machine_t {
 } machine_t;
 
 bool aresPtrComp(ares_t *a1, ares_t *a2);
-bool aresComp(ares_t a1, ares_ta2);
+bool aresComp(ares_t a1, ares_t a2);
 
 void machineReset(machine_base_t *base);
 

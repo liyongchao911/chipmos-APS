@@ -140,7 +140,7 @@ round_t prepareJobs(vector<lot_group_t> group)
     {
         jobs[i] = lots[i]->job();
         vector<string> can_run_ents = lots[i]->getCanRunEntities();
-        map<string, double> ent_process_time = lots[i]->getEntitiyProcessTime();
+        map<string, double> ent_process_time = lots[i]->getEntityProcessTime();
         pts[i] = (process_time_t *) malloc(sizeof(process_time_t) *
                                            can_run_ents.size());
         size_of_pt[i] = can_run_ents.size();
