@@ -1,9 +1,9 @@
 #ifndef __DA_H__
 #define __DA_H__
 
-#include <include/common.h>
 #include <include/csv.h>
-#include <include/job.h>
+#include <include/infra.h>
+#include <include/lot.h>
 #include <vector>
 
 /**
@@ -45,30 +45,51 @@ typedef struct da_station_t {
  * da_stations_t object manages all da_station_t objects. The program use the
  * production capacity to predict whether the lot will pass D/A station in 24
  * hours or not. The classification lot in D/A station is by its recipe(bd_id).
- * If lot traverses to D/A station, lots will add in queue and
+ * If lot is in D/A station, lots will be added in arrived queue and if lot is
+ * not in D/A station but the lot has traversed to D/A station, the lot will be
+ * added into unarrived queue.
  */
 class da_stations_t
 {
 private:
+    /// _da_stations_container is a container which classify the da_station_t
+    /// instances by bd_id
     std::map<std::string, da_station_t> _da_stations_container;
 
-    std::vector<lot_t> daDistributeCapacity(
-        da_station_t &da);  // for single da_station
-
-    std::vector<lot_t> getSubLot(std::vector<lot_t> lots);
 
     std::vector<lot_t> _parent_lots;
 
-public:
-    da_stations_t(csv_t fcst, bool strict = false);
+    /**
+     * daDistributeCapacity () - distribute the production capacity of a station
+     * @param da : for a single station
+     * @return the lots which successfully passed D/A station after distributing
+     * production capacity.
+     */
+    std::vector<lot_t> daDistributeCapacity(
+        da_station_t &da);  // for single da_station
 
     /**
-     * setFcst ()
-     *
-     * return 0 : -n
+     * splitSubLots () - split parent lots to several sub-lots
+     * @param lots
+     * @return the sub-lots
      */
-    int setFcst(csv_t fcst, bool strict = false);
+    std::vector<lot_t> splitSubLots(std::vector<lot_t> lots);
 
+
+public:
+    da_stations_t(csv_t fcst);
+
+    /**
+     * setFcst () setup the forecast production capacity of D/A station
+     * In the function, if the bd_id is duplicated, sum the value.
+     */
+    void setFcst(csv_t _fcst);
+
+    /**
+     *
+     * @param lot
+     * @return
+     */
     bool addArrivedLotToDA(lot_t &lot);
     bool addUnarrivedLotToDA(lot_t &lot);
 

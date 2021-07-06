@@ -1,61 +1,48 @@
 #ifndef __MACHINE_H__
 #define __MACHINE_H__
 
-#include <include/csv.h>
-#include <time.h>
-#include <map>
-#include <string>
-#include <vector>
+#include <include/infra.h>
+#include <include/job.h>
+#include <include/machine_base.h>
 
-typedef struct {
-    double recover_time;
-    std::string entity_name;
-    std::string model_name;
-    std::string area;
-} entity_t;
+typedef struct __info_t machine_info_t;
+typedef struct __info_t tool_info_t;
+typedef struct __info_t wire_info_t;
+
+typedef struct ancillary_resource_t {
+    unsigned int no;
+    struct __info_t name;
+    unsigned int machine_no;
+    double time;
+} ares_t;
+
+typedef ares_t tool_t;
+typedef ares_t wire_t;
 
 
-class machines_t
-{
-private:
-    std::map<std::string, std::string> _entity_location;
+typedef struct __machine_t {
+    machine_base_t base;
+    ares_t *tool;
+    ares_t *wire;
+    job_t current_job;
+    double makespan;
+    double total_completion_time;
+} machine_t;
 
-    // _entities[MODEL][AREA] is a vector of entity_t object.
-    std::map<std::string, std::map<std::string, std::vector<entity_t> > >
-        _entities;
-    time_t time;
+bool aresPtrComp(ares_t *a1, ares_t *a2);
+bool aresComp(ares_t a1, ares_t a2);
 
-public:
-    /**
-     * machines_t () - constructor of machines_t
-     *
-     * The constructor will convert @b _time to time_t type
-     */
-    machines_t(const char *_time);
+void machineReset(machine_base_t *base);
 
-    /**
-     * addMachine() - add new machine
-     *
-     * @b elements is a std::map container which store the relationship between
-     * header and data. For example, elements[ENTITY] == "BB211",
-     * elements[MODEL] = "UTC3000" and etc... This function will convert
-     * elements to entity_t object.
-     */
-    void addMachine(std::map<std::string, std::string> elements);
+double setupTimeCWN(job_base_t *_prev, job_base_t *_next);
+double setupTimeCK(job_base_t *_prev, job_base_t *_next);
+double setupTimeEU(job_base_t *_prev, job_base_t *_next);
+double setupTimeMCSC(job_base_t *_prev, job_base_t *_next);
+double setupTimeCSC(job_base_t *_prev, job_base_t *_next);
+double setupTimeUSC(job_base_t *_prev, job_base_t *_next);
 
-    /**
-     * addMachines() - add machines from dataframe
-     *
-     * add machines from @csv_t type dataframe.
-     */
-    void addMachines(csv_t machines_csv, csv_t location_csv);
+void scheduling(machine_t *mahcine, machine_base_operations_t *ops);
 
-    /**
-     * randomlyGetEntities () - randomly get the entities by model and area
-     */
-    std::vector<entity_t> randomlyGetEntities(std::string model_name,
-                                              std::string area,
-                                              int amount);
-};
+void setLastJobInMachine(machine_t *machine);
 
 #endif

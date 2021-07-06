@@ -1,0 +1,108 @@
+{
+    "file_path" : "files",
+    "preprocess_files" : [
+        {
+            "filename" : "WipOutPlanTime_20210417083000.csv",
+            "function" : "wip",
+            "columns" : [
+                "route",
+                "wlot_lot_number",
+                "wlot_crt_dat_al_1",
+                "pin_package",
+                "wlot_prod",
+                "wlot_qty_1",
+                "wlot_qty_2",
+                "wlot_oper",
+                "wlot_hold",
+                "wlot_mvin_perfmd",
+                "bd_id",
+                "urgent_code"
+            ]
+        },
+        {
+            "filename" : "product_find_process_id.csv",
+            "function" : "pid_bomid",
+            "columns" : [ "product", "process_id", "bom_id"]
+        },
+        {
+            "filename" : "process_find_lot_size_and_entity.csv",
+            "function" : "lot_size",
+            "columns" : ["process_id", "master_desc", "remark"]
+        },
+        {
+            "filename" : "fcst.csv",
+            "function" : "fcst",
+            "columns" : [ "bd_id", "da_out", "da_act" ]
+        },
+        {
+            "filename" : "routelist.csv",
+            "function" : "routelist",
+            "columns" : [ "wrto_route", "wrto_oper", "wrto_seq_num", "wrto_opr_shrt_desc" ]
+        },
+        {
+            "filename" : "ems_heatblock_data.csv",
+            "function" : "ems_heatblock",
+            "columns" : [ "part_no", "qty1", "qty3"]
+        },
+        {
+            "filename": "bom_list.csv",
+            "function": "bom_list",
+            "columns": [
+                "bom_id",
+                "oper",
+                "part_id",
+                "qty"
+            ]
+        },
+        {
+            "filename" : "gw_inventory.csv",
+            "function" : "gw_inventory",
+            "columns" : ["gw_part_no", "roll_length"]
+        },
+        {
+            "filename" : "wb_bdid_model_mapping.csv",
+            "function" : "bdid_model_mapping",
+            "columns" : [ "bd_id", "oper", "model" ]
+        },
+        {
+            "filename" : "uph.csv",
+            "function" : "uph",
+            "columns" : [ "OPER", "CUST", "B/D#", "MODEL", "G.UPH"]
+        },
+        {
+            "filename" : "process_find_heatblock.csv",
+            "function" : "pid_heatblock",
+            "columns" : [ "process_id", "remark"]
+        },
+        {
+            "filename" : "locations.csv",
+            "function" : "locations",
+            "columns" : [ "Location", "Entity"]
+        },
+        {
+            "filename" : "machines.csv",
+            "function" : "machines",
+            "columns" : [
+                "ENTITY",
+                "MODEL",
+                "STATUS",
+                "LOT#",
+                "OPER",
+                "PRODUCT",
+                "BOND ID",
+                "OUTPLAN",
+                "CUST",
+                "PIN_PKG"
+            ]
+        }
+    ],
+    "nopreprocess_files" : [
+        {
+            "filename" : "newqueue_time.csv",
+            "function" : "queue_time"
+        }
+    ],
+    "parameters" : {
+        "time" : 300
+    }
+}
