@@ -13,8 +13,20 @@ def filePreprocessing(path, files:dict, csv_config):
 
         if(not file_function in csv_config):
             csv_config[file_function] = []
+        try:
 
-        df = pd.read_csv(file_path, dtype=str)
+            if(re.search(r'.csv', file_path) != None):
+                df = pd.read_csv(file_path, dtype=str)
+                file_path = file_path.replace(r'.csv', '')
+            elif(re.search(r'.xlsx', file_path) != None):
+                df = pd.read_excel(file_path, dtype=str)
+                file_path = file_path.replace(r'.xlsx', '')
+        except ValueError as e:
+            print(e)
+            print(file_path)
+            exit(-1)
+
+
         df = df.rename(columns=lambda x : x.strip())
 
         if "columns" in file:
@@ -22,7 +34,7 @@ def filePreprocessing(path, files:dict, csv_config):
             for col in file["columns"]:
                 df[col] = df[col].str.strip()
 
-        df.to_csv(file_path, index=False)
+        df.to_csv(file_path + ".csv", index=False)
         csv_config[file_function].append(file_path)
     return csv_config
 
