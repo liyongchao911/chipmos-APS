@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include "include/entity.h"
+#include "include/infra.h"
 #include "include/job.h"
 #include "include/job_base.h"
 
@@ -316,6 +317,7 @@ job_t lot_t::job()
     j.customer = stringToInfo(_customer);
     j.part_id = stringToInfo(_part_id);
     j.bdid = stringToInfo(_recipe);
+    j.prod_id = stringToInfo(_prod_id);
 
 
     if (_urgent.length()) {
@@ -337,8 +339,5 @@ std::map<std::string, double> lot_t::getEntityProcessTime()
 
 bool lotGroupCmp(lot_group_t g1, lot_group_t g2)
 {
-    if(g1.lot_amount > g2.lot_amount)
-        return 1;
-    else
-        return -1;
+    return (g1.lot_amount > g2.lot_amount);
 }

@@ -277,7 +277,6 @@ void geneticAlgorithm(population_t *pop)
     machine_base_operations_t *machine_ops = pop->operations.machine_ops;
     list_operations_t *list_ops = pop->operations.list_ops;
     job_base_operations_t *job_ops = pop->operations.job_ops;
-
     // initialize machine_op
     int k;
     for (k = 0; k < pop->parameters.GENERATIONS; ++k) {
@@ -331,16 +330,16 @@ void geneticAlgorithm(population_t *pop)
     }
 
     // output
-    FILE *file = fopen("result.csv", "a+");
-    for (int i = 0; i < AMOUNT_OF_JOBS; ++i) {
-        machine_t *m = machines[jobs[i].base.machine_no];
-        // lot_number, part_no, part_id, entity_name, start time, end_time
-        string ent_name = convertUIntToEntityName(m->base.machine_no);
-        fprintf(file, "%s, %s, %s, %s, %s, %.3f, %.3f\n",
-                jobs[i].base.job_info.data.text, jobs[i].bdid.data.text,
-                m->tool->name.data.text, m->wire->name.data.text,
-                ent_name.c_str(), jobs[i].base.start_time,
-                jobs[i].base.end_time);
-    }
-    fclose(file);
+    // FILE *file = fopen("result.csv", "a+");
+    // for (int i = 0; i < AMOUNT_OF_JOBS; ++i) {
+    //     machine_t *m = machines[jobs[i].base.machine_no];
+    //     // lot_number, part_no, part_id, entity_name, start time, end_time
+    //     string ent_name = convertUIntToEntityName(m->base.machine_no);
+    //     fprintf(file, "%s, %s, %s, %s, %s, %s, %s, %s, %.3f, %.3f\n",
+    //             jobs[i].base.job_info.data.text, jobs[i].bdid.data.text,
+    //             m->tool->name.data.text, m->wire->name.data.text,
+    //             ent_name.c_str(), jobs[i].base.start_time,
+    //             jobs[i].base.end_time);
+    // }
+    // fclose(file);
 }
