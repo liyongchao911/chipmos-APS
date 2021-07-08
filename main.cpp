@@ -58,7 +58,7 @@ int main(int argc, const char *argv[])
                        .AMOUNT_OF_R_CHROMOSOMES = 200,
                        .EVOLUTION_RATE = 0.8,
                        .SELECTION_RATE = 0.2,
-                       .GENERATIONS = 2000},
+                       .GENERATIONS = 20},
         .groups = round_groups,
         .current_round_no = 0
     };

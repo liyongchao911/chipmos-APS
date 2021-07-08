@@ -35,7 +35,7 @@ def filePreprocessing(path, files:dict, csv_config):
                 df[col] = df[col].str.strip()
 
         df.to_csv(file_path + ".csv", index=False)
-        csv_config[file_function].append(file_path)
+        csv_config[file_function].append(file_path + ".csv")
     return csv_config
 
 def preprocessing(conf:dict):
