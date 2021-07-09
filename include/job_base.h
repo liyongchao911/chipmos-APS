@@ -26,11 +26,15 @@
 #ifndef __JOB_BASE_H__
 #define __JOB_BASE_H__
 
-#include <include/def.h>
-#include <include/infra.h>
-#include <include/linked_list.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include "include/def.h"
+#include "include/linked_list.h"
+#include "include/info.h"
 
+#if defined __NVCC__ || defined __cplusplus
+extern "C"{
+#endif 
 
 typedef struct process_time_t process_time_t;
 typedef struct job_base_t job_base_t;
@@ -155,6 +159,10 @@ __qualifier__ unsigned int machine_selection(job_base_t *self);
         .get_machine_no = get_machine_no,                                 \
         .machine_selection = machine_selection                            \
     }
+#endif
+
+#if defined __NVCC__ || defined __cplusplus
+}
 #endif
 
 #endif

@@ -149,6 +149,7 @@ struct list_ele_t {
  * @var set_next : pointer to function to set the next node of a list_ele_t
  * @var set_prev : pointer to function to set the previousnode of a list_ele_t
  */
+typedef struct list_operations_t list_operations_t;
 struct list_operations_t {
     /// pointer to a function to initialize the list_ele_t
     void (*init)(void *self);
@@ -163,6 +164,10 @@ struct list_operations_t {
     void (*set_prev)(void *self, list_ele_t *prev);
 };
 
+#if defined __NVCC__ || defined __cplusplus
+}
+#endif
+
 
 #ifndef LINKED_LIST_OPS
 /**
@@ -172,16 +177,11 @@ struct list_operations_t {
  * set_prev point to _list_ele_set_prev
  */
 #define LINKED_LIST_OPS                                                 \
-    list_operations_t                                                   \
     {                                                                   \
         .set_next = _list_ele_set_next, .set_prev = _list_ele_set_prev, \
     }
 #endif
 
 
-
-#if defined __NVCC__ || defined __cplusplus
-}
-#endif
 
 #endif
