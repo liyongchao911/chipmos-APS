@@ -24,9 +24,9 @@
 #ifndef __MACHINE_BASE_H__
 #define __MACHINE_BASE_H__
 
-#include <include/def.h>
-#include <include/job_base.h>
-#include <include/linked_list.h>
+#include "include/def.h"
+#include "include/job_base.h"
+#include "include/linked_list.h"
 #include <stddef.h>
 
 #if defined __NVCC__ || defined __cplusplus
@@ -119,6 +119,7 @@ struct machine_base_t {
  * time between two jobs.
  *
  */
+typedef struct machine_base_operations_t machine_base_operations_t;
 struct machine_base_operations_t {
     /// pointer to a function to initialize object
     void (*init)(void *self);

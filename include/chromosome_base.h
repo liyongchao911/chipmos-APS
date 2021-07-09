@@ -3,9 +3,14 @@
 #ifndef __CHROMOSOME_BASE_H__
 #define __CHROMOSOME_BASE_H__
 
-#include <include/def.h>
-#include <include/job_base.h>
-#include <include/machine_base.h>
+#include <stddef.h>
+#include "include/def.h"
+#include "include/job_base.h"
+#include "include/machine_base.h"
+
+#if defined __NVCC__ || __cplusplus
+extern "C" {
+#endif 
 
 typedef struct chromosome_base_t chromosome_base_t;
 typedef struct chromosome_base_operations_t chromosome_base_operations_t;
@@ -29,12 +34,15 @@ struct chromosome_base_operations_t {
 };
 
 
-chromosome_base_t *chromosome_base_new(size_t gene_size);
+chromosome_base_t *chromosome_base_new(size_t gene_size, int chromosome_no);
 
 __qualifier__ void chromosome_base_reset(chromosome_base_t *base);
 
 __qualifier__ void chromosome_base_init(chromosome_base_t *base,
                                         double *address);
+#if defined __NVCC__ || __cplusplus
+}
+#endif 
 
 
 #endif

@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "include/info.h"
+
 #define iter(vec, id) for (unsigned int id = 0; id < vec.size(); ++id)
 
 
@@ -40,17 +42,8 @@ time_t timeConverter(std::string text);
 void stringToLower(char *text);
 void stringToUpper(char *text);
 
-struct __info_t {
-    union {
-        char text[32];
-        unsigned int number[8];
-    } data;
-    unsigned int text_size : 5;
-    unsigned int number_size : 3;
-};
 
-
-bool isSameInfo(struct __info_t info1, struct __info_t info2);
+struct __info_t stringToInfo(std::string s);
 
 
 void random(double *genes, int size);
@@ -59,6 +52,5 @@ int randomRange(int start, int end, int different_num);
 
 double randomDouble();
 
-struct __info_t stringToInfo(std::string s);
 
 #endif

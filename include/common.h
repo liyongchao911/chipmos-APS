@@ -8,7 +8,6 @@
     }
 
 
-
 int cmpint(const void *a, const void *b);
 
 int cmpdouble(const void *a, const void *b);
