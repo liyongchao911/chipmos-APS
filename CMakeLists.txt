@@ -5,10 +5,7 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-# set(CMAKE_CXX_STANDARD 11)
-
-set(CMAKE_CXX_COMPILER clang)
-set(CAMKE_C_COMPILER clang)
+set(CMAKE_CXX_STANDARD 11)
 
 add_executable(main main.cpp src/algorithm.cpp src/chromosome.cpp src/condition_card.cpp src/csv.cpp src/da.cpp src/entity.cpp src/infra.cpp src/job.cpp src/lot.cpp src/lots.cpp src/machine.cpp src/route.cpp src/info.c)
 add_subdirectory(lib)
