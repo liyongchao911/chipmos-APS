@@ -1,5 +1,4 @@
-#include "../include/chromosome_base.h"
-#include <include/chromosome_base.h>
+#include "include/chromosome_base.h"
 #include <stdlib.h>
 
 chromosome_base_t *chromosome_base_new(size_t gene_size, int chromosome_no)
