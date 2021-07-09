@@ -59,7 +59,7 @@ machine_base_t *machine_base_new(unsigned int machine_no);
  * @var tail : point on the tail of jobs
  * @var machine_no : the machine's number
  * @var size_of_jobs : the amount of jobs
- * @var avaliable_time : the time the machine can start being used.
+ * @var available_time : the time the machine can start being used.
  */
 struct machine_base_t {
     /// pointer to parent object
@@ -78,7 +78,7 @@ struct machine_base_t {
     unsigned int size_of_jobs;
 
     /// the time the machine can start being used.
-    double avaliable_time;
+    double available_time;
 };
 
 /**

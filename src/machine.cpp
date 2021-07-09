@@ -123,7 +123,7 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
     double arrival_time;
     double setup_time;
     bool hasICSI = false;
-    double start_time = machine->base.avaliable_time;
+    double start_time = machine->base.available_time;
     double total_completion_time = 0;
     while (it) {
         job = (job_t *) it->ptr_derived_object;
@@ -161,4 +161,6 @@ void setLastJobInMachine(machine_t *machine)
         it = it->next;
     }
     machine->current_job = *job;
+    machine->current_job.base.ptr_derived_object = &machine->current_job;
+    machine->current_job.list.ptr_derived_object = &machine->current_job;
 }

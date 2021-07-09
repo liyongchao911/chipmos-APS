@@ -11,14 +11,14 @@
 #ifndef __CSV_H__
 #define __CSV_H__
 
-#include <bits/stdint-uintn.h>
-#include <include/infra.h>
 #include <cerrno>
 #include <cstring>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+
+#include "include/infra.h"
 
 /**
  * @class csv_t

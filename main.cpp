@@ -13,7 +13,7 @@
 
 using namespace std;
 
-
+void output(population_t * pop, csv_t * csv);
 
 int main(int argc, const char *argv[])
 {
@@ -50,27 +50,50 @@ int main(int argc, const char *argv[])
     entities.addMachines(machine_csv, location_csv);
     machines_t machines;
     machines.addMachines(entities.getAllEntity());
-
+    
+    srand(time(NULL));
     vector<vector<lot_group_t> > round_groups = lots.rounds(entities);
     population_t pop = population_t{
         .parameters = {.AMOUNT_OF_CHROMOSOMES = 100,
                        .AMOUNT_OF_R_CHROMOSOMES = 200,
                        .EVOLUTION_RATE = 0.8,
                        .SELECTION_RATE = 0.2,
-                       .GENERATIONS = 500},
+                       .GENERATIONS = 20},
         .groups = round_groups,
         .current_round_no = 0
     };
 
-    srand(time(nullptr));
+    csv_t result("result.csv", "w");
     initializeOperations(&pop);
     iter(pop.groups, i){
         initializePopulation(&pop, machines, tools, wires, i);
         geneticAlgorithm(&pop);
+        output(&pop, &result);
         freeJobs(&pop.round);
         freeResources(&pop.round);
         freeChromosomes(&pop);
     }
+    result.write();
 
     return 0;
+}
+
+void output(population_t * pop, csv_t *csv){
+    int AMOUNT_OF_JOBS = pop->round.AMOUNT_OF_JOBS;
+    job_t *jobs = pop->round.jobs;
+    for(int i = 0; i < AMOUNT_OF_JOBS; ++i){
+        csv->addData(map<string, string>({
+                        {"lot_number" , jobs[i].base.job_info.data.text },
+                        {"bd_id", jobs[i].bdid.data.text },
+                        {"part_no", jobs[i].part_no.data.text },
+                        {"part_id" , jobs[i].part_id.data.text },
+                        {"cust", jobs[i].customer.data.text },
+                        {"pin_pkg", jobs[i].pin_package.data.text },
+                        {"prod_id", jobs[i].prod_id.data.text },
+                        {"qty", to_string(jobs[i].base.qty) },
+                        {"entity", convertUIntToEntityName(jobs[i].base.machine_no) },
+                        {"start_time", to_string(jobs[i].base.start_time) },
+                        {"end_time", to_string(jobs[i].base.end_time) }
+                    }));
+    }
 }

@@ -13,8 +13,20 @@ def filePreprocessing(path, files:dict, csv_config):
 
         if(not file_function in csv_config):
             csv_config[file_function] = []
+        try:
 
-        df = pd.read_csv(file_path, dtype=str)
+            if(re.search(r'.csv', file_path) != None):
+                df = pd.read_csv(file_path, dtype=str)
+                file_path = file_path.replace(r'.csv', '')
+            elif(re.search(r'.xlsx', file_path) != None):
+                df = pd.read_excel(file_path, dtype=str)
+                file_path = file_path.replace(r'.xlsx', '')
+        except ValueError as e:
+            print(e)
+            print(file_path)
+            exit(-1)
+
+
         df = df.rename(columns=lambda x : x.strip())
 
         if "columns" in file:
@@ -22,8 +34,8 @@ def filePreprocessing(path, files:dict, csv_config):
             for col in file["columns"]:
                 df[col] = df[col].str.strip()
 
-        df.to_csv(file_path, index=False)
-        csv_config[file_function].append(file_path)
+        df.to_csv(file_path + ".csv", index=False)
+        csv_config[file_function].append(file_path + ".csv")
     return csv_config
 
 def preprocessing(conf:dict):
@@ -37,7 +49,7 @@ def preprocessing(conf:dict):
     time = re.split(r"_|\.csv", wip_filename)[1]
     dt = datetime.strptime(time, "%Y%m%d%H%M%S")
 
-    csv_config["std_time"] = [ dt.strftime("%Y/%M/%d %H:%M")]
+    csv_config["std_time"] = [ dt.strftime("%Y/%m/%d %H:%M")]
     df = pd.DataFrame(csv_config)
     df.to_csv(csv_config_file_path, index=False)
     # print(json.dumps(csv_config, indent=4))
