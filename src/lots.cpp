@@ -39,19 +39,6 @@ void lots_t::addLots(std::vector<lot_t> lots)
     }
 }
 
-//std::map<std::string, int> lots_t::initializeModelDistribution(
-//    std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
-//        ents)
-//{
-//    std::map<std::string, int> _;
-//    for (auto &ent : ents) {
-//        for (auto &it2 : ent.second) {
-//            _[it2.first] = 0;
-//        }
-//    }
-//    return _;
-//}
-
 std::map<std::string, int> lots_t::initializeModelDistribution(
     std::map<std::string, std::vector<entity_t *> > loc_ents)
 {
@@ -82,7 +69,7 @@ std::vector<lot_group_t> lots_t::round(entities_t machines)
 
     machines.reset();
 
-    // 30 sets;
+    // max : 50 sets;
     std::vector<lot_group_t> groups;
     for (auto &tool_wire_lot : tool_wire_lots) {
         groups.push_back(
@@ -90,8 +77,8 @@ std::vector<lot_group_t> lots_t::round(entities_t machines)
                         .lot_amount = tool_wire_lot.second.size()});
     }
     std::sort(groups.begin(), groups.end(), lotGroupCmp);
-
-    for (unsigned int i = 0; i < 50; ++i) {
+    int selected_group_number = (groups.size() > 50 ? 50 : groups.size());
+    for (int i = 0; i < selected_group_number; ++i) {
         if (groups[i].lot_amount > 0) {
             selected_groups.push_back(groups[i]);
         }
