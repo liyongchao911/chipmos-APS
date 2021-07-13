@@ -70,7 +70,6 @@ time_t timeConverter(std::string text)
 
 
 
-
 void random(double *genes, int size)
 {
     for (int i = 0; i < size; ++i) {

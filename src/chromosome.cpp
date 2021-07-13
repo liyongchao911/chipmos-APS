@@ -87,7 +87,7 @@ int chromosomeCmp(const void *_c1, const void *_c2)
 {
     chromosome_base_t *c1 = (chromosome_base_t *) _c1;
     chromosome_base_t *c2 = (chromosome_base_t *) _c2;
-    if(c1->fitnessValue > c2->fitnessValue)
+    if (c1->fitnessValue > c2->fitnessValue)
         return 1;
     else
         return -1;

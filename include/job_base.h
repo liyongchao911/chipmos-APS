@@ -29,12 +29,12 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "include/def.h"
-#include "include/linked_list.h"
 #include "include/info.h"
+#include "include/linked_list.h"
 
 #if defined __NVCC__ || defined __cplusplus
-extern "C"{
-#endif 
+extern "C" {
+#endif
 
 typedef struct process_time_t process_time_t;
 typedef struct job_base_t job_base_t;

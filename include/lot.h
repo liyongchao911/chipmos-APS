@@ -726,6 +726,7 @@ typedef struct {
     int wire_amount;
     int machine_amount;
     std::map<std::string, int> models_statistic;
+    std::map<std::string, int> bdid_statistic;
     std::vector<entity_t *> entities;
     std::vector<std::string> entity_names;
     std::vector<lot_t *> lots;

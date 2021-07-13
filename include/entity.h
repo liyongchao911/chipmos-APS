@@ -85,7 +85,8 @@ public:
      * randomlyGetEntitiesByLocations
      */
     std::vector<entity_t *> randomlyGetEntitiesByLocations(
-        std::map<std::string, int> statistic,
+        std::map<std::string, int> model_statistic,
+        std::map<std::string, int> bdid_statistic,
         int amount);
 
     void setTime(std::string text);
@@ -102,8 +103,6 @@ public:
     std::vector<machine_t> machines();
 
     std::vector<entity_t *> getAllEntity();
-
-    
 };
 
 

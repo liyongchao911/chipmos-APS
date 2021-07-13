@@ -292,11 +292,10 @@ void geneticAlgorithm(population_t *pop)
         printf("%d,%.3f\n", k, chromosomes[0].fitnessValue);
 
         // statistic
-        chromosomeSelection(
-                chromosomes, tmp_chromosomes, 
-                pop->parameters.SELECTION_RATE, 
-                pop->parameters.AMOUNT_OF_CHROMOSOMES, 
-                pop->parameters.AMOUNT_OF_CHROMOSOMES);
+        chromosomeSelection(chromosomes, tmp_chromosomes,
+                            pop->parameters.SELECTION_RATE,
+                            pop->parameters.AMOUNT_OF_CHROMOSOMES,
+                            pop->parameters.AMOUNT_OF_CHROMOSOMES);
 
         // evolution
         // crossover

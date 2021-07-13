@@ -20,56 +20,56 @@ machine_t entityToMachine(entity_t ent)
         .current_job = ent.job};
 }
 
-void entities_t::_readProcessIdFile(std::string filename){
+void entities_t::_readProcessIdFile(std::string filename)
+{
     csv_t csv(filename, "r", true, true);
     csv.trim(" ");
-    csv.setHeaders(map<string, string>({
-                {"prod_id", "product"},
-                {"process_id", "process_id"},
-                {"bom_id", "bom_id"}}));
+    csv.setHeaders(map<string, string>({{"prod_id", "product"},
+                                        {"process_id", "process_id"},
+                                        {"bom_id", "bom_id"}}));
 
     map<string, string> row;
-    for(int i = 0, nrows = csv.nrows(); i < nrows; ++i){
+    for (int i = 0, nrows = csv.nrows(); i < nrows; ++i) {
         row = csv.getElements(i);
         prod_map_to_pid[row["prod_id"]] = row["process_id"];
         prod_map_to_bom_id[row["prod_id"]] = row["bom_id"];
     }
-    
 }
 
-void entities_t::_readPartNoFile(std::string filename){
+void entities_t::_readPartNoFile(std::string filename)
+{
     csv_t csv(filename, "r", true, true);
     csv.trim(" ");
-    csv.setHeaders(map<string, string>({
-                    {"process_id", "process_id"},
-                    {"remark", "remark"}
-                }));
+    csv.setHeaders(map<string, string>(
+        {{"process_id", "process_id"}, {"remark", "remark"}}));
     map<string, string> pid_remark;
     map<string, string> row;
     string remark;
-    for(int i = 0, size = csv.nrows(); i < size; ++i){
+    for (int i = 0, size = csv.nrows(); i < size; ++i) {
         row = csv.getElements(i);
         remark = row["remark"];
-        if(remark[0] == 'A'){
-            remark = remark.substr(0, remark.find("(")); 
-            if(remark.find("(") != std::string::npos){
+        if (remark[0] == 'A') {
+            remark = remark.substr(0, remark.find("("));
+            if (remark.find("(") != std::string::npos) {
                 remark = remark.substr(0, remark.find("("));
             }
-            pid_remark[row["process_id"]] = remark; 
-        } 
+            pid_remark[row["process_id"]] = remark;
+        }
     }
-    pid_map_to_part_no = pid_remark; 
+    pid_map_to_part_no = pid_remark;
 }
 
-void entities_t::_readPartIdFile(std::string filename){
+void entities_t::_readPartIdFile(std::string filename)
+{
     csv_t csv(filename, "r", true, true);
     csv.trim(" ");
     csv.setHeaders(map<string, string>(
         {{"bom_id", "bom_id"}, {"oper", "oper"}, {"part_id", "part_id"}}));
     map<string, string> row;
-    for(int i = 0, size = csv.nrows(); i < size; ++i){
+    for (int i = 0, size = csv.nrows(); i < size; ++i) {
         row = csv.getElements(i);
-        bom_id_map_to_part_id[row["bom_id"] +"_" + row["oper"]] = row["part_id"];
+        bom_id_map_to_part_id[row["bom_id"] + "_" + row["oper"]] =
+            row["part_id"];
     }
 }
 
@@ -108,18 +108,17 @@ void entities_t::addMachine(map<string, string> elements)
         unsigned int no = convertEntityNameToUInt(elements["entity"]);
         prod_id = elements["prod_id"];
         string part_no = pid_map_to_part_no[prod_map_to_pid[prod_id]];
-        string part_id = bom_id_map_to_part_id[prod_map_to_bom_id[prod_id] + "_" + elements["oper"]];
+        string part_id = bom_id_map_to_part_id[prod_map_to_bom_id[prod_id] +
+                                               "_" + elements["oper"]];
         job_t job =
             job_t{.part_no = stringToInfo(part_no),
                   .pin_package = stringToInfo(elements["pin_pkg"]),
                   .customer = stringToInfo(elements["customer"]),
-                  .base = {
-                      .job_info = stringToInfo(elements["lot_number"]),
-                      .qty = 0,
-                      .machine_no = no,
-                      .start_time = 0,
-                      .end_time = recover_time
-                  },
+                  .base = {.job_info = stringToInfo(elements["lot_number"]),
+                           .qty = 0,
+                           .machine_no = no,
+                           .start_time = 0,
+                           .end_time = recover_time},
                   .part_id = stringToInfo(part_id),
                   .bdid = stringToInfo(elements["bd_id"]),
                   .prod_id = stringToInfo(elements["prod_id"])};
@@ -189,7 +188,6 @@ void entities_t::addMachines(csv_t _machines, csv_t _location)
                                       : 0) /
                                  60.0;
         _ents[i]->job.base.end_time = _ents[i]->recover_time;
-
     }
 }
 
@@ -211,14 +209,18 @@ bool entityComparisonByTime(entity_t *ent1, entity_t *ent2)
 }
 
 std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(
-    std::map<std::string, int> statistic,
+    std::map<std::string, int> model_statistic,
+    std::map<std::string, int> bdid_statistic,
     int amount)
 {
     vector<entity_t *> ret;
 
     vector<entity_t *> pool;
-    for (std::map<std::string, int>::iterator it = statistic.begin();
-         it != statistic.end(); it++) {
+    vector<entity_t *> better;  // the bdid is in bdid_statistic,
+    vector<entity_t *> bad;     // the bdid isn't in bdid_statistic
+    // if the model's statistic lot number isn't 0 -> push into pull
+    for (std::map<std::string, int>::iterator it = model_statistic.begin();
+         it != model_statistic.end(); it++) {
         if (it->second == 0)
             continue;
         for (unsigned int i = 0; i < _loc_ents[it->first].size(); ++i) {
@@ -230,6 +232,20 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(
 
     random_shuffle(pool.begin(), pool.end());
     sort(pool.begin(), pool.end(), entityComparisonByTime);
+
+    iter(pool, i)
+    {
+        string bdid = pool[i]->job.bdid.data.text;
+        if (bdid_statistic.count(bdid) != 0) {
+            better.push_back(pool[i]);
+        } else
+            bad.push_back(pool[i]);
+    }
+
+    pool.clear();
+    pool = better;
+    pool += bad;
+
 
     if ((unsigned) amount < pool.size()) {
         ret = vector<entity_t *>(pool.begin(), pool.begin() + amount);

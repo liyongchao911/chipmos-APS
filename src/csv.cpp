@@ -166,7 +166,7 @@ bool csv_t::read(std::string filename,
     if (_file) {
         close();
     }
-    
+
     _file = nullptr;
     _file = fopen(filename.c_str(), mode.c_str());
 
