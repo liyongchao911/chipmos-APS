@@ -13,7 +13,8 @@ python3 -m pip install -r requirements.txt
 ```shell=
 mkdir build
 cd build/
-cmake ..
+cmake .. (in Unix)
+cmake -G "MinGW Makefiles" .. (in Windows)
 make
 ```
 
