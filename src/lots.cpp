@@ -75,7 +75,7 @@ std::vector<lot_group_t> lots_t::selectGroups(int max)
     return selected_groups;
 }
 
-void lots_t::toolWireNumber(vector<lot_group_t> &selected_groups)
+void lots_t::setupToolWireAmount(vector<lot_group_t> &selected_groups)
 {
     // count the number of lots wanting to use its tool and wire
     std::map<std::string, int> sta_tools;
@@ -162,12 +162,11 @@ vector<lot_group_t> lots_t::round(entities_t machines)
         lots[i].clearCanRunLocation();
         lots[i].setCanRunLocation(model_location);
     }
-
     machines.reset();
     selected_groups = selectGroups(50);
 
     // setup the number of tool and the number of wire
-    toolWireNumber(selected_groups);
+    setupToolWireAmount(selected_groups);
 
     // models statistic
     string tool_wire_name;

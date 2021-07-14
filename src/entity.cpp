@@ -351,7 +351,7 @@ void machines_t::addMachines(std::vector<entity_t *> ents)
         machine_t *m_ptr = new machine_t;
         *m_ptr = m;
         m_ptr->current_job.base.ptr_derived_object = &(m_ptr->current_job);
-        m_ptr->base.ptr_derived_object=m_ptr;
+        m_ptr->base.ptr_derived_object = m_ptr;
         _machines[ents[i]->entity_name] = m_ptr;
     }
 }

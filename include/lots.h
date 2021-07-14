@@ -77,7 +77,8 @@ protected:
      * read the wip data from the function and check if wip data has
      * completeness. If wip data doesn't have completeness, the lot will be
      * pushed to faulty_lots
-     * @param filename
+     *
+     * @param filename : wip filename
      * @param lots
      * @param faulty_lots
      */
@@ -86,10 +87,12 @@ protected:
                  std::vector<lot_t> &faulty_lots);
 
     /**
-     * setPidBomId () - get lot's process_id and bom_id from a file b
+     * setPidBomId () - get lot's process_id and bom_id from a file
+     *
      * Use lot's product id to map the process_id and bom_id. If lot doesn't
-     * have completeness, lot will be pushed to faulty_lots.
-     * @param filename
+     * have completeness, lot will be pushed into faulty_lots.
+     *
+     * @param filename :
      * @param lots
      * @param faulty_lots
      */
@@ -98,7 +101,8 @@ protected:
                      std::vector<lot_t> &faulty_lots);
 
     /**
-     * setLotSize () - set lot's lot size for splitting the  parent lots
+     * setLotSize () - set lot's lot size for splitting the parent lots
+     *
      * If lot is parent lot, lot will be split on D/A station by its lot size.
      * @param filename
      * @param lots
@@ -110,6 +114,7 @@ protected:
     /**
      * setupRoute () - read the route list file and the queue time file to setup
      * the route station and queue time in each station
+     *
      * @param routelist_filename
      * @param queuetime_filename
      * @param routes
@@ -122,6 +127,7 @@ protected:
      * wb7Filter () - check if lot is in scheduling plan (WB - 7)
      * If lot is in scheduling plan, the lot will be returned, otherwise, the
      * lot is pushed into dontcare vector.
+     *
      * @param alllots
      * @param dontcare
      * @param routes
@@ -139,6 +145,7 @@ protected:
      * lot is split to several sub-lot by its lot size. Every lots being in D/A
      * station lined up and the D/A station distributes the production capacity
      * to determined which lot will pass station in 24 hours.
+     *
      * @param lots
      * @param faulty_lots
      * @param dontcare
@@ -245,7 +252,7 @@ public:
      * numnber_of_wires, can_run_entities}.
      *
      * @param machines
-     * @return
+     * @return a vector of lot_group_t instance in a round of scheduling plan
      */
     std::vector<lot_group_t> round(entities_t machines);
 
@@ -254,6 +261,7 @@ public:
      *
      * rounds function invoke round function untill all lots are scheduling in
      * each round.
+     *
      */
     std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
 
@@ -269,18 +277,47 @@ public:
 
     /**
      * amountOfWires () - return the amount of each sorts of wires
+     *
+     * @return a std::map container which maps the part_id to the number of this
+     * kinds of wires
      */
     std::map<std::string, int> amountOfWires();
 
     /**
      * amuntOfTools () - return the amount of each sorts of tools
+     *
+     * @return a std::map container which maps the part_no to the number of this
+     * kinds of tools
      */
     std::map<std::string, int> amountOfTools();
 
-    void toolWireNumber(std::vector<lot_group_t> &selected_groups);
+    /**
+     * setupToolWireAmount () - setup the tool's and wire's number for groups
+     *
+     *The function makes statistics on the tools and wires used by groups. The
+     *number of tools and wires for each group is determined by the ratio of the
+     *number of lots in each group which means that the more lots the group has,
+     *the more tools and wires the group would be distributed.
+     */
+    void setupToolWireAmount(std::vector<lot_group_t> &selected_groups);
 
+    /**
+     * bdidStatistic () - make statistics on the bdid for a vector of lots
+     *
+     * @param lots : a vector of pointers point to the lot_t instance
+     * @return a std::map container which maps the bdid to the number of lots
+     * using this bdid
+     */
     std::map<std::string, int> bdidStatistic(std::vector<lot_t *> lots);
 
+    /**
+     * modelStatistic () - make statistics on the models for a vector of lots
+     *
+     * @param lots : a vector of pointers to lot_t instance
+     * @param loc_ents : a map container maps the location name to a vector of
+     * pointers point to the entity_t instance
+     * @return a std::map container which maps the
+     */
     std::map<std::string, int> modelStatistic(
         std::vector<lot_t *> lots,
         std::map<std::string, std::vector<entity_t *> > loc_ents);
