@@ -75,7 +75,7 @@ double decoding(chromosome_base_t chromosome,
          it != machines.end(); it++) {
         scheduling(it->second, machine_ops);
         // if(it->second->total_completion_time > value)
-        value += it->second->total_completion_time;
+        value += it->second->quality;
     }
 
     return value;

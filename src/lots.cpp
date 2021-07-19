@@ -156,6 +156,8 @@ vector<lot_group_t> lots_t::round(entities_t machines)
 
     vector<lot_group_t> selected_groups;
 
+    lot_group_t test_lot_group;
+
     // initialize
     iter(lots, i)
     {
@@ -163,7 +165,7 @@ vector<lot_group_t> lots_t::round(entities_t machines)
         lots[i].setCanRunLocation(model_location);
     }
     machines.reset();
-    selected_groups = selectGroups(50);
+    selected_groups = selectGroups(30);
 
     // setup the number of tool and the number of wire
     setupToolWireAmount(selected_groups);
@@ -185,13 +187,34 @@ vector<lot_group_t> lots_t::round(entities_t machines)
 
     iter(selected_groups, i)
     {
+        // int lot_amount = selected_groups[i].lot_amount;
+        // int machine_number = lot_amount > 4 ? lot_amount >> 2 : 1;
+        // machine_number = machine_number >  selected_groups[i].machine_amount ? selected_groups[i].machine_amount : machine_number;
+        // selected_groups[i].entities = machines.randomlyGetEntitiesByLocations(selected_groups[i].models_statistic, selected_groups[i].bdid_statistic, machine_number);
+        // if (selected_groups[i].lot_amount < 10)
+        //     machine_number = (3 > selected_groups[i].machine_amount
+        //                           ? selected_groups[i].machine_amount
+        //                           : 3);
+        // else if (selected_groups[i].machine_amount > 20) {
+        //     machine_number = selected_groups[i].lot_amount / 10;
+        //     machine_number = (selected_groups[i].lot_amount / 10 > 20
+        //                           ? 20
+        //                           : selected_groups[i].machine_amount);
+        // } else {
+        //     machine_number = selected_groups[i].machine_amount;
+        //     selected_groups[i].entities =
+        //         machines.randomlyGetEntitiesByLocations(
+        //             selected_groups[i].models_statistic,
+        //             selected_groups[i].bdid_statistic, machine_number);
+        // }
+        
         if (selected_groups[i].lot_amount < 10)
             selected_groups[i].entities =
                 machines.randomlyGetEntitiesByLocations(
                     selected_groups[i].models_statistic,
                     selected_groups[i].bdid_statistic,
                     selected_groups[i].machine_amount > 10
-                        ? 10
+                        ? 3
                         : selected_groups[i].machine_amount);
         else
             selected_groups[i].entities =
@@ -200,6 +223,8 @@ vector<lot_group_t> lots_t::round(entities_t machines)
                     selected_groups[i].bdid_statistic,
                     selected_groups[i].machine_amount);
     }
+
+    test_lot_group = selected_groups[0];
 
 
     std::vector<lot_t *> failed;

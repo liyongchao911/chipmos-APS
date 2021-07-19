@@ -35,12 +35,7 @@ protected:
     static std::map<std::string, int> initializeModelDistribution(
         std::map<std::string, std::vector<entity_t *> > loc_ents);
 
-    /**
-     * toolWireLotsHasLots () - if tool_wire classification has lot
-     * @return
-     */
-    bool toolWireLotsHasLots();
-
+    
     /**
      * createLots () - create a vector of lots by reading and mapping the
      * information from files
@@ -229,6 +224,12 @@ protected:
     std::vector<lot_group_t> selectGroups(int max);
 
 public:
+    /**
+     * toolWireLotsHasLots () - if tool_wire classification has lot
+     * @return
+     */
+    bool toolWireLotsHasLots();
+
     /**
      * addLots () - add the lots
      * If lot's creation isn't from lots_t::createLots, addLots can accept a

@@ -1,4 +1,3 @@
-#include <include/lot.h>
 #include <pthread.h>
 #include <cmath>
 #include <exception>
@@ -10,6 +9,7 @@
 #include "include/infra.h"
 #include "include/job.h"
 #include "include/job_base.h"
+#include "include/lot.h"
 
 lot_t::lot_t(std::map<std::string, std::string> elements)
 {
@@ -221,17 +221,23 @@ bool lot_t::setUph(csv_t _uph_csv)
         }
     }
     std::vector<std::string> invalid_models;
+    std::vector<std::string> valid_models;
     for (std::map<std::string, double>::iterator it = _uphs.begin();
          it != _uphs.end(); it++) {
         if (it->second == 0) {
             invalid_models.push_back(it->first);
+        }else{
+            valid_models.push_back(it->first);
         }
     }
+
     iter(invalid_models, i)
     {
         _uphs.erase(invalid_models[i]);
         _model_process_times.erase(invalid_models[i]);
     }
+
+    _can_run_models = valid_models; 
 
     if (_uphs.size() == 0) {
         addLog("All of uph is 0");

@@ -8,6 +8,7 @@
 #include "include/chromosome.h"
 #include "include/chromosome_base.h"
 #include "include/infra.h"
+#include "include/population.h"
 
 using namespace std;
 
@@ -61,10 +62,9 @@ void prepareChromosomes(chromosome_base_t **_chromosomes,
 void initializePopulation(population_t *pop,
                           machines_t &machines,
                           ancillary_resources_t &tools,
-                          ancillary_resources_t &wires,
-                          int round)
+                          ancillary_resources_t &wires)
 {
-    pop->round = createARound(pop->groups[round], machines, tools, wires);
+    pop->round = createARound(pop->groups, machines, tools, wires);
     prepareChromosomes(&pop->chromosomes, pop->round.AMOUNT_OF_JOBS,
                        pop->parameters.AMOUNT_OF_R_CHROMOSOMES);
     prepareChromosomes(&pop->tmp_chromosomes, pop->round.AMOUNT_OF_JOBS,
@@ -341,4 +341,13 @@ void geneticAlgorithm(population_t *pop)
     //             jobs[i].base.end_time);
     // }
     // fclose(file);
+}
+
+void machineWriteBackToEntity(population_t * pop){
+    map<unsigned int, machine_t *> machines = pop->round.machines;
+    for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
+        entity_t * ent = (entity_t *)it->second->ptr_derived_object;
+        ent->recover_time = it->second->makespan;
+        ent->job = it->second->current_job;
+    }
 }

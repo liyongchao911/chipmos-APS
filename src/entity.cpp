@@ -1,11 +1,12 @@
-#include <include/entity.h>
-#include <include/machine.h>
 #include <limits.h>
 #include <sched.h>
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
 #include "include/infra.h"
+#include "include/entity.h"
+#include "include/machine.h"
+
 
 using namespace std;
 
@@ -17,7 +18,8 @@ machine_t entityToMachine(entity_t ent)
                  .available_time = ent.recover_time},
         .tool = ent.tool,
         .wire = ent.wire,
-        .current_job = ent.job};
+        .current_job = ent.job,
+        .quality = 0};
 }
 
 void entities_t::_readProcessIdFile(std::string filename)
@@ -218,7 +220,7 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(
     vector<entity_t *> pool;
     vector<entity_t *> better;  // the bdid is in bdid_statistic,
     vector<entity_t *> bad;     // the bdid isn't in bdid_statistic
-    // if the model's statistic lot number isn't 0 -> push into pull
+    // if the model's statistic lot number isn't 0 -> push into pool
     for (std::map<std::string, int>::iterator it = model_statistic.begin();
          it != model_statistic.end(); it++) {
         if (it->second == 0)
@@ -230,21 +232,34 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(
         }
     }
 
-    random_shuffle(pool.begin(), pool.end());
+    // random_shuffle(pool.begin(), pool.end());
     sort(pool.begin(), pool.end(), entityComparisonByTime);
-
-    iter(pool, i)
-    {
-        string bdid = pool[i]->job.bdid.data.text;
-        if (bdid_statistic.count(bdid) != 0) {
-            better.push_back(pool[i]);
-        } else
-            bad.push_back(pool[i]);
+    printf("[!] ");
+    if(pool.size() > 10){
+        iter_range(pool, i, 0, 10){
+            printf("(%s ,%.2f) ",pool[i]->entity_name.c_str(), pool[i]->recover_time);
+        }
+        printf("\n");
+    }else{
+        iter(pool, i){
+            printf("(%s ,%.2f) ",pool[i]->entity_name.c_str(), pool[i]->recover_time);
+        }
+        printf("\n");
     }
+       
 
-    pool.clear();
-    pool = better;
-    pool += bad;
+    // iter(pool, i)
+    // {
+    //     string bdid = pool[i]->job.bdid.data.text;
+    //     if (bdid_statistic.count(bdid) != 0) {
+    //         better.push_back(pool[i]);
+    //     } else
+    //         bad.push_back(pool[i]);
+    // }
+
+    // pool.clear();
+    // pool = better;
+    // pool += bad;
 
 
     if ((unsigned) amount < pool.size()) {
@@ -350,6 +365,7 @@ void machines_t::addMachines(std::vector<entity_t *> ents)
         machine_t m = entityToMachine(*ents[i]);
         machine_t *m_ptr = new machine_t;
         *m_ptr = m;
+        m_ptr->ptr_derived_object = ents[i];
         m_ptr->current_job.base.ptr_derived_object = &(m_ptr->current_job);
         m_ptr->base.ptr_derived_object = m_ptr;
         _machines[ents[i]->entity_name] = m_ptr;
