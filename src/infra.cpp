@@ -70,7 +70,6 @@ time_t timeConverter(std::string text)
 
 
 
-
 void random(double *genes, int size)
 {
     for (int i = 0; i < size; ++i) {
@@ -93,7 +92,7 @@ int randomRange(int start, int end, int different_num)
 
 double randomDouble()
 {
-    return (double) rand() / (double) (RAND_MAX+1.0);
+    return (double) rand() / (double) (RAND_MAX + 1.0);
 }
 
 struct __info_t stringToInfo(std::string s)

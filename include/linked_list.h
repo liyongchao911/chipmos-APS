@@ -177,7 +177,8 @@ struct list_operations_t {
  * set_prev point to _list_ele_set_prev
  */
 #define LINKED_LIST_OPS                                                 \
-    (list_operations_t){                                                                   \
+    (list_operations_t)                                                 \
+    {                                                                   \
         .set_next = _list_ele_set_next, .set_prev = _list_ele_set_prev, \
     }
 #endif

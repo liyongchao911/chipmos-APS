@@ -64,8 +64,8 @@ round_t createARound(std::vector<lot_group_t> group,
 void initializePopulation(population_t *pop,
                           machines_t &machines,
                           ancillary_resources_t &tools,
-                          ancillary_resources_t &wires,
-                          int round);
+                          ancillary_resources_t &wires
+                          );
 
 
 
@@ -100,5 +100,9 @@ void freeResources(round_t *round);
  * @param pop : a population which is about to free the chromosomes.
  */
 void freeChromosomes(population_t *pop);
+
+
+
+void machineWriteBackToEntity(population_t * pop);
 
 #endif

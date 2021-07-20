@@ -125,10 +125,18 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
     bool hasICSI = false;
     double start_time = machine->base.available_time;
     double total_completion_time = 0;
+    int setup_times = 0;
+    int setup_times_in1440 = 0;
+    machine->setup_times = 0;
     while (it) {
         job = (job_t *) it->ptr_derived_object;
         arrival_time = job->base.arriv_t;
         setup_time = calculateSetupTime(prev_job, job, ops);
+        if (setup_time != 0.0)
+            ++setup_times;
+        if(start_time < 1440){
+            ++setup_times_in1440;
+        }
         if (!hasICSI) {
             if (strncmp(job->customer.data.text, "ICSI", 4) == 0) {
                 setup_time += 54;
@@ -149,6 +157,8 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
     machine->tool->time = start_time;
     machine->wire->time = start_time;
     machine->total_completion_time = total_completion_time;
+    machine->quality = setup_times * 10 + total_completion_time;
+    machine->setup_times = setup_times_in1440;
 }
 
 

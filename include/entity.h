@@ -42,8 +42,19 @@ private:
 
     std::vector<std::map<std::string, std::string> > _faulty_machine;
 
+    std::map<std::string, std::string> prod_map_to_pid;
+    std::map<std::string, std::string> prod_map_to_bom_id;
+    std::map<std::string, std::string> bom_id_map_to_part_id;
+    std::map<std::string, std::string> pid_map_to_part_no;
+
 
     time_t _time;
+
+    void _readProcessIdFile(std::string filename);
+
+    void _readPartNoFile(std::string filename);
+
+    void _readPartIdFile(std::string filename);
 
 public:
     /**
@@ -51,7 +62,7 @@ public:
      *
      * The constructor will convert @b _time to time_t type
      */
-    entities_t(std::string _time);
+    entities_t(std::map<std::string, std::string> arguments);
 
     /**
      * addMachine() - add a machine
@@ -74,7 +85,8 @@ public:
      * randomlyGetEntitiesByLocations
      */
     std::vector<entity_t *> randomlyGetEntitiesByLocations(
-        std::map<std::string, int> statistic,
+        std::map<std::string, int> model_statistic,
+        std::map<std::string, int> bdid_statistic,
         int amount);
 
     void setTime(std::string text);
