@@ -25,7 +25,9 @@ output_new_result(result_df)
 '''
 
 def plot_gantt(result_df):
-
+    # 1. Group the result.csv by entity 
+    # 2. Use group key(entity) to find which lot processing on this entity, and plot each entity's lots by order.
+    # 3. Using plotly.express.timeline to plot gantt, which need the information of below data.(need using time stamp to convert date )
     def createFolder(directory):
         try:
             if not os.path.exists(directory):
@@ -89,6 +91,8 @@ def plot_gantt(result_df):
     pass
 
 def output_simulation(result_df,machine_area_df): 
+    #1. Need to find the amount of entity(ENT) which use same sets('cust','pin_pkg','prod_id','bd_id','Location') on different moment and total die quantity(outplan).
+    #2. Detail can be found on each function
 
     #  Get the filetered dataframe by judging whether proceesing through specific time
     def get_result_byFilter(merge_result,relative_time):
@@ -154,6 +158,11 @@ def output_simulation(result_df,machine_area_df):
     pass
 
 def output_setup_record(result_df):
+    # 1. Sort the result.csv by entity & start_time
+    # 2. Record the setup of each entity by judging whether the bd_id is same or not (for i in range..)
+    # 3. The method of geting setuptime is recordimg previous endT and current startT(need to change to date)
+    # 4. The format of ouyput is using dictionary to record each entity(key) and its setup information(value) p.s. maybe 0 or more values of each entity record.
+    # 5. Finally, convert dict to csv. 
 
     sorted_result_df=result_df.sort_values(by=['entity', 'start_time'])
     setup_dict ={}
@@ -192,7 +201,8 @@ def output_setup_record(result_df):
     pass
 
 def output_new_result(result_df):
-
+    # 1. Convert relative time to absulute time(date) (start time and end time)
+    # 2. Change the column order
     new_result_df = result_df.copy(deep=True)
     for i in range(len(result_df.index)):
         new_result_df['start_time'].iloc[i] =  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ini_time_stamp+result_df['start_time'].iloc[i]*60))
