@@ -7,14 +7,24 @@ import time
 import os 
 
 ''' add to main.py
-result_df = pd.read_csv("result.csv")
-machine_area_df = pd.read_excel("機台區域作業產品.xls" )
 
-plot_2(result_df)
-output_2data(result_df,machine_area_df)
+# initialize
+
+result_df = pd.read_csv("result.csv")
+machine_area_df = pd.read_excel("機台區域作業產品.xls" )[['Entity','Location']]
+timeString = "2021-04-17 08:30:00"  # 改讀config.csv?
+ini_time_stamp = int(time.mktime(time.strptime(timeString, "%Y-%m-%d %H:%M:%S"))) 
+
+# execute
+
+plot_gantt(result_df)
+output_simulation(result_df,machine_area_df)
+output_setup_record(result_df)
+output_new_result(result_df)
+
 '''
 
-def plot_2(result_df):
+def plot_gantt(result_df):
 
     def createFolder(directory):
         try:
@@ -23,13 +33,10 @@ def plot_2(result_df):
         except OSError:
             print ('Error: Creating directory. ' +  directory) 
 
-
     # read file and initizlize data
-    #result = pd.read_csv(result_csv) #//改
     entities= result_df.groupby("entity") # group by entity
     entity_key_list= list(entities.groups.keys()) # key list
-    ini_time_stamp = 1618619400 # 2021/4/17 08:30 (change to var)  //改
-    plot_num = 50 #each time plot 50
+    plot_num = 50 #each time plot 50 entities
     color_discrete_sequence_list=['#F0F8FF','#7FFFD4','#F0FFFF','#F5F5DC','#FFE4C4',    # add color cycle
                 '#000000','#0000FF','#8A2BE2','#A52A2A','#DEB887','#5F9EA0',
                 '#7FFF00','#D2691E','#FF7F50','#6495ED','#FFF8DC','#DC143C','#00FFFF',
@@ -53,9 +60,9 @@ def plot_2(result_df):
     df=[]
     count=0
     foldername = './plot_result' + datetime.now().strftime('-%Y%m%d%H%M') + '/' # folder which store result picture
+
     # create folder
     createFolder(foldername)  
-
     #plot
     for i in range(len(entity_key_list)): 
         key= entity_key_list[i]
@@ -81,28 +88,22 @@ def plot_2(result_df):
 
     pass
 
+def output_simulation(result_df,machine_area_df): 
 
-def output_2data(result_csv,machine_area_df):  # add
-
-    def createFolder(directory):
-        try:
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-        except OSError:
-            print ('Error: Creating directory. ' +  directory) 
-
-    # # 11. 7:30
-    def get_result_byFilter(result,relative_time):
-        filter_strt = result["start_time"] <= relative_time 
-        filter_end = result["end_time"] >= relative_time
-        filter_result = result[filter_strt & filter_end]
+    #  Get the filetered dataframe by judging whether proceesing through specific time
+    def get_result_byFilter(merge_result,relative_time):
+        filter_strt = merge_result["start_time"] <= relative_time  # retuen true or false of each record on dataframe
+        filter_end = merge_result["end_time"] >= relative_time
+        filter_result = merge_result[filter_strt & filter_end]     # if satisfying both condition, it will get this record(through all)  
 
         return filter_result
 
-    # 
-    def getENTdf(temp_result,ent_colname):
+    # Get entity amount(dataframe) on specific time
+    # input: filetered dataframe & new column name
+    # use two times group by to get amount
+    def get_ENT_df(merge_result,ent_colname): 
 
-        temp_group= temp_result.groupby(['cust','pin_pkg','prod_id','bd_id','Location','entity']) 
+        temp_group= merge_result.groupby(['cust','pin_pkg','prod_id','bd_id','Location','entity']) 
         df_grp_entity = pd.DataFrame(temp_group.groups.keys())
         grp_basis = df_grp_entity.groupby([0,1,2,3,4])  # cust > Location
         df_keys= pd.DataFrame(grp_basis.groups.keys())
@@ -112,7 +113,9 @@ def output_2data(result_csv,machine_area_df):  # add
 
         return ENTdf
     
-    def caculate_total_qty(original_group,result):
+    #Use group by to get the amount of quantity of each sets and make it to dataframe(list>df)
+    #Find the lots using same group by set and accumulate their die quantity
+    def get_qty_df(original_group,merge_result):
 
         qty_list=[]
         group_key_list= list(original_group.groups.keys())
@@ -122,57 +125,82 @@ def output_2data(result_csv,machine_area_df):  # add
             qty_sum=0
             for j in range(len(original_group.groups[key])):
                 row_index=original_group.groups[key][j]
-                qty_sum+=result.iloc[row_index].at['qty']
+                qty_sum+=merge_result.iloc[row_index].at['qty']
             qty_list.append(qty_sum)
 
-        df_qty = pd.DataFrame(qty_list,columns=['Output plan'])
+        qty_df = pd.DataFrame(qty_list,columns=['Output plan'])
 
-        return df_qty
+        return qty_df
 
-    def get_lots_output(df1):
+    # initialize
+    merge_result = pd.merge(result_df, machine_area_df, left_on ='entity', right_on ='Entity', how='left')
+    original_group=merge_result.groupby(['cust','pin_pkg','prod_id','bd_id','Location']) 
 
-        df_output2 = df1.copy(deep=True)
-        for i in range(len(machine_area_df.index)):
-            df_output2['start_time'].iloc[i] =  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ini_time_stamp+df1['start_time'].iloc[i]*60))
-            df_output2['end_time'].iloc[i] =  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ini_time_stamp+df1['end_time'].iloc[i]*60)) 
-        df_output2= df_output2[['lot_number','cust','pin_pkg','prod_id','qty','part_id','part_no','bd_id','entity','start_time','end_time']]
+    ENT_all = get_ENT_df(merge_result,'Allocate ENT')
+    ENT_1 = get_ENT_df(get_result_byFilter(merge_result,0),'Original ENT(07:30)')      #relative to 07:30(standard time) is 0 minute
+    ENT_2 = get_ENT_df(get_result_byFilter(merge_result,210),'Original ENT(11:00)')    #relative to 11:00 is need to plus 210 minute
+    qty_df = get_qty_df(original_group,merge_result)
 
-        return df_output2
+    # merge and concat all data to one dataframe
+    merge_df1 = pd.merge(ENT_all, ENT_1, on =(['cust','pin_pkg','prod_id','bd_id','Location']), how ='left')
+    merge_df2 = pd.merge(merge_df1, ENT_2, on =(['cust','pin_pkg','prod_id','bd_id','Location']), how ='left')
+    temp_df= pd.concat([merge_df2, qty_df], axis=1)
+    ## change column sequence to final version
+    simulation_output_df = temp_df[['cust','pin_pkg','prod_id','bd_id','Location','Original ENT(07:30)','Original ENT(11:00)','Allocate ENT','Output plan']]
 
-    # ini
-    #df1 = pd.read_csv(result_csv)
-    #df2 = pd.read_excel(機台區域作業產品_xls)[['Entity','Location']]
-    machine_area_df = machine_area_df[['Entity','Location']]
-    result = pd.merge(result_df, machine_area_df, left_on ='entity', right_on ='Entity', how='left')
-    original_group=result.groupby(['cust','pin_pkg','prod_id','bd_id','Location']) 
-    ini_time_stamp = 1618619400 ## ini time
-    relative_time_1 = 0      # >08:30 改07:30
-    relative_time_2 = 150      # >11:00
-    foldername = './data_result' + datetime.now().strftime('-%Y%m%d%H%M') + '/' # folder which store result of two data
-
-    # create folder
-    createFolder(foldername)  
-    ENT_all = getENTdf(result,'Allocate ENT')
-    ENT_08 = getENTdf(get_result_byFilter(result,relative_time_1),'Original ENT(08:30)') # 改
-    ENT_11 = getENTdf(get_result_byFilter(result,relative_time_2),'Original ENT(11:00)')
-
-    # # caculate total qty 
-    df_qty = caculate_total_qty(original_group,result)
-
-    # merge and concat data
-    result_all_8 = pd.merge(ENT_all, ENT_08, on =(['cust','pin_pkg','prod_id','bd_id','Location']), how ='left')
-    ENT_result = pd.merge(result_all_8, ENT_11, on =(['cust','pin_pkg','prod_id','bd_id','Location']), how ='left')
-    temp_df= pd.concat([ENT_result, df_qty], axis=1)
-    ## change column sequence
-    simulation_output_df = temp_df[['cust','pin_pkg','prod_id','bd_id','Location','Original ENT(08:30)','Original ENT(11:00)','Allocate ENT','Output plan']]
-
-    # get_lots_output_df
-    lots_output_df= get_lots_output(result_df)
-
-    # # two dataframe write to csv
-    simulation_output_df.to_csv(foldername +"simulation_output.csv", index=False ,na_rep=0) 
-    lots_output_df.to_csv(foldername +"lots_output.csv", index=False ,na_rep=0)
+    # write to csv
+    simulation_output_df.to_csv("simulation_output.csv", index=False ,na_rep=0) 
 
     pass
- 
+
+def output_setup_record(result_df):
+
+    sorted_result_df=result_df.sort_values(by=['entity', 'start_time'])
+    setup_dict ={}
+    times_info_list=[]
+    entity_name= sorted_result_df['entity'].iloc[0]
+    bd_id = sorted_result_df['bd_id'].iloc[0]
+
+    for i in range(len(sorted_result_df.index)): # serach for all data
+        if entity_name == sorted_result_df['entity'].iloc[i]:  # If entity is same, need to judge whether bd_id is same. Else, record new entity(key)
+
+            if bd_id != sorted_result_df['bd_id'].iloc[i]: # if bd_id is different need to record
+                setup_start=time.strftime("%m-%d %H:%M:%S", time.localtime(ini_time_stamp+sorted_result_df['end_time'].iloc[i-1]*60))  #the endT of previous and convert to date
+                setup_end=time.strftime("%m-%d %H:%M:%S", time.localtime(ini_time_stamp+sorted_result_df['start_time'].iloc[i]*60))   #the startT of current and convert to date
+                # change to date
+                times_info_list.append(setup_start+' > '+setup_end) 
+                bd_id = sorted_result_df['bd_id'].iloc[i]
+
+        else: 
+            #add to dict
+            setup_dict[entity_name]=times_info_list
+            #next entitys
+            entity_name = sorted_result_df['entity'].iloc[i]
+            bd_id = sorted_result_df['bd_id'].iloc[i]
+            times_info_list=[]
+
+        #final one
+        if i ==len(sorted_result_df.index)-1: 
+            setup_dict[entity_name]=times_info_list
+
+    # write file
+    with open("setup_record.csv", "w", newline="") as f_output:
+        csv_output = csv.writer(f_output)
+        for key in sorted(setup_dict.keys()):
+            csv_output.writerow([key] + setup_dict[key])
+
+    pass
+
+def output_new_result(result_df):
+
+    new_result_df = result_df.copy(deep=True)
+    for i in range(len(result_df.index)):
+        new_result_df['start_time'].iloc[i] =  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ini_time_stamp+result_df['start_time'].iloc[i]*60))
+        new_result_df['end_time'].iloc[i] =  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ini_time_stamp+result_df['end_time'].iloc[i]*60)) 
+    new_result_df= new_result_df[['lot_number','cust','pin_pkg','prod_id','qty','part_id','part_no','bd_id','entity','start_time','end_time']]
+
+    # write file 
+    new_result_df.to_csv("new_result.csv", index=False ,na_rep=0)
+
+    pass
 
