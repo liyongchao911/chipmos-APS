@@ -165,7 +165,7 @@ vector<lot_group_t> lots_t::round(entities_t machines)
         lots[i].setCanRunLocation(model_location);
     }
     machines.reset();
-    selected_groups = selectGroups(30);
+    selected_groups = selectGroups(20);
 
     // setup the number of tool and the number of wire
     setupToolWireAmount(selected_groups);

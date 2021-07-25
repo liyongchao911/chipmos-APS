@@ -476,6 +476,8 @@ public:
      * @return map<string, double> data mapping model's name to its uph
      */
     std::map<std::string, double> getUphs();
+
+    bool isModelValid(std::string model);
 };
 
 inline void lot_t::clearCanRunLocation()
@@ -675,22 +677,38 @@ inline void lot_t::setAmountOfWires(int amount)
     _amount_of_wires = amount;
 }
 
+inline bool lot_t::isModelValid(std::string model){
+    if(_part_no.find("A0801") != std::string::npos){ // if part_no contains A0801
+        if(model.compare("UTC1000") == 0 || model.compare("UTC2000") == 0 || model.compare("UTC3000") == 0) {
+            return true;
+        }else
+            return false;
+    }
+    return true;
+}
+
 inline void lot_t::setCanRunModel(std::string model)
 {
-    _uphs[model] = 0;
-    _model_process_times[model] = 0;
-    if (find(_can_run_models.begin(), _can_run_models.end(), model) !=
-        _can_run_models.end())
-        _can_run_models.push_back(model);
+        
+    if(isModelValid(model)){
+        _uphs[model] = 0;
+        _model_process_times[model] = 0;
+        if (find(_can_run_models.begin(), _can_run_models.end(), model) !=
+            _can_run_models.end())
+            _can_run_models.push_back(model);
+    }
 }
 
 inline void lot_t::setCanRunModels(std::vector<std::string> models)
 {
     iter(models, i)
     {
-        _uphs[models[i]] = 0;
-        _model_process_times[models[i]] = 0;
+        if(isModelValid(models[i])){
+            _uphs[models[i]] = 0;
+            _model_process_times[models[i]] = 0;
+        }
     }
+
     _can_run_models = models;
 }
 

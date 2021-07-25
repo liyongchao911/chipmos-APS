@@ -157,7 +157,7 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
     machine->tool->time = start_time;
     machine->wire->time = start_time;
     machine->total_completion_time = total_completion_time;
-    machine->quality = setup_times * 10 + total_completion_time;
+    machine->quality = setup_times * 1000 + total_completion_time;
     machine->setup_times = setup_times_in1440;
 }
 

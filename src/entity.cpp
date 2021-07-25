@@ -234,18 +234,18 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(
 
     // random_shuffle(pool.begin(), pool.end());
     sort(pool.begin(), pool.end(), entityComparisonByTime);
-    printf("[!] ");
-    if(pool.size() > 10){
-        iter_range(pool, i, 0, 10){
-            printf("(%s ,%.2f) ",pool[i]->entity_name.c_str(), pool[i]->recover_time);
-        }
-        printf("\n");
-    }else{
-        iter(pool, i){
-            printf("(%s ,%.2f) ",pool[i]->entity_name.c_str(), pool[i]->recover_time);
-        }
-        printf("\n");
-    }
+    // printf("[!] ");
+    // if(pool.size() > 10){
+    //     iter_range(pool, i, 0, 10){
+    //         printf("(%s ,%.2f) ",pool[i]->entity_name.c_str(), pool[i]->recover_time);
+    //     }
+    //     printf("\n");
+    // }else{
+    //     iter(pool, i){
+    //         printf("(%s ,%.2f) ",pool[i]->entity_name.c_str(), pool[i]->recover_time);
+    //     }
+    //     printf("\n");
+    // }
        
 
     // iter(pool, i)
