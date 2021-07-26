@@ -24,10 +24,10 @@
 #ifndef __MACHINE_BASE_H__
 #define __MACHINE_BASE_H__
 
+#include <stddef.h>
 #include "include/def.h"
 #include "include/job_base.h"
 #include "include/linked_list.h"
-#include <stddef.h>
 
 #if defined __NVCC__ || defined __cplusplus
 extern "C" {

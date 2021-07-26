@@ -166,7 +166,7 @@ bool csv_t::read(std::string filename,
     if (_file) {
         close();
     }
-    
+
     _file = nullptr;
     _file = fopen(filename.c_str(), mode.c_str());
 
@@ -182,10 +182,11 @@ bool csv_t::read(std::string filename,
     }
 
     size_t size = 0;
-    char *line_ptr = NULL;
+    char line_ptr[1024];
     std::vector<std::string> text;
 
-    if (getline(&line_ptr, &size, _file) > 0) {
+    if (fgets(line_ptr, 1024, _file)) {
+        size = strlen(line_ptr);
         // check byte order mark
         if (_hasBOM(line_ptr, 0x00BFBBEF,
                     8)) {  // EF BB BF, 0x00BFBBEF for little endian
@@ -212,11 +213,10 @@ bool csv_t::read(std::string filename,
         _data.push_back(text);
     }
 
-    while (getline(&line_ptr, &size, _file) > 0) {
+    while (fgets(line_ptr, 1024, _file)) {
         text = parseCsvRow(line_ptr, ',');
         _data.push_back(text);
     }
-    free(line_ptr);
 
     if (r1 >= 0 && r2 < 0) {
         _data.erase(_data.begin() + r1, _data.end());

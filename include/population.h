@@ -1,11 +1,12 @@
 #ifndef __POPULATION_H__
 #define __POPULATION_H__
-#include <include/chromosome_base.h>
-#include <include/common.h>
-#include <include/job.h>
-#include <include/job_base.h>
-#include <include/machine.h>
 #include <vector>
+#include <map>
+#include "include/chromosome_base.h"
+#include "include/common.h"
+#include "include/job.h"
+#include "include/job_base.h"
+#include "include/machine.h"
 #include "include/lot.h"
 #include "include/machine_base.h"
 
@@ -40,11 +41,9 @@ struct population_t {
         machine_base_operations_t *machine_ops;
     } operations;
 
-    std::vector<std::vector<lot_group_t> > groups;
+    std::vector<lot_group_t> groups;
 
-    unsigned int current_round_no;
     round_t round;
-
     chromosome_base_t *chromosomes;
     chromosome_base_t *tmp_chromosomes;
 };

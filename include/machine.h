@@ -25,8 +25,11 @@ typedef struct __machine_t {
     ares_t *tool;
     ares_t *wire;
     job_t current_job;
+    void *ptr_derived_object;
     double makespan;
     double total_completion_time;
+    double quality;
+    int setup_times;
 } machine_t;
 
 bool aresPtrComp(ares_t *a1, ares_t *a2);

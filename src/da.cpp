@@ -42,7 +42,7 @@ void da_stations_t::setFcst(csv_t _fcst)
                              .time = 0,
                              .finished = false};
         }
-  }
+    }
 }
 bool da_stations_t::addArrivedLotToDA(lot_t &lot)
 {

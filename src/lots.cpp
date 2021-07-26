@@ -14,10 +14,16 @@
 #include "include/csv.h"
 #include "include/da.h"
 #include "include/infra.h"
+#include "include/lot.h"
 #include "include/lots.h"
 #include "include/route.h"
 
 using namespace std;
+
+
+#define separateToolWireName(tool_wire_name, t_name, w_name)     \
+    t_name = tool_wire_name.substr(0, tool_wire_name.find("_")); \
+    w_name = tool_wire_name.substr(tool_wire_name.find("_") + 1);
 
 void lots_t::addLots(std::vector<lot_t> lots)
 {
@@ -49,50 +55,36 @@ std::map<std::string, int> lots_t::initializeModelDistribution(
     return _;
 }
 
-
-std::vector<lot_group_t> lots_t::round(entities_t machines)
+std::vector<lot_group_t> lots_t::selectGroups(int max)
 {
-    std::map<std::string, std::map<std::string, std::vector<entity_t *> > >
-        entities = machines.getEntities();
-    std::map<std::string, std::vector<entity_t *> > loc_ents =
-        machines.getLocEntity();
-    std::map<std::string, std::vector<std::string> > model_location =
-        machines.getModelLocation();
-    std::vector<lot_group_t> selected_groups;
-
-    // initialize
-    iter(lots, i)
-    {
-        lots[i].clearCanRunLocation();
-        lots[i].setCanRunLocation(model_location);
-    }
-
-    machines.reset();
-
     // max : 50 sets;
     std::vector<lot_group_t> groups;
+    std::vector<lot_group_t> selected_groups;
     for (auto &tool_wire_lot : tool_wire_lots) {
         groups.push_back(
             lot_group_t{.wire_tools_name = tool_wire_lot.first,
                         .lot_amount = tool_wire_lot.second.size()});
     }
     std::sort(groups.begin(), groups.end(), lotGroupCmp);
-    int selected_group_number = (groups.size() > 50 ? 50 : groups.size());
+    int selected_group_number = (groups.size() > max ? max : groups.size());
     for (int i = 0; i < selected_group_number; ++i) {
         if (groups[i].lot_amount > 0) {
             selected_groups.push_back(groups[i]);
         }
     }
+    return selected_groups;
+}
 
+void lots_t::setupToolWireAmount(vector<lot_group_t> &selected_groups)
+{
+    // count the number of lots wanting to use its tool and wire
     std::map<std::string, int> sta_tools;
     std::map<std::string, int> sta_wires;
-
     std::string t, w, t_w;
     iter(selected_groups, i)
     {
         t_w = selected_groups[i].wire_tools_name;
-        t = t_w.substr(0, t_w.find("_"));
-        w = t_w.substr(t_w.find("_") + 1);
+        separateToolWireName(t_w, t, w);
         selected_groups[i].wire_name = w;
         selected_groups[i].tool_name = t;
         if (sta_tools.count(t) == 0) {
@@ -124,76 +116,144 @@ std::vector<lot_group_t> lots_t::round(entities_t machines)
                 ? selected_groups[i].wire_amount
                 : selected_groups[i].tool_amount;
     }
+}
+
+map<string, int> lots_t::bdidStatistic(vector<lot_t *> lots)
+{
+    map<string, int> ret;
+    iter(lots, i)
+    {
+        if (ret.count(lots[i]->recipe()) == 0) {
+            ret[lots[i]->recipe()] = 1;
+        } else
+            ret[lots[i]->recipe()] += 1;
+    }
+    return ret;
+}
+
+map<string, int> lots_t::modelStatistic(
+    vector<lot_t *> lots,
+    map<string, vector<entity_t *> > loc_ents)
+{
+    map<string, int> ret;
+    ret = initializeModelDistribution(loc_ents);
+    iter(lots, i)
+    {
+        std::vector<std::string> can_run_locations =
+            lots[i]->getCanRunLocations();
+        iter(can_run_locations, j) { ret[can_run_locations[j]] += 1; }
+    }
+    return ret;
+}
+
+vector<lot_group_t> lots_t::round(entities_t machines)
+{
+    // loc_ents is a map container which maps location to several entities
+    map<string, vector<entity_t *> > loc_ents = machines.getLocEntity();
+
+    // model_location is a map conainer which store the model and its location
+    map<string, vector<string> > model_location = machines.getModelLocation();
+
+    vector<lot_group_t> selected_groups;
+
+    lot_group_t test_lot_group;
+
+    // initialize
+    iter(lots, i)
+    {
+        lots[i].clearCanRunLocation();
+        lots[i].setCanRunLocation(model_location);
+    }
+    machines.reset();
+    selected_groups = selectGroups(30);
+
+    // setup the number of tool and the number of wire
+    setupToolWireAmount(selected_groups);
 
     // models statistic
+    string tool_wire_name;
     iter(selected_groups, k)
     {
         if (selected_groups[k].machine_amount > 0) {
-            t_w = selected_groups[k].wire_tools_name;
-            std::vector<lot_t *> lots = this->tool_wire_lots[t_w];
-            // std::map<std::string, int> initializeModelDistribution;
+            std::vector<lot_t *> lots =
+                this->tool_wire_lots[selected_groups[k].wire_tools_name];
 
-            std::map<std::string, int> sta =
-                initializeModelDistribution(loc_ents);
-            for (unsigned int i = 0; i < lots.size(); ++i) {
-                std::vector<std::string> can_run_locations =
-                    lots[i]->getCanRunLocations();
-                iter(can_run_locations, c) { sta[can_run_locations[c]] += 1; }
-            }
-            // for(std::map<std::string, int>::iterator it = sta.begin(); it !=
-            // sta.end(); ++it){
-            //     printf("%s : %d\n", it->first.c_str(), it->second);
-            // }
-            // printf("***********************************\n");
-            selected_groups[k].models_statistic = sta;
-        } else {
-            printf("Error!\n");
+            selected_groups[k].models_statistic =
+                modelStatistic(lots, loc_ents);
+            selected_groups[k].bdid_statistic = bdidStatistic(lots);
         }
     }
+
+
     iter(selected_groups, i)
     {
+        // int lot_amount = selected_groups[i].lot_amount;
+        // int machine_number = lot_amount > 4 ? lot_amount >> 2 : 1;
+        // machine_number = machine_number >  selected_groups[i].machine_amount ? selected_groups[i].machine_amount : machine_number;
+        // selected_groups[i].entities = machines.randomlyGetEntitiesByLocations(selected_groups[i].models_statistic, selected_groups[i].bdid_statistic, machine_number);
+        // if (selected_groups[i].lot_amount < 10)
+        //     machine_number = (3 > selected_groups[i].machine_amount
+        //                           ? selected_groups[i].machine_amount
+        //                           : 3);
+        // else if (selected_groups[i].machine_amount > 20) {
+        //     machine_number = selected_groups[i].lot_amount / 10;
+        //     machine_number = (selected_groups[i].lot_amount / 10 > 20
+        //                           ? 20
+        //                           : selected_groups[i].machine_amount);
+        // } else {
+        //     machine_number = selected_groups[i].machine_amount;
+        //     selected_groups[i].entities =
+        //         machines.randomlyGetEntitiesByLocations(
+        //             selected_groups[i].models_statistic,
+        //             selected_groups[i].bdid_statistic, machine_number);
+        // }
+        
         if (selected_groups[i].lot_amount < 10)
             selected_groups[i].entities =
                 machines.randomlyGetEntitiesByLocations(
                     selected_groups[i].models_statistic,
+                    selected_groups[i].bdid_statistic,
                     selected_groups[i].machine_amount > 10
-                        ? 10
+                        ? 3
                         : selected_groups[i].machine_amount);
         else
             selected_groups[i].entities =
                 machines.randomlyGetEntitiesByLocations(
                     selected_groups[i].models_statistic,
+                    selected_groups[i].bdid_statistic,
                     selected_groups[i].machine_amount);
     }
 
-    // check
-    std::set<entity_t *> s;
+    test_lot_group = selected_groups[0];
+
+
+    std::vector<lot_t *> failed;
+    std::vector<lot_t *> successful;
+    std::set<entity_t *> entities_set;
     std::vector<lot_group_t> ret;
     iter(selected_groups, i)
     {
+        // check if the entity is selected by at least 2 groups
         iter(selected_groups[i].entities, j)
         {
-            if (s.count(selected_groups[i].entities[j]) == 0) {
-                s.insert(selected_groups[i].entities[j]);
+            if (entities_set.count(selected_groups[i].entities[j]) == 0) {
+                entities_set.insert(selected_groups[i].entities[j]);
             } else {
-                printf("group %d is duplicated!\n", i);
+                string err = "group " + to_string(i) + " is duplicated!\n";
+                throw logic_error(err);
             }
         }
 
         // update the machine_amount.
         selected_groups[i].machine_amount = selected_groups[i].entities.size();
-        // if(selected_groups[i].entities.size() <
-        // selected_groups[i].machine_amount){
-        //     printf("machines are insufficient to the group %d\n", i);
-        // }
-
-        std::string tool_wire_name = selected_groups[i].wire_tools_name;
+        tool_wire_name = selected_groups[i].wire_tools_name;
         std::vector<lot_t *> lots = tool_wire_lots[tool_wire_name];
-        std::vector<lot_t *> failed;
-        std::vector<lot_t *> successful;
+
+        successful.clear();
+        failed.clear();
         iter(lots, j)
         {
-            bool found = false;
+            bool found = false;  // check there is a acceptable entity
             iter(selected_groups[i].entities, k)
             {
                 if (lots[j]->addCanRunEntity(selected_groups[i].entities[k])) {
@@ -203,7 +263,6 @@ std::vector<lot_group_t> lots_t::round(entities_t machines)
             if (found)
                 successful.push_back(lots[j]);
             else {
-                // printf("has no machine\n");
                 failed.push_back(lots[j]);
             }
         }

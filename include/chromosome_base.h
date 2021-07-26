@@ -10,7 +10,7 @@
 
 #if defined __NVCC__ || __cplusplus
 extern "C" {
-#endif 
+#endif
 
 typedef struct chromosome_base_t chromosome_base_t;
 typedef struct chromosome_base_operations_t chromosome_base_operations_t;
@@ -42,7 +42,7 @@ __qualifier__ void chromosome_base_init(chromosome_base_t *base,
                                         double *address);
 #if defined __NVCC__ || __cplusplus
 }
-#endif 
+#endif
 
 
 #endif
