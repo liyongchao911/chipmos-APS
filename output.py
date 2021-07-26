@@ -185,13 +185,13 @@ def output_simulation(result_df,machine_area_df):
     # use two times group by to get amount
     def get_ENT_df(merge_result,ent_colname): 
 
-        temp_group= merge_result.groupby(['cust','pin_pkg','prod_id','bd_id','Location','entity']) 
+        temp_group= merge_result.groupby(['cust','pin_pkg','prod_id','bd_id','oper','Location','entity']) # to know entity amount
         df_grp_entity = pd.DataFrame(temp_group.groups.keys())
-        grp_basis = df_grp_entity.groupby([0,1,2,3,4])  # cust > Location
+        grp_basis = df_grp_entity.groupby([0,1,2,3,4,5])  # from cust to Location(index=0~5) #second groupby to build new dataframe format
         df_keys= pd.DataFrame(grp_basis.groups.keys())
         df_Ent_amount= pd.DataFrame(list(grp_basis.size()))
         ENTdf= pd.concat([df_keys, df_Ent_amount], axis=1)
-        ENTdf.columns=['cust','pin_pkg','prod_id','bd_id','Location',ent_colname]
+        ENTdf.columns=['cust','pin_pkg','prod_id','bd_id','oper','Location',ent_colname]  
 
         return ENTdf
     
@@ -216,19 +216,20 @@ def output_simulation(result_df,machine_area_df):
 
     # initialize
     merge_result = pd.merge(result_df, machine_area_df, left_on ='entity', right_on ='Entity', how='left')
-    original_group=merge_result.groupby(['cust','pin_pkg','prod_id','bd_id','Location']) 
+    original_group=merge_result.groupby(['cust','pin_pkg','prod_id','bd_id','oper','Location']) 
 
     ENT_all = get_ENT_df(merge_result,'Allocate ENT')
     ENT_1 = get_ENT_df(get_result_byFilter(merge_result,0),'Original ENT(07:30)')      #relative to 07:30(standard time) is 0 minute
     ENT_2 = get_ENT_df(get_result_byFilter(merge_result,210),'Original ENT(11:00)')    #relative to 11:00 is need to plus 210 minute
     qty_df = get_qty_df(original_group,merge_result)
 
+
     # merge and concat all data to one dataframe
-    merge_df1 = pd.merge(ENT_all, ENT_1, on =(['cust','pin_pkg','prod_id','bd_id','Location']), how ='left')
-    merge_df2 = pd.merge(merge_df1, ENT_2, on =(['cust','pin_pkg','prod_id','bd_id','Location']), how ='left')
+    merge_df1 = pd.merge(ENT_all, ENT_1, on =(['cust','pin_pkg','prod_id','bd_id','oper','Location']), how ='left')
+    merge_df2 = pd.merge(merge_df1, ENT_2, on =(['cust','pin_pkg','prod_id','bd_id','oper','Location']), how ='left')
     temp_df= pd.concat([merge_df2, qty_df], axis=1)
-    ## change column sequence to final version
-    simulation_output_df = temp_df[['cust','pin_pkg','prod_id','bd_id','Location','Original ENT(07:30)','Original ENT(11:00)','Allocate ENT','Output plan']]
+    ## change column sequence to create final version
+    simulation_output_df = temp_df[['cust','pin_pkg','prod_id','bd_id','oper','Location','Original ENT(07:30)','Original ENT(11:00)','Allocate ENT','Output plan']]
 
     # write to csv
     simulation_output_df.to_csv("simulation_output.csv", index=False ,na_rep=0) 
