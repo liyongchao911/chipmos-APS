@@ -9,6 +9,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <sys/stat.h>
 
 #include "include/condition_card.h"
 #include "include/csv.h"
@@ -860,23 +861,28 @@ vector<lot_t> lots_t::createLots(
     setCanRunModels(bdid_mapping_models_filename, lots, faulty_lots);
     setUph(uph_filename, lots, faulty_lots);
 
+    #if defined(_WIN32)
+	mkdir("output");
+	#else 
+	mkdir("output", 0777); // notice that 777 is different than 0777
+	#endif
 
     // output faulty lots
-    csv_t faulty_lots_csv("faulty_lots.csv", "w");
+    csv_t faulty_lots_csv("output/faulty_lots.csv", "w");
     iter(faulty_lots, i) { faulty_lots_csv.addData(faulty_lots[i].data()); }
     faulty_lots_csv.write();
     // output dontcare lots
-    csv_t dontcare_lots_csv("dontcare.csv", "w");
+    csv_t dontcare_lots_csv("output/dontcare.csv", "w");
     iter(dontcare, i) { dontcare_lots_csv.addData(dontcare[i].data()); }
     dontcare_lots_csv.write();
 
     // output lots
-    csv_t lots_csv("lots.csv", "w");
+    csv_t lots_csv("output/lots.csv", "w");
     iter(lots, i) { lots_csv.addData(lots[i].data()); }
     lots_csv.write();
 
     // ouput wip
-    csv_t wip_csv("out.csv", "w");
+    csv_t wip_csv("output/out.csv", "w");
     iter(faulty_lots, i) { wip_csv.addData(faulty_lots[i].data()); }
     iter(dontcare, i) { wip_csv.addData(dontcare[i].data()); }
     iter(lots, i) { wip_csv.addData(lots[i].data()); }

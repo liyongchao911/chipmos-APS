@@ -1,5 +1,5 @@
 {
-    "file_path" : "files",
+    "file_path" : "input",
     "preprocess_files" : [
         {
             "filename" : "WipOutPlanTime_20210417083000.csv",
