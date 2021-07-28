@@ -29,6 +29,7 @@ protected:
     int _qty;
     int _oper;
     int _lot_size;
+    int _sub_lots;
     int _amount_of_wires;
     int _amount_of_tools;
 
@@ -39,6 +40,7 @@ protected:
     double _queue_time;  // for all queue time;
     double _fcst_time;   // for DA fcst time
     double _outplan_time;
+    double _weight;
 
     bool _finish_traversal;
 

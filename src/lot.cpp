@@ -80,6 +80,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
 
     _part_id = elements.count("part_id") == 0 ? "" : elements["part_id"];
     _part_no = elements.count("part_no") == 0 ? "" : elements["part_no"];
+    _sub_lots = elements.count("sub_lot") == 0 ? -1 : std::stoi(elements["sub_lot"]);
 }
 
 bool lot_t::checkFormation()
@@ -102,6 +103,10 @@ bool lot_t::checkFormation()
     if (_qty <= 0) {
         data_members.push_back("qty");
     }
+
+    // if(_sub_lots <= 0){
+    //     data_members.push_back("sub_lots");
+    // }
 
     if (data_members.size()) {
         error_msg = data_members.size() > 1 ? "These information, "
@@ -324,7 +329,11 @@ job_t lot_t::job()
     j.part_id = stringToInfo(_part_id);
     j.bdid = stringToInfo(_recipe);
     j.prod_id = stringToInfo(_prod_id);
+    j.oper = tmp_oper;
+    
+    float lot_order = std::stod(_lot_number.substr(_lot_number.length() - 2)) / (float)_sub_lots;
 
+    j.weight = lot_order;
 
     if (_urgent.length()) {
         j.urgent_code = _urgent[0];

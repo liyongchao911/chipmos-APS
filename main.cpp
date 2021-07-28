@@ -63,7 +63,7 @@ int main(int argc, const char *argv[])
                        .AMOUNT_OF_R_CHROMOSOMES = 200,
                        .EVOLUTION_RATE = 0.8,
                        .SELECTION_RATE = 0.2,
-                       .GENERATIONS = 2000},
+                       .GENERATIONS = 200},
     };
 
     csv_t result("result.csv", "w");
@@ -103,7 +103,8 @@ map<string, string> outputJob(job_t job){
         {"qty", to_string(job.base.qty) },
         {"entity", convertUIntToEntityName(job.base.machine_no) },
         {"start_time", to_string(job.base.start_time) },
-        {"end_time", to_string(job.base.end_time) }
+        {"end_time", to_string(job.base.end_time) },
+        {"oper", to_string(job.oper) }
     });
 }
 

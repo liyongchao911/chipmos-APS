@@ -123,7 +123,8 @@ void entities_t::addMachine(map<string, string> elements)
                            .end_time = recover_time},
                   .part_id = stringToInfo(part_id),
                   .bdid = stringToInfo(elements["bd_id"]),
-                  .prod_id = stringToInfo(elements["prod_id"])};
+                  .prod_id = stringToInfo(elements["prod_id"]),
+                  .oper = stoi(elements["oper"])};
 
         *ent = entity_t{.recover_time = recover_time,
                         .outplan_time = recover_time,

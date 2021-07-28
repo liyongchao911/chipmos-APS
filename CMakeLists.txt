@@ -9,7 +9,4 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_executable(main main.cpp src/algorithm.cpp src/chromosome.cpp src/condition_card.cpp src/csv.cpp src/da.cpp src/entity.cpp src/infra.cpp src/job.cpp src/lot.cpp src/lots.cpp src/machine.cpp src/route.cpp src/info.c)
 add_subdirectory(lib)
-# set_property(TARGET main PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(main lib stdc++ m)
-# add_subdirectory(tests)
-# add_subdirectory(examples)

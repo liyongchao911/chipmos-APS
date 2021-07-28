@@ -579,7 +579,7 @@ void lots_t::setPartId(string filename,
     for (unsigned int i = 0; i < bomlist.nrows(); ++i) {
         map<string, string> tmp = bomlist.getElements(i);
         // if "oper" is WB, then get its part_id.
-        std::set<int> opers = {WB1, WB2, WB3, WB4};
+        std::set<int> opers = {WB1, WB2, WB3, WB4, WB5, WB6, WB7, WB8};
         int oper_int = stoi(tmp["oper"]);
         if (opers.count(oper_int) != 0) {
             bom_oper_part[oper_int][tmp["bom_id"]] = tmp["part_id"];
@@ -630,7 +630,12 @@ void lots_t::setAmountOfWire(string filename,
         if (part_roll.count(tmp["gw_part_no"]) == 0) {
             part_roll[tmp["gw_part_no"]] = 0;
         }
-        if (stod(tmp["roll_length"]) >= 1000.0) {
+
+        if (tmp["gw_part_no"][4] == 'A' &&  // gw_part_no[4] is 'A' --> which is golden wire
+                stod(tmp["roll_length"]) >= 1000.0) {
+            part_roll[tmp["gw_part_no"]] += 1;
+        } else if(tmp["gw_part_no"][4] == 'A' && 
+                stod(tmp["roll_length"]) >= 200.0){
             part_roll[tmp["gw_part_no"]] += 1;
         }
     }
