@@ -66,7 +66,7 @@ int main(int argc, const char *argv[])
                        .GENERATIONS = 200},
     };
 
-    csv_t result("result.csv", "w");
+    csv_t result("output/result.csv", "w");
     outputJobInMachine(machines.getMachines(), &result);
     initializeOperations(&pop);
     
