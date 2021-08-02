@@ -90,6 +90,7 @@ std::vector<lot_t> da_stations_t::distributeProductionCapacity()
     for (std::map<std::string, da_station_t>::iterator it =
              _da_stations_container.begin();
          it != _da_stations_container.end(); it++) {
+
         lots += daDistributeCapacity(it->second);
     }
 

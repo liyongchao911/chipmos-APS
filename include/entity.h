@@ -84,7 +84,12 @@ public:
     /**
      * randomlyGetEntitiesByLocations
      */
-    std::vector<entity_t *> randomlyGetEntitiesByLocations(
+    std::vector<entity_t *> getRandomEntities(
+        std::map<std::string, int> model_statistic,
+        std::map<std::string, int> bdid_statistic,
+        int amount);
+
+    std::vector<entity_t *> getTheSuitableEntities(
         std::map<std::string, int> model_statistic,
         std::map<std::string, int> bdid_statistic,
         int amount);

@@ -685,7 +685,7 @@ inline bool lot_t::isModelValid(std::string model){
             return true;
         }else
             return false;
-    }
+    }    
     return true;
 }
 

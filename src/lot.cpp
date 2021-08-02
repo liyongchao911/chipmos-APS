@@ -46,7 +46,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     tmp_oper = _oper;
     tmp_mvin = _mvin;
 
-    _is_sub_lot = _lot_number.length() >= 8 ? true : false;
+    _is_sub_lot = _lot_number.length() > 8 ? true : false;
     _amount_of_tools = elements.count("amount_of_tools") == 0
                            ? 0
                            : std::stoi(elements["amount_of_tools"]);
@@ -330,8 +330,16 @@ job_t lot_t::job()
     j.bdid = stringToInfo(_recipe);
     j.prod_id = stringToInfo(_prod_id);
     j.oper = tmp_oper;
-    
-    float lot_order = std::stod(_lot_number.substr(_lot_number.length() - 2)) / (float)_sub_lots;
+    float lot_order; 
+    try{
+        std::string seq = _lot_number.substr(_lot_number.length() - 2);
+        int n1, n2;
+        std::sscanf(seq.c_str(), "%1x%d", &n1, &n2);
+        lot_order = n1*10 + n2;
+        lot_order /= (float)_sub_lots;
+    }catch(std::invalid_argument & e){
+        std::cout<<e.what()<<std::endl;
+    }
 
     j.weight = lot_order;
 

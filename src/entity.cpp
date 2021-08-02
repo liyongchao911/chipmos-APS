@@ -211,7 +211,15 @@ bool entityComparisonByTime(entity_t *ent1, entity_t *ent2)
     return ent1->recover_time < ent2->recover_time;
 }
 
-std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(
+std::vector<entity_t *> entities_t::getTheSuitableEntities(
+    std::map<std::string, int> model_statistic,
+    std::map<std::string, int> bdid_statistic,
+    int amount)
+{
+    
+}
+
+std::vector<entity_t *> entities_t::getRandomEntities(
     std::map<std::string, int> model_statistic,
     std::map<std::string, int> bdid_statistic,
     int amount)
@@ -235,38 +243,44 @@ std::vector<entity_t *> entities_t::randomlyGetEntitiesByLocations(
 
     // random_shuffle(pool.begin(), pool.end());
     sort(pool.begin(), pool.end(), entityComparisonByTime);
-    // printf("[!] ");
-    // if(pool.size() > 10){
-    //     iter_range(pool, i, 0, 10){
-    //         printf("(%s ,%.2f) ",pool[i]->entity_name.c_str(), pool[i]->recover_time);
-    //     }
-    //     printf("\n");
-    // }else{
-    //     iter(pool, i){
-    //         printf("(%s ,%.2f) ",pool[i]->entity_name.c_str(), pool[i]->recover_time);
-    //     }
-    //     printf("\n");
-    // }
-       
 
-    // iter(pool, i)
-    // {
-    //     string bdid = pool[i]->job.bdid.data.text;
-    //     if (bdid_statistic.count(bdid) != 0) {
-    //         better.push_back(pool[i]);
-    //     } else
-    //         bad.push_back(pool[i]);
-    // }
+    bool flag = true;
+    iter(pool, i)
+    {
+        string bdid = pool[i]->job.bdid.data.text;
+        if (bdid_statistic.count(bdid) != 0) {
+            better.push_back(pool[i]);
+        } else
+            bad.push_back(pool[i]);
+    }
 
-    // pool.clear();
-    // pool = better;
-    // pool += bad;
+    vector<entity_t *> pool2;
+    int i = 0, j = 0;
+    while(i < better.size() && j < bad.size()){
+        if(flag){
+            pool2.push_back(better[i]);
+            ++i;
+        }else{
+            pool2.push_back(bad[j]);
+            ++j;
+        }
+        flag = !flag;
+    }
 
+    while(i < better.size()){
+        pool2.push_back(better[i]);  
+        ++i;
+    }
 
-    if ((unsigned) amount < pool.size()) {
-        ret = vector<entity_t *>(pool.begin(), pool.begin() + amount);
+    while(j < bad.size()){
+        pool2.push_back(bad[j]);
+        ++j;
+    }
+
+    if ((unsigned) amount < pool2.size()) {
+        ret = vector<entity_t *>(pool2.begin(), pool2.begin() + amount);
     } else {
-        ret = vector<entity_t *>(pool.begin(), pool.end());
+        ret = vector<entity_t *>(pool2.begin(), pool2.end());
     }
 
     iter(ret, i) { ret[i]->hold = true; }
