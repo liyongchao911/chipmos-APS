@@ -218,7 +218,7 @@ def output_simulation(result_df,machine_area_df):
     merge_result = pd.merge(result_df, machine_area_df, left_on ='entity', right_on ='Entity', how='left')
     original_group=merge_result.groupby(['cust','pin_pkg','prod_id','bd_id','oper','Location']) 
 
-    ENT_all = get_ENT_df(merge_result,'Allocate ENT')
+    ENT_all = get_ENT_df(merge_result[merge_result["end_time"] <= 1650],'Allocate ENT')  # the lots from 07:30 today to 11:00 tomorrow (total 27.5hrs)
     ENT_1 = get_ENT_df(get_result_byFilter(merge_result,0),'Original ENT(07:30)')      #relative to 07:30(standard time) is 0 minute
     ENT_2 = get_ENT_df(get_result_byFilter(merge_result,210),'Original ENT(11:00)')    #relative to 11:00 is need to plus 210 minute
     qty_df = get_qty_df(original_group,merge_result)
