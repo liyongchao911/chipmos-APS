@@ -1,10 +1,10 @@
+#include "include/entity.h"
 #include <limits.h>
 #include <sched.h>
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
 #include "include/infra.h"
-#include "include/entity.h"
 #include "include/machine.h"
 
 
@@ -233,13 +233,13 @@ std::vector<entity_t *> entities_t::getRandomEntities(
 
     // random_shuffle(pool.begin(), pool.end());
     sort(pool.begin(), pool.end(), entityComparisonByTime);
-    
-    if((unsigned)amount < pool.size()){
-        ret = vector<entity_t*>(pool.begin(), pool.begin() + amount);
-    }else{
-        ret = vector<entity_t*>(pool.begin(), pool.end());
+
+    if ((unsigned) amount < pool.size()) {
+        ret = vector<entity_t *>(pool.begin(), pool.begin() + amount);
+    } else {
+        ret = vector<entity_t *>(pool.begin(), pool.end());
     }
-    iter(ret, i){ ret[i]->hold = true; }
+    iter(ret, i) { ret[i]->hold = true; }
     return ret;
 }
 

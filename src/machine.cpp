@@ -135,7 +135,7 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
         setup_time = calculateSetupTime(prev_job, job, ops);
         if (setup_time != 0.0)
             ++setup_times;
-        if(start_time < 1440){
+        if (start_time < 1440) {
             ++setup_times_in1440;
         }
         if (!hasICSI) {
@@ -177,7 +177,8 @@ void setLastJobInMachine(machine_t *machine)
 }
 
 
-void _insertHeadAlgorithm(machine_t *machine, machine_base_operations_t * mbops){
+void _insertHeadAlgorithm(machine_t *machine, machine_base_operations_t *mbops)
+{
     list_ele_t *it = machine->base.root;
     list_ele_t *prev;
     list_ele_t *next;
@@ -185,62 +186,62 @@ void _insertHeadAlgorithm(machine_t *machine, machine_base_operations_t * mbops)
 
     job_t *job;
     double size = -1;
-     
+
     // search the head segment
     // check if the machine has at least two jobs
-    if(it == nullptr || it->next == nullptr)
-        return; // if the machine has only one job -> return immediately
-    
+    if (it == nullptr || it->next == nullptr)
+        return;  // if the machine has only one job -> return immediately
+
     // get the first segment size
     job = (job_t *) it->ptr_derived_object;
-    size = job->base.start_time - machine->base.available_time;   
+    size = job->base.start_time - machine->base.available_time;
 
     it = it->next;
-    while(it){
+    while (it) {
         job = (job_t *) it->ptr_derived_object;
         // check if ptime is smaller then size
-        if(job->base.ptime < size && 
-                job->base.arriv_t < machine->base.available_time){
+        if (job->base.ptime < size &&
+            job->base.arriv_t < machine->base.available_time) {
             prev = it->prev;
             next = it->next;
             prev->next = next;
-            if(next != nullptr)
+            if (next != nullptr)
                 next->prev = prev;
 
             it->prev = nullptr;
             it->next = head;
             head->prev = it;
-            machine->base.root = it; 
+            machine->base.root = it;
             break;
         }
         it = it->next;
     }
     scheduling(machine, mbops);
-
 }
 
-void insertAlgorithm(machine_t *machine, machine_base_operations_t *mbops){
+void insertAlgorithm(machine_t *machine, machine_base_operations_t *mbops)
+{
     _insertHeadAlgorithm(machine, mbops);
 
-    list_ele_t * it = machine->base.root;
-    list_ele_t * prev, *next, *it2;
-    job_t * it_job, *prev_job, *next_job, *it2_job;
+    list_ele_t *it = machine->base.root;
+    list_ele_t *prev, *next, *it2;
+    job_t *it_job, *prev_job, *next_job, *it2_job;
     double size = -1;
-    
-    while(it && it->next){
-        it_job = (job_t *)it->ptr_derived_object;
-        next_job = (job_t *)it->next->ptr_derived_object;
+
+    while (it && it->next) {
+        it_job = (job_t *) it->ptr_derived_object;
+        next_job = (job_t *) it->next->ptr_derived_object;
         size = next_job->base.start_time - it_job->base.end_time;
-        if(size > 0){
+        if (size > 0) {
             it2 = it->next->next;
-            while(it2){
-                it2_job = (job_t*)it2->ptr_derived_object;
-                if(it2_job->base.ptime < size && 
-                   it2_job->base.arriv_t <= it_job->base.end_time){
+            while (it2) {
+                it2_job = (job_t *) it2->ptr_derived_object;
+                if (it2_job->base.ptime < size &&
+                    it2_job->base.arriv_t <= it_job->base.end_time) {
                     prev = it2->prev;
                     next = it2->next;
                     prev->next = next;
-                    if(next != nullptr)
+                    if (next != nullptr)
                         next->prev = prev;
 
                     prev = it;
@@ -251,8 +252,8 @@ void insertAlgorithm(machine_t *machine, machine_base_operations_t *mbops){
                     it2->prev = prev;
                     scheduling(machine, mbops);
                     break;
-                } 
-                it2 = it2->next; 
+                }
+                it2 = it2->next;
             }
         }
         it = it->next;

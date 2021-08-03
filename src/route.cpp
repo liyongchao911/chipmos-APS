@@ -46,7 +46,8 @@ void route_t::setRoute(std::string routename, csv_t dataframe)
 
     _routes[routename] = stations;
 
-    setupBeforeStation(routename, true, 7, 8, WB1, WB2, WB3, WB4, WB5, WB6, WB7, WB8);  // WB - 7
+    setupBeforeStation(routename, true, 7, 8, WB1, WB2, WB3, WB4, WB5, WB6, WB7,
+                       WB8);  // WB - 7
 }
 
 
@@ -266,4 +267,3 @@ int route_t::calculateQueueTime(lot_t &lot)
 
     return -1;
 }
-

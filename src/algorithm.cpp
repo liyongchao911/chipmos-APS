@@ -153,7 +153,6 @@ round_t prepareJobs(vector<lot_group_t> group)
     // set process time
     iter(lots, i)
     {
-
         jobs[i] = lots[i]->job();
         vector<string> can_run_ents = lots[i]->getCanRunEntities();
         map<string, double> ent_process_time = lots[i]->getEntityProcessTime();
@@ -323,25 +322,26 @@ void geneticAlgorithm(population_t *pop)
 
     decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops,
              AMOUNT_OF_JOBS);
-    
-    for(map<unsigned, machine_t *>::iterator it = machines.begin(); 
-            it != machines.end(); ++it){
+
+    for (map<unsigned, machine_t *>::iterator it = machines.begin();
+         it != machines.end(); ++it) {
         insertAlgorithm(it->second, machine_ops);
     }
-   
+
     // update machines' avaliable time and set the last job
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
          it != machines.end(); ++it) {
         it->second->base.available_time = it->second->makespan;
         setLastJobInMachine(it->second);
     }
-
 }
 
-void machineWriteBackToEntity(population_t * pop){
+void machineWriteBackToEntity(population_t *pop)
+{
     map<unsigned int, machine_t *> machines = pop->round.machines;
-    for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
-        entity_t * ent = (entity_t *)it->second->ptr_derived_object;
+    for (map<unsigned int, machine_t *>::iterator it = machines.begin();
+         it != machines.end(); it++) {
+        entity_t *ent = (entity_t *) it->second->ptr_derived_object;
         ent->recover_time = it->second->makespan;
         ent->job = it->second->current_job;
     }

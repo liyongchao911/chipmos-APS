@@ -35,7 +35,7 @@ protected:
     static std::map<std::string, int> initializeModelDistribution(
         std::map<std::string, std::vector<entity_t *> > loc_ents);
 
-    
+
     /**
      * createLots () - create a vector of lots by reading and mapping the
      * information from files
