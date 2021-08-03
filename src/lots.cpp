@@ -185,30 +185,37 @@ vector<lot_group_t> lots_t::round(entities_t machines)
         }
     }
 
-
+    // first round of getting the entities
+    // get the suitable entities
     iter(selected_groups, i)
     {
-        if (selected_groups[i].lot_amount < 10)
-            selected_groups[i].entities =
-                machines.getRandomEntities(
+        if (selected_groups[i].lot_amount < 10 &&
+           selected_groups[i].machine_amount > 10)
+                selected_groups[i].machine_amount = 3;
+
+        selected_groups[i].entities =
+                machines.getTheSuitableEntities(
                     selected_groups[i].models_statistic,
                     selected_groups[i].bdid_statistic,
-                    selected_groups[i].machine_amount > 10
-                        ? 3
-                        : selected_groups[i].machine_amount);
-        else
-            selected_groups[i].entities =
+                    selected_groups[i].machine_amount);
+
+        selected_groups[i].machine_amount -= selected_groups[i].entities.size();
+        
+        // printf("Group [%d]:", i);
+        // iter(selected_groups[i].entities, j){
+        //     cout<<selected_groups[i].entities[j]->entity_name<<" ";
+        // }
+        // printf("\n");
+    }
+
+    iter(selected_groups, i){
+        selected_groups[i].entities += 
                 machines.getRandomEntities(
                     selected_groups[i].models_statistic,
                     selected_groups[i].bdid_statistic,
                     selected_groups[i].machine_amount);
-        
-        printf("Group [%d]:", i);
-        iter(selected_groups[i].entities, j){
-            cout<<selected_groups[i].entities[j]->entity_name<<" ";
-        }
-        printf("\n");
-    }
+    } 
+
 
     test_lot_group = selected_groups[0];
 
@@ -222,9 +229,9 @@ vector<lot_group_t> lots_t::round(entities_t machines)
         // check if the entity is selected by at least 2 groups
         iter(selected_groups[i].entities, j)
         {
-            if (selected_groups[i].entities[j]->entity_name.compare("BB789") == 0){
-                printf("halt"); 
-            }
+            // if (selected_groups[i].entities[j]->entity_name.compare("BB789") == 0){
+            //     printf("halt"); 
+            // }
 
             if (entities_set.count(selected_groups[i].entities[j]) == 0) {
                 entities_set.insert(selected_groups[i].entities[j]);

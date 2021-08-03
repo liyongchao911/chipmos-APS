@@ -98,6 +98,7 @@ void entities_t::addMachine(map<string, string> elements)
     if (elements["recover_time"].length() == 0) {
         throw std::invalid_argument("recover time is empty");
     }
+
     double recover_time = timeConverter(elements["recover_time"]);
 
 
@@ -211,24 +212,47 @@ bool entityComparisonByTime(entity_t *ent1, entity_t *ent2)
     return ent1->recover_time < ent2->recover_time;
 }
 
-std::vector<entity_t *> entities_t::getTheSuitableEntities(
-    std::map<std::string, int> model_statistic,
-    std::map<std::string, int> bdid_statistic,
-    int amount)
-{
-    
-}
-
 std::vector<entity_t *> entities_t::getRandomEntities(
     std::map<std::string, int> model_statistic,
     std::map<std::string, int> bdid_statistic,
     int amount)
 {
     vector<entity_t *> ret;
-
     vector<entity_t *> pool;
+    // if the model's statistic lot number isn't 0 -> push into pool
+    for (std::map<std::string, int>::iterator it = model_statistic.begin();
+         it != model_statistic.end(); it++) {
+        if (it->second == 0)
+            continue;
+        for (unsigned int i = 0; i < _loc_ents[it->first].size(); ++i) {
+            if (!_loc_ents[it->first][i]->hold) {
+                pool.push_back(_loc_ents[it->first][i]);
+            }
+        }
+    }
+
+    // random_shuffle(pool.begin(), pool.end());
+    sort(pool.begin(), pool.end(), entityComparisonByTime);
+    
+    if((unsigned)amount < pool.size()){
+        ret = vector<entity_t*>(pool.begin(), pool.begin() + amount);
+    }else{
+        ret = vector<entity_t*>(pool.begin(), pool.end());
+    }
+    iter(ret, i){ ret[i]->hold = true; }
+    return ret;
+}
+
+std::vector<entity_t *> entities_t::getTheSuitableEntities(
+    std::map<std::string, int> model_statistic,
+    std::map<std::string, int> bdid_statistic,
+    int amount)
+{
     vector<entity_t *> better;  // the bdid is in bdid_statistic,
     vector<entity_t *> bad;     // the bdid isn't in bdid_statistic
+
+    vector<entity_t *> ret;
+    vector<entity_t *> pool;
     // if the model's statistic lot number isn't 0 -> push into pool
     for (std::map<std::string, int>::iterator it = model_statistic.begin();
          it != model_statistic.end(); it++) {
@@ -244,7 +268,6 @@ std::vector<entity_t *> entities_t::getRandomEntities(
     // random_shuffle(pool.begin(), pool.end());
     sort(pool.begin(), pool.end(), entityComparisonByTime);
 
-    bool flag = true;
     iter(pool, i)
     {
         string bdid = pool[i]->job.bdid.data.text;
@@ -254,33 +277,10 @@ std::vector<entity_t *> entities_t::getRandomEntities(
             bad.push_back(pool[i]);
     }
 
-    vector<entity_t *> pool2;
-    int i = 0, j = 0;
-    while(i < better.size() && j < bad.size()){
-        if(flag){
-            pool2.push_back(better[i]);
-            ++i;
-        }else{
-            pool2.push_back(bad[j]);
-            ++j;
-        }
-        flag = !flag;
-    }
-
-    while(i < better.size()){
-        pool2.push_back(better[i]);  
-        ++i;
-    }
-
-    while(j < bad.size()){
-        pool2.push_back(bad[j]);
-        ++j;
-    }
-
-    if ((unsigned) amount < pool2.size()) {
-        ret = vector<entity_t *>(pool2.begin(), pool2.begin() + amount);
+    if ((unsigned) amount < better.size()) {
+        ret = vector<entity_t *>(better.begin(), better.begin() + amount);
     } else {
-        ret = vector<entity_t *>(pool2.begin(), pool2.end());
+        ret = vector<entity_t *>(better.begin(), better.end());
     }
 
     iter(ret, i) { ret[i]->hold = true; }
