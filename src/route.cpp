@@ -7,7 +7,7 @@
 
 route_t::route_t()
 {
-    _wb_stations = {WB1, WB2, WB3, WB4};
+    _wb_stations = {WB1, WB2, WB3, WB4, WB5, WB6, WB7, WB8};
     _da_stations = {DA1, DA2,  DA3,  DA4,  DA5,  DA6,  DA7, DA8,
                     DA9, DA10, DA11, DA12, DA13, DA14, DA15};
 }
@@ -46,7 +46,8 @@ void route_t::setRoute(std::string routename, csv_t dataframe)
 
     _routes[routename] = stations;
 
-    setupBeforeStation(routename, true, 7, 4, WB1, WB2, WB3, WB4);  // WB - 7
+    setupBeforeStation(routename, true, 7, 8, WB1, WB2, WB3, WB4, WB5, WB6, WB7,
+                       WB8);  // WB - 7
 }
 
 

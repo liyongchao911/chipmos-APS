@@ -8,6 +8,7 @@
 #include "include/chromosome.h"
 #include "include/chromosome_base.h"
 #include "include/infra.h"
+#include "include/machine.h"
 #include "include/population.h"
 
 using namespace std;
@@ -321,32 +322,26 @@ void geneticAlgorithm(population_t *pop)
 
     decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops,
              AMOUNT_OF_JOBS);
+
+    for (map<unsigned, machine_t *>::iterator it = machines.begin();
+         it != machines.end(); ++it) {
+        insertAlgorithm(it->second, machine_ops);
+    }
+
     // update machines' avaliable time and set the last job
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
          it != machines.end(); ++it) {
         it->second->base.available_time = it->second->makespan;
         setLastJobInMachine(it->second);
     }
-
-    // output
-    // FILE *file = fopen("result.csv", "a+");
-    // for (int i = 0; i < AMOUNT_OF_JOBS; ++i) {
-    //     machine_t *m = machines[jobs[i].base.machine_no];
-    //     // lot_number, part_no, part_id, entity_name, start time, end_time
-    //     string ent_name = convertUIntToEntityName(m->base.machine_no);
-    //     fprintf(file, "%s, %s, %s, %s, %s, %s, %s, %s, %.3f, %.3f\n",
-    //             jobs[i].base.job_info.data.text, jobs[i].bdid.data.text,
-    //             m->tool->name.data.text, m->wire->name.data.text,
-    //             ent_name.c_str(), jobs[i].base.start_time,
-    //             jobs[i].base.end_time);
-    // }
-    // fclose(file);
 }
 
-void machineWriteBackToEntity(population_t * pop){
+void machineWriteBackToEntity(population_t *pop)
+{
     map<unsigned int, machine_t *> machines = pop->round.machines;
-    for(map<unsigned int, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
-        entity_t * ent = (entity_t *)it->second->ptr_derived_object;
+    for (map<unsigned int, machine_t *>::iterator it = machines.begin();
+         it != machines.end(); it++) {
+        entity_t *ent = (entity_t *) it->second->ptr_derived_object;
         ent->recover_time = it->second->makespan;
         ent->job = it->second->current_job;
     }

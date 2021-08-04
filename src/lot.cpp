@@ -1,3 +1,4 @@
+#include "include/lot.h"
 #include <pthread.h>
 #include <cmath>
 #include <exception>
@@ -9,7 +10,6 @@
 #include "include/infra.h"
 #include "include/job.h"
 #include "include/job_base.h"
-#include "include/lot.h"
 
 lot_t::lot_t(std::map<std::string, std::string> elements)
 {
@@ -46,7 +46,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     tmp_oper = _oper;
     tmp_mvin = _mvin;
 
-    _is_sub_lot = _lot_number.length() >= 8 ? true : false;
+    _is_sub_lot = _lot_number.length() > 8 ? true : false;
     _amount_of_tools = elements.count("amount_of_tools") == 0
                            ? 0
                            : std::stoi(elements["amount_of_tools"]);
@@ -80,6 +80,8 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
 
     _part_id = elements.count("part_id") == 0 ? "" : elements["part_id"];
     _part_no = elements.count("part_no") == 0 ? "" : elements["part_no"];
+    _sub_lots =
+        elements.count("sub_lot") == 0 ? -1 : std::stoi(elements["sub_lot"]);
 }
 
 bool lot_t::checkFormation()
@@ -102,6 +104,10 @@ bool lot_t::checkFormation()
     if (_qty <= 0) {
         data_members.push_back("qty");
     }
+
+    // if(_sub_lots <= 0){
+    //     data_members.push_back("sub_lots");
+    // }
 
     if (data_members.size()) {
         error_msg = data_members.size() > 1 ? "These information, "
@@ -226,7 +232,7 @@ bool lot_t::setUph(csv_t _uph_csv)
          it != _uphs.end(); it++) {
         if (it->second == 0) {
             invalid_models.push_back(it->first);
-        }else{
+        } else {
             valid_models.push_back(it->first);
         }
     }
@@ -237,7 +243,7 @@ bool lot_t::setUph(csv_t _uph_csv)
         _model_process_times.erase(invalid_models[i]);
     }
 
-    _can_run_models = valid_models; 
+    _can_run_models = valid_models;
 
     if (_uphs.size() == 0) {
         addLog("All of uph is 0");
@@ -324,7 +330,19 @@ job_t lot_t::job()
     j.part_id = stringToInfo(_part_id);
     j.bdid = stringToInfo(_recipe);
     j.prod_id = stringToInfo(_prod_id);
+    j.oper = tmp_oper;
+    float lot_order;
+    try {
+        std::string seq = _lot_number.substr(_lot_number.length() - 2);
+        int n1, n2;
+        std::sscanf(seq.c_str(), "%1x%d", &n1, &n2);
+        lot_order = n1 * 10 + n2;
+        lot_order /= (float) _sub_lots;
+    } catch (std::invalid_argument &e) {
+        std::cout << e.what() << std::endl;
+    }
 
+    j.weight = lot_order;
 
     if (_urgent.length()) {
         j.urgent_code = _urgent[0];

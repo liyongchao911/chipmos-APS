@@ -46,6 +46,8 @@ double setupTimeUSC(job_base_t *_prev, job_base_t *_next);
 
 void scheduling(machine_t *mahcine, machine_base_operations_t *ops);
 
+void insertAlgorithm(machine_t *machine, machine_base_operations_t *ops);
+
 void setLastJobInMachine(machine_t *machine);
 
 #endif

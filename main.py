@@ -2,6 +2,7 @@ import json
 import os
 import re
 import pandas as pd
+import argparse
 from datetime import datetime
 
 
@@ -58,8 +59,32 @@ def preprocessing(conf:dict):
 
 
 if __name__ == '__main__':
-    if(len(os.sys.argv) < 2):
-        print("Please specify the config file.")
-        exit(-1)
-    config = os.sys.argv[1]
-    csv_config_file_path = preprocessing(json.load(open(config)))
+    arg_parser = argparse.ArgumentParser()
+    exegroup = arg_parser.add_mutually_exclusive_group() 
+
+    exegroup.add_argument("-nr", "--norun", 
+            help="do not run the algorithm directly", 
+            action="store_false")
+
+    exegroup.add_argument("-r", "--run",
+            help="run the algorithm directly",
+            action="store_true")
+
+    plotgroup = arg_parser.add_mutually_exclusive_group()
+    
+    plotgroup.add_argument("-p", "--plot",
+            help="plot the result of scheduling",
+            action="store_true")
+
+    plotgroup.add_argument("-np", "--noplot", 
+            help="Plot the result of scheduling", 
+            action="store_false")
+
+    arg_parser.add_argument("config", help="Specify the config file")
+    
+    arg_parser.add_argument("-e", "--bin", 
+            help="Specify the algorithm binary file", default="main")
+    args = arg_parser.parse_args()
+
+    config = args.config
+    csv_config_file_path = preprocessing(json.load(open(config))) 

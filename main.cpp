@@ -103,7 +103,9 @@ map<string, string> outputJob(job_t job){
         {"qty", to_string(job.base.qty) },
         {"entity", convertUIntToEntityName(job.base.machine_no) },
         {"start_time", to_string(job.base.start_time) },
-        {"end_time", to_string(job.base.end_time) }
+        {"end_time", to_string(job.base.end_time) },
+        {"oper", to_string(job.oper) },
+        {"process_time", to_string(job.base.ptime)}
     });
 }
 

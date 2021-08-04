@@ -14,6 +14,10 @@
 #define WB2 3200
 #define WB3 3400
 #define WB4 3600
+#define WB5 4200
+#define WB6 4400
+#define WB7 4600
+#define WB8 4800
 
 #define DA1 2070
 #define DA2 2130
@@ -172,5 +176,6 @@ public:
      */
     int calculateQueueTime(lot_t &lot);
 };
+
 
 #endif
