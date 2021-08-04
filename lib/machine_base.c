@@ -25,7 +25,7 @@ __qualifier__ void machineBaseAddJob(machine_base_t *_self, list_ele_t *job)
 }
 
 __qualifier__ void machineBaseSortJob(machine_base_t *_self,
-                                          list_operations_t *ops)
+                                      list_operations_t *ops)
 {
     if (_self->size_of_jobs == 0) {
         return;

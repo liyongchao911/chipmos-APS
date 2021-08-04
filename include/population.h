@@ -1,13 +1,13 @@
 #ifndef __POPULATION_H__
 #define __POPULATION_H__
-#include <vector>
 #include <map>
+#include <vector>
 #include "include/chromosome_base.h"
 #include "include/common.h"
 #include "include/job.h"
 #include "include/job_base.h"
-#include "include/machine.h"
 #include "include/lot.h"
+#include "include/machine.h"
 #include "include/machine_base.h"
 
 typedef struct round_t {

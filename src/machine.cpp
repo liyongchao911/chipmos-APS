@@ -1,5 +1,6 @@
-#include <include/machine.h>
+#include "include/machine.h"
 #include <string.h>
+#include "include/machine_base.h"
 
 bool aresPtrComp(ares_t *a1, ares_t *a2)
 {
@@ -134,7 +135,7 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
         setup_time = calculateSetupTime(prev_job, job, ops);
         if (setup_time != 0.0)
             ++setup_times;
-        if(start_time < 1440){
+        if (start_time < 1440) {
             ++setup_times_in1440;
         }
         if (!hasICSI) {
@@ -157,7 +158,7 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
     machine->tool->time = start_time;
     machine->wire->time = start_time;
     machine->total_completion_time = total_completion_time;
-    machine->quality = setup_times * 10 + total_completion_time;
+    machine->quality = setup_times * 500 + total_completion_time;
     machine->setup_times = setup_times_in1440;
 }
 
@@ -173,4 +174,88 @@ void setLastJobInMachine(machine_t *machine)
     machine->current_job = *job;
     machine->current_job.base.ptr_derived_object = &machine->current_job;
     machine->current_job.list.ptr_derived_object = &machine->current_job;
+}
+
+
+void _insertHeadAlgorithm(machine_t *machine, machine_base_operations_t *mbops)
+{
+    list_ele_t *it = machine->base.root;
+    list_ele_t *prev;
+    list_ele_t *next;
+    list_ele_t *head = it;
+
+    job_t *job;
+    double size = -1;
+
+    // search the head segment
+    // check if the machine has at least two jobs
+    if (it == nullptr || it->next == nullptr)
+        return;  // if the machine has only one job -> return immediately
+
+    // get the first segment size
+    job = (job_t *) it->ptr_derived_object;
+    size = job->base.start_time - machine->base.available_time;
+
+    it = it->next;
+    while (it) {
+        job = (job_t *) it->ptr_derived_object;
+        // check if ptime is smaller then size
+        if (job->base.ptime < size &&
+            job->base.arriv_t < machine->base.available_time) {
+            prev = it->prev;
+            next = it->next;
+            prev->next = next;
+            if (next != nullptr)
+                next->prev = prev;
+
+            it->prev = nullptr;
+            it->next = head;
+            head->prev = it;
+            machine->base.root = it;
+            break;
+        }
+        it = it->next;
+    }
+    scheduling(machine, mbops);
+}
+
+void insertAlgorithm(machine_t *machine, machine_base_operations_t *mbops)
+{
+    _insertHeadAlgorithm(machine, mbops);
+
+    list_ele_t *it = machine->base.root;
+    list_ele_t *prev, *next, *it2;
+    job_t *it_job, *prev_job, *next_job, *it2_job;
+    double size = -1;
+
+    while (it && it->next) {
+        it_job = (job_t *) it->ptr_derived_object;
+        next_job = (job_t *) it->next->ptr_derived_object;
+        size = next_job->base.start_time - it_job->base.end_time;
+        if (size > 0) {
+            it2 = it->next->next;
+            while (it2) {
+                it2_job = (job_t *) it2->ptr_derived_object;
+                if (it2_job->base.ptime < size &&
+                    it2_job->base.arriv_t <= it_job->base.end_time) {
+                    prev = it2->prev;
+                    next = it2->next;
+                    prev->next = next;
+                    if (next != nullptr)
+                        next->prev = prev;
+
+                    prev = it;
+                    next = it->next;
+                    prev->next = it2;
+                    next->prev = it2;
+                    it2->next = next;
+                    it2->prev = prev;
+                    scheduling(machine, mbops);
+                    break;
+                }
+                it2 = it2->next;
+            }
+        }
+        it = it->next;
+    }
 }

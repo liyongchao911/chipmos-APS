@@ -71,12 +71,17 @@ double decoding(chromosome_base_t chromosome,
 
     // scheduling
     double value = 0;
+    int setup_times_in1440 = 0;
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
          it != machines.end(); it++) {
         scheduling(it->second, machine_ops);
         // if(it->second->total_completion_time > value)
         value += it->second->quality;
+        setup_times_in1440 += it->second->setup_times;
     }
+
+    // if(setup_times_in1440 > 150)
+    //     value += setup_times_in1440 * 10000;
 
     return value;
 }

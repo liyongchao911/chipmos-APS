@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <sys/stat.h>
 #include <cstdlib>
 #include <ctime>
 #include <exception>
@@ -9,7 +10,6 @@
 #include <set>
 #include <stdexcept>
 #include <string>
-#include <sys/stat.h>
 
 #include "include/condition_card.h"
 #include "include/csv.h"
@@ -166,7 +166,7 @@ vector<lot_group_t> lots_t::round(entities_t machines)
         lots[i].setCanRunLocation(model_location);
     }
     machines.reset();
-    selected_groups = selectGroups(30);
+    selected_groups = selectGroups(20);
 
     // setup the number of tool and the number of wire
     setupToolWireAmount(selected_groups);
@@ -185,45 +185,36 @@ vector<lot_group_t> lots_t::round(entities_t machines)
         }
     }
 
+    // first round of getting the entities
+    // get the suitable entities
+    iter(selected_groups, i)
+    {
+        if (selected_groups[i].lot_amount < 10 &&
+            selected_groups[i].machine_amount > 10)
+            selected_groups[i].machine_amount = 3;
+
+        selected_groups[i].entities =
+            machines.getTheSuitableEntities(selected_groups[i].models_statistic,
+                                            selected_groups[i].bdid_statistic,
+                                            selected_groups[i].machine_amount);
+
+        selected_groups[i].machine_amount -= selected_groups[i].entities.size();
+
+        // printf("Group [%d]:", i);
+        // iter(selected_groups[i].entities, j){
+        //     cout<<selected_groups[i].entities[j]->entity_name<<" ";
+        // }
+        // printf("\n");
+    }
 
     iter(selected_groups, i)
     {
-        // int lot_amount = selected_groups[i].lot_amount;
-        // int machine_number = lot_amount > 4 ? lot_amount >> 2 : 1;
-        // machine_number = machine_number >  selected_groups[i].machine_amount ? selected_groups[i].machine_amount : machine_number;
-        // selected_groups[i].entities = machines.randomlyGetEntitiesByLocations(selected_groups[i].models_statistic, selected_groups[i].bdid_statistic, machine_number);
-        // if (selected_groups[i].lot_amount < 10)
-        //     machine_number = (3 > selected_groups[i].machine_amount
-        //                           ? selected_groups[i].machine_amount
-        //                           : 3);
-        // else if (selected_groups[i].machine_amount > 20) {
-        //     machine_number = selected_groups[i].lot_amount / 10;
-        //     machine_number = (selected_groups[i].lot_amount / 10 > 20
-        //                           ? 20
-        //                           : selected_groups[i].machine_amount);
-        // } else {
-        //     machine_number = selected_groups[i].machine_amount;
-        //     selected_groups[i].entities =
-        //         machines.randomlyGetEntitiesByLocations(
-        //             selected_groups[i].models_statistic,
-        //             selected_groups[i].bdid_statistic, machine_number);
-        // }
-        
-        if (selected_groups[i].lot_amount < 10)
-            selected_groups[i].entities =
-                machines.randomlyGetEntitiesByLocations(
-                    selected_groups[i].models_statistic,
-                    selected_groups[i].bdid_statistic,
-                    selected_groups[i].machine_amount > 10
-                        ? 3
-                        : selected_groups[i].machine_amount);
-        else
-            selected_groups[i].entities =
-                machines.randomlyGetEntitiesByLocations(
-                    selected_groups[i].models_statistic,
-                    selected_groups[i].bdid_statistic,
-                    selected_groups[i].machine_amount);
+        selected_groups[i].entities +=
+            machines.getRandomEntities(selected_groups[i].models_statistic,
+                                       selected_groups[i].bdid_statistic,
+                                       selected_groups[i].machine_amount);
     }
+
 
     test_lot_group = selected_groups[0];
 
@@ -237,10 +228,18 @@ vector<lot_group_t> lots_t::round(entities_t machines)
         // check if the entity is selected by at least 2 groups
         iter(selected_groups[i].entities, j)
         {
+            // if (selected_groups[i].entities[j]->entity_name.compare("BB789")
+            // == 0){
+            //     printf("halt");
+            // }
+
             if (entities_set.count(selected_groups[i].entities[j]) == 0) {
                 entities_set.insert(selected_groups[i].entities[j]);
             } else {
-                string err = "group " + to_string(i) + " is duplicated!\n";
+                string err = "entities " +
+                             selected_groups[i].entities[j]->entity_name +
+                             " in group " + to_string(i) + " is duplicated!";
+
                 throw logic_error(err);
             }
         }
@@ -492,7 +491,7 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
     std::vector<lot_t> unfinished = lots;
     std::vector<lot_t> finished;
 
-    // std::string trace_lot_number("P16ABB5");
+    std::string trace_lot_number("P16AWCMA");
 
     while (unfinished.size()) {
         iter(unfinished, i)
@@ -580,7 +579,7 @@ void lots_t::setPartId(string filename,
     for (unsigned int i = 0; i < bomlist.nrows(); ++i) {
         map<string, string> tmp = bomlist.getElements(i);
         // if "oper" is WB, then get its part_id.
-        std::set<int> opers = {WB1, WB2, WB3, WB4};
+        std::set<int> opers = {WB1, WB2, WB3, WB4, WB5, WB6, WB7, WB8};
         int oper_int = stoi(tmp["oper"]);
         if (opers.count(oper_int) != 0) {
             bom_oper_part[oper_int][tmp["bom_id"]] = tmp["part_id"];
@@ -631,7 +630,13 @@ void lots_t::setAmountOfWire(string filename,
         if (part_roll.count(tmp["gw_part_no"]) == 0) {
             part_roll[tmp["gw_part_no"]] = 0;
         }
-        if (stod(tmp["roll_length"]) >= 1000.0) {
+
+        if (tmp["gw_part_no"][4] ==
+                'A' &&  // gw_part_no[4] is 'A' --> which is golden wire
+            stod(tmp["roll_length"]) >= 1000.0) {
+            part_roll[tmp["gw_part_no"]] += 1;
+        } else if (tmp["gw_part_no"][4] == 'A' &&
+                   stod(tmp["roll_length"]) >= 200.0) {
             part_roll[tmp["gw_part_no"]] += 1;
         }
     }
@@ -861,11 +866,11 @@ vector<lot_t> lots_t::createLots(
     setCanRunModels(bdid_mapping_models_filename, lots, faulty_lots);
     setUph(uph_filename, lots, faulty_lots);
 
-    #if defined(_WIN32)
-	mkdir("output");
-	#else 
-	mkdir("output", 0777); // notice that 777 is different than 0777
-	#endif
+#if defined(_WIN32)
+    mkdir("output");
+#else
+    mkdir("output", 0777);  // notice that 777 is different than 0777
+#endif
 
     // output faulty lots
     csv_t faulty_lots_csv("output/faulty_lots.csv", "w");
