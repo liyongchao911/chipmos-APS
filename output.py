@@ -6,24 +6,6 @@ from datetime import datetime
 import time
 import os 
 
-''' add to main.py
-
-# initialize
-
-result_df = pd.read_csv("result.csv")
-machine_area_df = pd.read_excel("機台區域作業產品.xls" )[['Entity','Location']]
-timeString = "2021-04-17 08:30:00"  # 改讀config.csv?
-ini_time_stamp = int(time.mktime(time.strptime(timeString, "%Y-%m-%d %H:%M:%S"))) 
-
-# execute
-
-plot_gantt_by_order(result_df)
-plot_gantt_by_sets(result_df)
-output_simulation(result_df,machine_area_df)
-output_setup_record(result_df)
-output_new_result(result_df)
-
-'''
 
 def plot_gantt_by_order(result_df):
     # 1. Group the result.csv by entity 
@@ -62,7 +44,7 @@ def plot_gantt_by_order(result_df):
                 '#40E0D0','#EE82EE','#F5DEB3','#FFFFFF','#F5F5F5','#FFFF00','#9ACD32']  
     df=[] #plot need dataframe
     plt_count=0 # record the times current plot
-    foldername = './plot_by_order' + '/' # folder which store result picture
+    foldername = './output/plot_by_order' + '/' # folder which store result picture
     createFolder(foldername)  
     #plot
     for i in range(len(entity_key_list)): 
@@ -133,7 +115,7 @@ def plot_gantt_by_sets(result_df):
         if sets_key_list[i][2] not in plot_entity_order:
             plot_entity_order.append(sets_key_list[i][2])
 
-    foldername = './plot_by_sets' + '/' # folder which store result picture
+    foldername = './output/plot_by_sets' + '/' # folder which store result picture
     createFolder(foldername)
 
     # plot
@@ -232,7 +214,7 @@ def output_simulation(result_df,machine_area_df):
     simulation_output_df = temp_df[['cust','pin_pkg','prod_id','bd_id','oper','Location','Original ENT(07:30)','Original ENT(11:00)','Allocate ENT','Output plan']]
 
     # write to csv
-    simulation_output_df.to_csv("simulation_output.csv", index=False ,na_rep=0) 
+    simulation_output_df.to_csv("output/simulation_output.csv", index=False ,na_rep=0) 
 
     pass
 
@@ -272,7 +254,7 @@ def output_setup_record(result_df):
             setup_dict[entity_name]=times_info_list
 
     # write file
-    with open("setup_record.csv", "w", newline="") as f_output:
+    with open("output/setup_record.csv", "w", newline="") as f_output:
         csv_output = csv.writer(f_output)
         for key in sorted(setup_dict.keys()):
             csv_output.writerow([key] + setup_dict[key])
@@ -289,7 +271,19 @@ def output_new_result(result_df):
     new_result_df= new_result_df[['lot_number','cust','pin_pkg','prod_id','qty','part_id','part_no','bd_id','entity','start_time','end_time']]
 
     # write file 
-    new_result_df.to_csv("new_result.csv", index=False ,na_rep=0)
+    new_result_df.to_csv("output/new_result.csv", index=False ,na_rep=0)
 
     pass
 
+# read file and initialize
+result_df = pd.read_csv("output/result.csv")
+machine_area_df = pd.read_csv("input/locations.csv" )[['Entity','Location']]
+config_df = pd.read_csv("input/config.csv")
+ini_time_stamp = int(time.mktime(time.strptime(config_df.at[0,'std_time'], "%Y/%m/%d %H:%M"))) # get standard time
+
+# execute
+plot_gantt_by_order(result_df)
+plot_gantt_by_sets(result_df)
+output_simulation(result_df,machine_area_df)
+output_setup_record(result_df)
+output_new_result(result_df)
