@@ -743,7 +743,7 @@ typedef struct {
     std::string wire_tools_name;
     std::string wire_name;
     std::string tool_name;
-    unsigned long lot_amount;
+    unsigned long long lot_amount;
     int tool_amount;
     int wire_amount;
     int machine_amount;

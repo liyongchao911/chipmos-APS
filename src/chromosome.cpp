@@ -37,7 +37,7 @@ void mutation(chromosome_base_t p, chromosome_base_t c)
 {
     memcpy(c.genes, p.genes, sizeof(double) * p.gene_size);
     int pos = randomRange(0, p.gene_size, -1);
-    double rnd = (double) rand() / (double) RAND_MAX;
+    double rnd = randomDouble();
     c.genes[pos] = rnd;
 }
 
