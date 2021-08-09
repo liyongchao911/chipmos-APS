@@ -33,6 +33,7 @@ struct population_t {
         double EVOLUTION_RATE;
         double SELECTION_RATE;
         int GENERATIONS;
+        int MAX_SETUP_TIMES;
     } parameters;
 
     struct {

@@ -1,5 +1,5 @@
 {
-    "file_path" : "input",
+    "file_path" : "../input",
     "preprocess_files" : [
         {
             "filename" : "WipOutPlanTime_20210417083000.csv",
@@ -103,6 +103,7 @@
         }
     ],
     "parameters" : {
-        "time" : 300
+        "times" : 5000,
+        "max_setup_times" : 180
     }
 }

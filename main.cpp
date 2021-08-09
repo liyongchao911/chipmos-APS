@@ -63,7 +63,9 @@ int main(int argc, const char *argv[])
                        .AMOUNT_OF_R_CHROMOSOMES = 200,
                        .EVOLUTION_RATE = 0.8,
                        .SELECTION_RATE = 0.2,
-                       .GENERATIONS = 2000},
+                       .GENERATIONS = stoi(arguments["times"]),
+                       .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"])
+        },
     };
 
     csv_t result("output/result.csv", "w");

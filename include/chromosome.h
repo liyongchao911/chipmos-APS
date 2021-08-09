@@ -62,6 +62,7 @@ void copyChromosome(chromosome_base_t dest, chromosome_base_t src);
  * @param list_ops : linked list operations
  * @param job_ops : job operation
  * @param AMOUNT_OF_JOBS : amount of jobs
+ * @param MAX_SETUP_TIMES : maximum of setup times
  * @return the fitness value of chromosome
  */
 double decoding(chromosome_base_t chromosome,
@@ -70,7 +71,8 @@ double decoding(chromosome_base_t chromosome,
                 machine_base_operations_t *machine_ops,
                 list_operations_t *list_ops,
                 job_base_operations_t *job_ops,
-                int AMOUNT_OF_JOBS);
+                int AMOUNT_OF_JOBS, 
+                int MAX_SETUP_TIMES);
 
 /**
  * chromosomeCmp () : The comparison of two chromosomes.

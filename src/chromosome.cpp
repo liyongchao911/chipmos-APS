@@ -4,6 +4,7 @@
 #include "include/infra.h"
 #include "include/job_base.h"
 #include "include/linked_list.h"
+#include "include/machine.h"
 
 using namespace std;
 
@@ -47,7 +48,8 @@ double decoding(chromosome_base_t chromosome,
                 machine_base_operations_t *machine_ops,
                 list_operations_t *list_ops,
                 job_base_operations_t *job_ops,
-                int AMOUNT_OF_JOBS)
+                int AMOUNT_OF_JOBS,
+                int MAX_SETUP_TIMES)
 {
     unsigned int machine_idx, machine_no;
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
@@ -75,14 +77,15 @@ double decoding(chromosome_base_t chromosome,
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
          it != machines.end(); it++) {
         scheduling(it->second, machine_ops);
+        insertAlgorithm(it->second, machine_ops);
         // if(it->second->total_completion_time > value)
         value += it->second->quality;
         setup_times_in1440 += it->second->setup_times;
     }
 
-    // if(setup_times_in1440 > 150)
-    //     value += setup_times_in1440 * 10000;
-
+//    if(setup_times_in1440 > MAX_SETUP_TIMES)
+//        value += setup_times_in1440 * 1000;
+//
     return value;
 }
 

@@ -269,6 +269,7 @@ void chromosomeSelection(chromosome_base_t *chromosomes,
 void geneticAlgorithm(population_t *pop)
 {
     int AMOUNT_OF_JOBS = pop->round.AMOUNT_OF_JOBS;
+    int MAX_SETUP_TIMES = pop->parameters.MAX_SETUP_TIMES;
     job_t *jobs = pop->round.jobs;
     chromosome_base_t *chromosomes = pop->chromosomes;
     chromosome_base_t *tmp_chromosomes = pop->tmp_chromosomes;
@@ -285,7 +286,7 @@ void geneticAlgorithm(population_t *pop)
              ++i) {  // for all chromosomes
             chromosomes[i].fitnessValue =
                 decoding(chromosomes[i], jobs, machines, machine_ops, list_ops,
-                         job_ops, AMOUNT_OF_JOBS);
+                         job_ops, AMOUNT_OF_JOBS, MAX_SETUP_TIMES);
         }
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES,
@@ -321,12 +322,7 @@ void geneticAlgorithm(population_t *pop)
     }
 
     decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops,
-             AMOUNT_OF_JOBS);
-
-    for (map<unsigned, machine_t *>::iterator it = machines.begin();
-         it != machines.end(); ++it) {
-        insertAlgorithm(it->second, machine_ops);
-    }
+             AMOUNT_OF_JOBS, MAX_SETUP_TIMES);
 
     // update machines' avaliable time and set the last job
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();

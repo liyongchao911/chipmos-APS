@@ -35,6 +35,8 @@ build/
 lab/
 docs/
 files/
+files2/
+input/
 venv/
 .vscode/
 .ycm_extra_conf.py
