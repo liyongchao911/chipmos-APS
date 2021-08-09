@@ -166,6 +166,8 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
 void setLastJobInMachine(machine_t *machine)
 {
     list_ele_t *it = machine->base.root;
+    if(!it)
+        return;
     job_t *job;
     while (it) {
         job = (job_t *) it->ptr_derived_object;
