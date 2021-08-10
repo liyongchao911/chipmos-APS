@@ -9,6 +9,7 @@
 #include "include/chromosome_base.h"
 #include "include/infra.h"
 #include "include/machine.h"
+#include "include/machine_base.h"
 #include "include/population.h"
 
 using namespace std;
@@ -17,16 +18,24 @@ void initializeOperations(population_t *pop)
 {
     machine_base_operations_t *machine_ops;
     machine_ops = (machine_base_operations_t *) malloc(
-        sizeof(machine_base_operations_t) + sizeof(setup_time_t) * 7);
+        sizeof(machine_base_operations_t) + sizeof(setup_time_unit_t) * 7);
     machine_ops->add_job = machineBaseAddJob;
     machine_ops->sort_job = machineBaseSortJob;
-    machine_ops->setup_times[0] = setupTimeCWN;
-    machine_ops->setup_times[1] = setupTimeCK;
-    machine_ops->setup_times[2] = setupTimeEU;
-    machine_ops->setup_times[3] = setupTimeMCSC;
-    machine_ops->setup_times[4] = setupTimeCSC;
-    machine_ops->setup_times[5] = setupTimeUSC;
-    machine_ops->sizeof_setup_time_function_array = 6;
+    machine_ops->setup_time_functions[0] = {
+        setupTimeCWN, pop->parameters.scheduling_parameters.TIME_CWN};
+    machine_ops->setup_time_functions[1] = {
+        setupTimeCK, pop->parameters.scheduling_parameters.TIME_CK};
+    machine_ops->setup_time_functions[2] = {
+        setupTimeEU, pop->parameters.scheduling_parameters.TIME_EU};
+    machine_ops->setup_time_functions[3] = {
+        setupTimeMC, pop->parameters.scheduling_parameters.TIME_MC};
+    machine_ops->setup_time_functions[4] = {
+        setupTimeSC, pop->parameters.scheduling_parameters.TIME_SC};
+    machine_ops->setup_time_functions[5] = {
+        setupTimeCSC, pop->parameters.scheduling_parameters.TIME_CSC};
+    machine_ops->setup_time_functions[6] = {
+        setupTimeUSC, pop->parameters.scheduling_parameters.TIME_USC};
+    machine_ops->sizeof_setup_time_function_array = 7;
     machine_ops->reset = machineReset;
 
     list_operations_t *list_ops;
@@ -237,7 +246,7 @@ void chromosomeSelection(chromosome_base_t *chromosomes,
                          int AMOUNT_OF_CHROMOSOMES,
                          int AMOUNT_OF_R_CHROMOSOMES)
 {
-    double sum0, sum1 = 0;
+    double sum0 = 0, sum1 = 0;
     double accumulate = 0;
     double rnd = 0;
     int elites_amount = AMOUNT_OF_CHROMOSOMES * elites_rate;
@@ -284,9 +293,10 @@ void geneticAlgorithm(population_t *pop)
     for (k = 0; k < pop->parameters.GENERATIONS; ++k) {
         for (int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES;
              ++i) {  // for all chromosomes
-            chromosomes[i].fitnessValue =
-                decoding(chromosomes[i], jobs, machines, machine_ops, list_ops,
-                         job_ops, AMOUNT_OF_JOBS, MAX_SETUP_TIMES);
+            chromosomes[i].fitnessValue = decoding(
+                chromosomes[i], jobs, machines, machine_ops, list_ops, job_ops,
+                AMOUNT_OF_JOBS, MAX_SETUP_TIMES, pop->parameters.weights,
+                pop->parameters.scheduling_parameters);
         }
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES,
@@ -322,7 +332,8 @@ void geneticAlgorithm(population_t *pop)
     }
 
     decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops,
-             AMOUNT_OF_JOBS, MAX_SETUP_TIMES);
+             AMOUNT_OF_JOBS, MAX_SETUP_TIMES, pop->parameters.weights,
+             pop->parameters.scheduling_parameters);
 
     // update machines' avaliable time and set the last job
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();

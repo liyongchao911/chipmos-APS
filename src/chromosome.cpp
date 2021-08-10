@@ -5,6 +5,7 @@
 #include "include/job_base.h"
 #include "include/linked_list.h"
 #include "include/machine.h"
+#include "include/parameters.h"
 
 using namespace std;
 
@@ -49,7 +50,9 @@ double decoding(chromosome_base_t chromosome,
                 list_operations_t *list_ops,
                 job_base_operations_t *job_ops,
                 int AMOUNT_OF_JOBS,
-                int MAX_SETUP_TIMES)
+                int MAX_SETUP_TIMES,
+                weights_t weights,
+                scheduling_parameters_t scheduling_parameters)
 {
     unsigned int machine_idx, machine_no;
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
@@ -76,16 +79,16 @@ double decoding(chromosome_base_t chromosome,
     int setup_times_in1440 = 0;
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
          it != machines.end(); it++) {
-        scheduling(it->second, machine_ops);
-        insertAlgorithm(it->second, machine_ops);
-        // if(it->second->total_completion_time > value)
+        scheduling(it->second, machine_ops, weights, scheduling_parameters);
+        insertAlgorithm(it->second, machine_ops, weights,
+                        scheduling_parameters);
         value += it->second->quality;
         setup_times_in1440 += it->second->setup_times;
     }
 
-//    if(setup_times_in1440 > MAX_SETUP_TIMES)
-//        value += setup_times_in1440 * 1000;
-//
+    if (setup_times_in1440 > MAX_SETUP_TIMES)
+        value += weights.WEIGHT_MAX_SETUP_TIMES * setup_times_in1440;
+
     return value;
 }
 

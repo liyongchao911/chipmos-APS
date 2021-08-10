@@ -9,6 +9,7 @@
 #include "include/lot.h"
 #include "include/machine.h"
 #include "include/machine_base.h"
+#include "include/parameters.h"
 
 typedef struct round_t {
     int round_no;
@@ -34,6 +35,8 @@ struct population_t {
         double SELECTION_RATE;
         int GENERATIONS;
         int MAX_SETUP_TIMES;
+        weights_t weights;
+        scheduling_parameters_t scheduling_parameters;
     } parameters;
 
     struct {
