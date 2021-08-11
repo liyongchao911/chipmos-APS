@@ -2,24 +2,24 @@
 #include <map>
 #include <string>
 
+#include "include/algorithm.h"
 #include "include/csv.h"
 #include "include/da.h"
 #include "include/entity.h"
 #include "include/infra.h"
 #include "include/lot.h"
-#include "include/population.h"
 #include "include/lots.h"
-#include "include/algorithm.h"
+#include "include/population.h"
 
 using namespace std;
 
-void output(population_t * pop, csv_t * csv);
+void output(population_t *pop, csv_t *csv);
 
-void outputJobInMachine(map<string, machine_t*> , csv_t *csv);
+void outputJobInMachine(map<string, machine_t *>, csv_t *csv);
 
 int main(int argc, const char *argv[])
 {
-    if(argc < 2){
+    if (argc < 2) {
         printf("Please specify the path of configuration file\n");
         exit(1);
     }
@@ -55,23 +55,42 @@ int main(int argc, const char *argv[])
     entities.addMachines(machine_csv, location_csv);
     machines_t machines;
     machines.addMachines(entities.getAllEntity());
-    
-    
+
+
     // srand(time(NULL));
     population_t pop = population_t{
-        .parameters = {.AMOUNT_OF_CHROMOSOMES = 100,
-                       .AMOUNT_OF_R_CHROMOSOMES = 200,
-                       .EVOLUTION_RATE = 0.8,
-                       .SELECTION_RATE = 0.2,
-                       .GENERATIONS = 2000},
+        .parameters =
+            {.AMOUNT_OF_CHROMOSOMES = 100,
+             .AMOUNT_OF_R_CHROMOSOMES = 200,
+             .EVOLUTION_RATE = 0.8,
+             .SELECTION_RATE = 0.2,
+             .GENERATIONS = stoi(arguments["times"]),
+             .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"]),
+             .weights = {.WEIGHT_SETUP_TIMES =
+                             stoi(arguments["weight_setup_times"]),
+                         .WEIGHT_TOTAL_COMPLETION_TIME =
+                             stoi(arguments["weight_total_completion_time"]),
+                         .WEIGHT_MAX_SETUP_TIMES =
+                             stoi(arguments["weight_max_setup_times"])},
+             .scheduling_parameters =
+                 {
+                     .TIME_CWN = stod(arguments["setup_time_cwn"]),
+                     .TIME_CK = stod(arguments["setup_time_ck"]),
+                     .TIME_EU = stod(arguments["setup_time_eu"]),
+                     .TIME_MC = stod(arguments["setup_time_mc"]),
+                     .TIME_SC = stod(arguments["setup_time_sc"]),
+                     .TIME_CSC = stod(arguments["setup_time_csc"]),
+                     .TIME_USC = stod(arguments["setup_time_usc"]),
+                     .TIME_ICSI = stod(arguments["setup_time_icsi"]),
+                 }},
     };
 
     csv_t result("output/result.csv", "w");
     outputJobInMachine(machines.getMachines(), &result);
     initializeOperations(&pop);
-    
+
     int i = 0;
-    while(lots.toolWireLotsHasLots()){
+    while (lots.toolWireLotsHasLots()) {
         printf("i = %d\n", i++);
         pop.groups = lots.round(entities);
         // if(pop.groups.size() == 0){
@@ -91,35 +110,38 @@ int main(int argc, const char *argv[])
     return 0;
 }
 
-map<string, string> outputJob(job_t job){
-    return map<string, string>({
-        {"lot_number" , job.base.job_info.data.text },
-        {"bd_id", job.bdid.data.text },
-        {"part_no", job.part_no.data.text },
-        {"part_id" , job.part_id.data.text },
-        {"cust", job.customer.data.text },
-        {"pin_pkg", job.pin_package.data.text },
-        {"prod_id", job.prod_id.data.text },
-        {"qty", to_string(job.base.qty) },
-        {"entity", convertUIntToEntityName(job.base.machine_no) },
-        {"start_time", to_string(job.base.start_time) },
-        {"end_time", to_string(job.base.end_time) },
-        {"oper", to_string(job.oper) },
-        {"process_time", to_string(job.base.ptime)}
-    });
+map<string, string> outputJob(job_t job)
+{
+    return map<string, string>(
+        {{"lot_number", job.base.job_info.data.text},
+         {"bd_id", job.bdid.data.text},
+         {"part_no", job.part_no.data.text},
+         {"part_id", job.part_id.data.text},
+         {"cust", job.customer.data.text},
+         {"pin_pkg", job.pin_package.data.text},
+         {"prod_id", job.prod_id.data.text},
+         {"qty", to_string(job.base.qty)},
+         {"entity", convertUIntToEntityName(job.base.machine_no)},
+         {"start_time", to_string(job.base.start_time)},
+         {"end_time", to_string(job.base.end_time)},
+         {"oper", to_string(job.oper)},
+         {"process_time", to_string(job.base.ptime)}});
 }
 
-void outputJobInMachine(map<string, machine_t *> machines, csv_t *csv){
-    for(map<string, machine_t *>::iterator it = machines.begin(); it != machines.end(); it++){
-        if(it->second->current_job.prod_id.text_size != 0)
-            csv->addData(outputJob(it->second->current_job)); 
+void outputJobInMachine(map<string, machine_t *> machines, csv_t *csv)
+{
+    for (map<string, machine_t *>::iterator it = machines.begin();
+         it != machines.end(); it++) {
+        if (it->second->current_job.prod_id.text_size != 0)
+            csv->addData(outputJob(it->second->current_job));
     }
 }
 
-void output(population_t * pop, csv_t *csv){
+void output(population_t *pop, csv_t *csv)
+{
     int AMOUNT_OF_JOBS = pop->round.AMOUNT_OF_JOBS;
     job_t *jobs = pop->round.jobs;
-    for(int i = 0; i < AMOUNT_OF_JOBS; ++i){
+    for (int i = 0; i < AMOUNT_OF_JOBS; ++i) {
         csv->addData(outputJob(jobs[i]));
     }
 }

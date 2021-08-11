@@ -1,5 +1,5 @@
 {
-    "file_path" : "input",
+    "file_path" : "../input",
     "preprocess_files" : [
         {
             "filename" : "WipOutPlanTime_20210417083000.csv",
@@ -103,6 +103,18 @@
         }
     ],
     "parameters" : {
-        "time" : 300
+        "times" : 5000,
+        "max_setup_times" : 180,
+        "weight_setup_times" : 500,
+        "weight_max_setup_times" : 200,
+        "weight_total_completion_time" : 1,
+        "setup_time_cwn" : 30,
+        "setup_time_ck" : 0,
+        "setup_time_eu" : 0,
+        "setup_time_mc" : 84,
+        "setup_time_sc" : 90,
+        "setup_time_csc" : 0,
+        "setup_time_usc" : 72,
+        "setup_time_icsi" : 54
     }
 }

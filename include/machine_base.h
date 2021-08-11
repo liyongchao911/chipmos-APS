@@ -81,6 +81,13 @@ struct machine_base_t {
     double available_time;
 };
 
+typedef double (*setup_time_t)(job_base_t *, job_base_t *, double time);
+typedef struct setup_time_unit_t {
+    setup_time_t function;
+    double minute;
+} setup_time_unit_t;
+
+
 /**
  * @struct machine_base_operations_t
  * @brief The structure to store all operations of struct machine_base_t.
@@ -152,12 +159,9 @@ struct machine_base_operations_t {
     /// functions
     size_t sizeof_setup_time_function_array;
 
-    /// pointers to functions which are used to compute the setup time between
-    /// two jobs.
-    double (*setup_times[])(job_base_t *job1, job_base_t *job2);
+    setup_time_unit_t setup_time_functions[];
 };
 
-typedef double (*setup_time_t)(job_base_t *, job_base_t *);
 
 /**
  * machine_base_reset () - Reset machine_base_t object

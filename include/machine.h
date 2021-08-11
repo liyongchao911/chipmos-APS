@@ -1,13 +1,15 @@
 #ifndef __MACHINE_H__
 #define __MACHINE_H__
 
-#include <include/infra.h>
-#include <include/job.h>
-#include <include/machine_base.h>
+#include "include/infra.h"
+#include "include/job.h"
+#include "include/machine_base.h"
+#include "include/parameters.h"
 
 typedef struct __info_t machine_info_t;
 typedef struct __info_t tool_info_t;
 typedef struct __info_t wire_info_t;
+
 
 typedef struct ancillary_resource_t {
     unsigned int no;
@@ -32,21 +34,29 @@ typedef struct __machine_t {
     int setup_times;
 } machine_t;
 
+
 bool aresPtrComp(ares_t *a1, ares_t *a2);
 bool aresComp(ares_t a1, ares_t a2);
 
 void machineReset(machine_base_t *base);
 
-double setupTimeCWN(job_base_t *_prev, job_base_t *_next);
-double setupTimeCK(job_base_t *_prev, job_base_t *_next);
-double setupTimeEU(job_base_t *_prev, job_base_t *_next);
-double setupTimeMCSC(job_base_t *_prev, job_base_t *_next);
-double setupTimeCSC(job_base_t *_prev, job_base_t *_next);
-double setupTimeUSC(job_base_t *_prev, job_base_t *_next);
+double setupTimeCWN(job_base_t *_prev, job_base_t *_next, double time);
+double setupTimeCK(job_base_t *_prev, job_base_t *_next, double time);
+double setupTimeEU(job_base_t *_prev, job_base_t *_next, double time);
+double setupTimeMC(job_base_t *_prev, job_base_t *_next, double time);
+double setupTimeSC(job_base_t *_prev, job_base_t *_next, double time);
+double setupTimeCSC(job_base_t *_prev, job_base_t *_next, double time);
+double setupTimeUSC(job_base_t *_prev, job_base_t *_next, double time);
 
-void scheduling(machine_t *mahcine, machine_base_operations_t *ops);
+void scheduling(machine_t *mahcine,
+                machine_base_operations_t *ops,
+                weights_t weights,
+                scheduling_parameters_t scheduling_parameters);
 
-void insertAlgorithm(machine_t *machine, machine_base_operations_t *ops);
+void insertAlgorithm(machine_t *machine,
+                     machine_base_operations_t *ops,
+                     weights_t weights,
+                     scheduling_parameters_t scheduling_parameters);
 
 void setLastJobInMachine(machine_t *machine);
 

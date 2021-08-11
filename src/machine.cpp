@@ -1,6 +1,7 @@
 #include "include/machine.h"
 #include <string.h>
 #include "include/machine_base.h"
+#include "include/parameters.h"
 
 bool aresPtrComp(ares_t *a1, ares_t *a2)
 {
@@ -22,7 +23,7 @@ void machineReset(machine_base_t *base)
     m->wire->time = 0;
 }
 
-double setupTimeCWN(job_base_t *_prev, job_base_t *_next)
+double setupTimeCWN(job_base_t *_prev, job_base_t *_next, double time)
 {
     if (_prev) {
         job_t *prev = (job_t *) _prev->ptr_derived_object;
@@ -30,12 +31,12 @@ double setupTimeCWN(job_base_t *_prev, job_base_t *_next)
         if (isSameInfo(prev->part_no, next->part_no))
             return 0.0;
         else
-            return 30.0;
+            return time;
     }
     return 0;
 }
 
-double setupTimeCK(job_base_t *_prev, job_base_t *_next)
+double setupTimeCK(job_base_t *_prev, job_base_t *_next, double time)
 {
     if (_prev) {
         job_t *prev = (job_t *) _prev->ptr_derived_object;
@@ -49,7 +50,7 @@ double setupTimeCK(job_base_t *_prev, job_base_t *_next)
     return 0;
 }
 
-double setupTimeEU(job_base_t *_prev, job_base_t *_next)
+double setupTimeEU(job_base_t *_prev, job_base_t *_next, double time)
 {
     if (_next) {
         job_t *next = (job_t *) _next->ptr_derived_object;
@@ -61,41 +62,52 @@ double setupTimeEU(job_base_t *_prev, job_base_t *_next)
     return -1;
 }
 
-double setupTimeMCSC(job_base_t *_prev, job_base_t *_next)
+double setupTimeMC(job_base_t *_prev, job_base_t *_next, double time)
 {
     if (_prev && _next) {
         job_t *prev = (job_t *) _prev->ptr_derived_object;
         job_t *next = (job_t *) _next->ptr_derived_object;
         if (prev->pin_package.data.number[0] ==
             next->pin_package.data.number[0]) {
-            return 84;
-        } else {
-            return 90;
+            return time;
         }
     }
     return 0;
 }
 
-double setupTimeCSC(job_base_t *_prev, job_base_t *_next)
+double setupTimeSC(job_base_t *_prev, job_base_t *_next, double time)
 {
-    if (_next) {
+    if (_prev && _next) {
+        job_t *prev = (job_t *) _prev->ptr_derived_object;
         job_t *next = (job_t *) _next->ptr_derived_object;
-        if (next->part_no.data.text[5] != 'A')
-            return 0;
+        if (prev->pin_package.data.number[0] !=
+            next->pin_package.data.number[0]) {
+            return time;
+        }
     }
     return 0;
 }
 
-double setupTimeUSC(job_base_t *_prev, job_base_t *_next)
+double setupTimeCSC(job_base_t *_prev, job_base_t *_next, double time)
+{
+    if (_next) {
+        job_t *next = (job_t *) _next->ptr_derived_object;
+        if (next->part_no.data.text[5] != 'A')
+            return time;
+    }
+    return 0;
+}
+
+double setupTimeUSC(job_base_t *_prev, job_base_t *_next, double time)
 {
     if (_next) {
         job_t *next = (job_t *) _next->ptr_derived_object;
         if (next->part_no.data.text[5] != 'A' && next->urgent_code == 'Y')
-            return 72;
+            return time;
         else
             return 0;
     }
-    return -1;
+    return 0;
 }
 
 double calculateSetupTime(job_t *prev,
@@ -108,14 +120,19 @@ double calculateSetupTime(job_t *prev,
         return 0.0;
     for (unsigned int i = 0; i < ops->sizeof_setup_time_function_array; ++i) {
         if (prev)
-            time += ops->setup_times[i](&prev->base, &next->base);
+            time += ops->setup_time_functions[i].function(
+                &prev->base, &next->base, ops->setup_time_functions[i].minute);
         else
-            time += ops->setup_times[i](NULL, &next->base);
+            time += ops->setup_time_functions[i].function(
+                NULL, &next->base, ops->setup_time_functions[i].minute);
     }
     return time;
 }
 
-void scheduling(machine_t *machine, machine_base_operations_t *ops)
+void scheduling(machine_t *machine,
+                machine_base_operations_t *ops,
+                weights_t weights,
+                scheduling_parameters_t scheduling_parameters)
 {
     list_ele_t *it;
     job_t *job;
@@ -140,7 +157,7 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
         }
         if (!hasICSI) {
             if (strncmp(job->customer.data.text, "ICSI", 4) == 0) {
-                setup_time += 54;
+                setup_time += scheduling_parameters.TIME_ICSI;
                 hasICSI = true;
             }
         }
@@ -158,7 +175,9 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
     machine->tool->time = start_time;
     machine->wire->time = start_time;
     machine->total_completion_time = total_completion_time;
-    machine->quality = setup_times * 500 + total_completion_time;
+    machine->quality =
+        weights.WEIGHT_SETUP_TIMES * setup_times +
+        weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time;
     machine->setup_times = setup_times_in1440;
 }
 
@@ -166,7 +185,7 @@ void scheduling(machine_t *machine, machine_base_operations_t *ops)
 void setLastJobInMachine(machine_t *machine)
 {
     list_ele_t *it = machine->base.root;
-    if(!it)
+    if (!it)
         return;
     job_t *job;
     while (it) {
@@ -179,7 +198,10 @@ void setLastJobInMachine(machine_t *machine)
 }
 
 
-void _insertHeadAlgorithm(machine_t *machine, machine_base_operations_t *mbops)
+void _insertHeadAlgorithm(machine_t *machine,
+                          machine_base_operations_t *mbops,
+                          weights_t weights,
+                          scheduling_parameters_t scheduling_parameters)
 {
     list_ele_t *it = machine->base.root;
     list_ele_t *prev;
@@ -218,16 +240,19 @@ void _insertHeadAlgorithm(machine_t *machine, machine_base_operations_t *mbops)
         }
         it = it->next;
     }
-    scheduling(machine, mbops);
+    scheduling(machine, mbops, weights, scheduling_parameters);
 }
 
-void insertAlgorithm(machine_t *machine, machine_base_operations_t *mbops)
+void insertAlgorithm(machine_t *machine,
+                     machine_base_operations_t *mbops,
+                     weights_t weights,
+                     scheduling_parameters_t scheduling_parameters)
 {
-    _insertHeadAlgorithm(machine, mbops);
+    _insertHeadAlgorithm(machine, mbops, weights, scheduling_parameters);
 
     list_ele_t *it = machine->base.root;
     list_ele_t *prev, *next, *it2;
-    job_t *it_job, *prev_job, *next_job, *it2_job;
+    job_t *it_job, *next_job, *it2_job;
     double size = -1;
 
     while (it && it->next) {
@@ -252,7 +277,7 @@ void insertAlgorithm(machine_t *machine, machine_base_operations_t *mbops)
                     next->prev = it2;
                     it2->next = next;
                     it2->prev = prev;
-                    scheduling(machine, mbops);
+                    scheduling(machine, mbops, weights, scheduling_parameters);
                     break;
                 }
                 it2 = it2->next;

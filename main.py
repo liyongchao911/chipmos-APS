@@ -51,6 +51,8 @@ def preprocessing(conf:dict):
     dt = datetime.strptime(time, "%Y%m%d%H%M%S")
 
     csv_config["std_time"] = [ dt.strftime("%Y/%m/%d %H:%M")]
+    for item in conf["parameters"]:
+        csv_config[item] = conf["parameters"][item]
     df = pd.DataFrame(csv_config)
     df.to_csv(csv_config_file_path, index=False)
     # print(json.dumps(csv_config, indent=4))
