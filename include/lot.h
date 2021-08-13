@@ -683,14 +683,16 @@ inline bool lot_t::isModelValid(std::string model)
 {
     if (_part_no.find("A0801") !=
         std::string::npos) {  // if part_no contains A0801
-        if (model.compare("UTC1000") == 0 || model.compare("UTC2000") == 0 ||
+        if (model.compare("UTC1000") == 0 || model.compare("UTC1000S") == 0 ||
+            model.compare("UTC2000") == 0 || model.compare("UTC2000S") == 0 ||
             model.compare("UTC3000") == 0) {
             return true;
         } else
             return false;
     } else if (_part_no.find("A0803") !=
                std::string::npos) {  // if part_no contains A0803
-        if (model.compare("UTC1000") != 0 || model.compare("UTC2000") != 0 ||
+        if (model.compare("UTC1000") != 0 || model.compare("UTC1000S") != 0 ||
+            model.compare("UTC2000") != 0 || model.compare("UTC2000S") != 0 ||
             model.compare("UTC3000") != 0) {
             return true;
         } else
