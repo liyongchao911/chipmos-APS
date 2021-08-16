@@ -1,5 +1,6 @@
 #include "include/lot.h"
 #include <pthread.h>
+#include <pthread/pthread_impl.h>
 #include <cmath>
 #include <exception>
 #include <set>
@@ -20,6 +21,9 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _prod_id = elements["prod_id"];
     _urgent = elements["urgent_code"];
     _customer = elements["customer"];
+    _wb_location = elements["wb_location"];
+
+
 
     _qty = std::stoi(elements["qty"]);
     _oper = std::stoi(elements["oper"]);
@@ -55,14 +59,14 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
                            : std::stoi(elements["amount_of_wires"]);
 
     if (elements.count("CAN_RUN_MODELS") != 0 &&
-        elements.count("PROCESS_TIME") != 0 && elements.count("getUphs")) {
+        elements.count("PROCESS_TIME") != 0 && elements.count("uphs")) {
         char *text = strdup(elements["CAN_RUN_MODELS"].c_str());
         std::vector<std::string> models = split(text, ',');
         free(text);
         text = strdup(elements["PROCESS_TIME"].c_str());
         std::vector<std::string> ptimes = split(text, ',');
         free(text);
-        text = strdup(elements["getUphs"].c_str());
+        text = strdup(elements["uphs"].c_str());
         std::vector<std::string> uphs = split(text, ',');
         free(text);
         _can_run_models = models;
@@ -82,6 +86,22 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _part_no = elements.count("part_no") == 0 ? "" : elements["part_no"];
     _sub_lots =
         elements.count("sub_lot") == 0 ? -1 : std::stoi(elements["sub_lot"]);
+
+    _prescheduled_order = -1;
+    if (_wb_location.length() && _wb_location[0] != 'N') {
+        char *text = strdup(_wb_location.c_str());
+        std::vector<std::string> machine_order = split(text, '-');
+        _prescheduled_machine = machine_order[0];
+        if (machine_order.size() >= 2) {
+            try {
+                _prescheduled_order = stoi(machine_order[1]);
+            } catch (std::invalid_argument &e) {
+                std::cout << e.what() << std::endl;
+            }
+        } else {
+            _prescheduled_order = 0;
+        }
+    }
 }
 
 bool lot_t::checkFormation()
@@ -181,6 +201,9 @@ std::map<std::string, std::string> lot_t::data()
     d["log"] = join(_log, "||");
     d["urgent_code"] = _urgent;
     d["customer"] = _customer;
+    d["wb_location"] = _wb_location;
+    d["prescheduled_machine"] = _prescheduled_machine;
+    d["prescheduled_order"] = std::to_string(_prescheduled_order);
 
     std::vector<std::string> models;
     for (std::map<std::string, double>::iterator it = _uphs.begin();
@@ -203,7 +226,7 @@ std::map<std::string, std::string> lot_t::data()
 
     d["CAN_RUN_MODELS"] = join(models, ",");
     d["PROCESS_TIME"] = join(process_times, ",");
-    d["getUphs"] = join(uphs, ",");
+    d["uphs"] = join(uphs, ",");
     return d;
 }
 

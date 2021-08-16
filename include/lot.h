@@ -5,6 +5,7 @@
 #include <include/entity.h>
 #include <include/infra.h>
 #include <include/job.h>
+#include <pthread/pthread_impl.h>
 #include <algorithm>
 #include <map>
 #include <stdexcept>
@@ -25,6 +26,8 @@ protected:
     std::string _part_no;
     std::string _urgent;
     std::string _customer;
+    std::string _wb_location;
+    std::string _prescheduled_machine;
 
     int _qty;
     int _oper;
@@ -32,6 +35,7 @@ protected:
     int _sub_lots;
     int _amount_of_wires;
     int _amount_of_tools;
+    int _prescheduled_order;
 
     bool _hold;
     bool _mvin;
@@ -480,6 +484,10 @@ public:
     std::map<std::string, double> getUphs();
 
     bool isModelValid(std::string model);
+
+    std::string preScheduledEntity();
+
+    bool isPrescheduled();
 };
 
 inline void lot_t::clearCanRunLocation()
@@ -746,6 +754,16 @@ inline std::vector<std::string> lot_t::getCanRunModels()
 inline std::string lot_t::pin_package()
 {
     return _pin_package;
+}
+
+inline std::string lot_t::preScheduledEntity()
+{
+    return _prescheduled_machine;
+}
+
+inline bool lot_t::isPrescheduled()
+{
+    return _prescheduled_order >= 0;
 }
 
 typedef struct {
