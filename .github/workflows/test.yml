@@ -1,0 +1,17 @@
+name: cmake
+
+on: [ push, pull_request ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      run : cmake -S . -B build
+      run : cmake --build build 
+
+    - name: Test
+      run : cd build && ./test
+
