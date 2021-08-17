@@ -23,12 +23,25 @@ add_executable(
     ${test_cpp_sources}
 )
 
-target_link_libraries(
-    test
-    gtest_main
-    src
-    pgalib
-)
+if (WIN32)
+    target_link_libraries(
+        test
+        src
+        pgalib
+        -static-libstdc++
+        m
+        gtest_main
+    )
+else()
+    target_link_libraries(
+        test
+        src
+        pgalib
+        stdc++
+        m
+        gtest_main
+    )
+endif()
 
 include(GoogleTest)
 gtest_discover_tests(test)
