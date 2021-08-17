@@ -1,16 +1,14 @@
-#include "include/lot.h"
-#include <pthread.h>
-#include <pthread/pthread_impl.h>
 #include <cmath>
 #include <exception>
 #include <set>
 #include <stdexcept>
 #include <string>
-#include <utility>
+
 #include "include/entity.h"
 #include "include/infra.h"
 #include "include/job.h"
 #include "include/job_base.h"
+#include "include/lot.h"
 
 lot_t::lot_t(std::map<std::string, std::string> elements)
 {
