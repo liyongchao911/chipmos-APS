@@ -1,16 +1,14 @@
 #ifndef __LOT_H__
 #define __LOT_H__
 
-#include <include/csv.h>
-#include <include/entity.h>
-#include <include/infra.h>
-#include <include/job.h>
-#include <pthread/pthread_impl.h>
 #include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "include/csv.h"
+#include "include/infra.h"
+#include "include/job.h"
 
 class lot_t
 {
@@ -443,12 +441,14 @@ public:
      */
     bool isEntityCanRun(std::string model, std::string location);
 
-    /**
-     * addCanRunEntity () - add can run entity's name to can run entity vector
-     * @param ent
-     * @return
-     */
-    bool addCanRunEntity(entity_t *ent);
+    // /**
+    //  * addCanRunEntity () - add can run entity's name to can run entity
+    //  vector
+    //  * @param ent
+    //  * @return
+    //  */
+    // bool addCanRunEntity(entity_t *ent);
+
 
     /**
      * getCanRunEntities () - get can run entities vector
@@ -776,7 +776,7 @@ typedef struct {
     int machine_amount;
     std::map<std::string, int> models_statistic;
     std::map<std::string, int> bdid_statistic;
-    std::vector<entity_t *> entities;
+    // std::vector<entity_t *> entities;
     std::vector<std::string> entity_names;
     std::vector<lot_t *> lots;
 } lot_group_t;

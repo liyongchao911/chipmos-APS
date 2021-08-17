@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 
-#include "include/algorithm.h"
 #include "include/csv.h"
 #include "include/da.h"
 #include "include/entity.h"
@@ -39,9 +38,6 @@ int main(int argc, const char *argv[])
     ancillary_resources_t wires(lots.amountOfWires());
 
     entities_t entities = createEntities(argc, argv);
-    machines_t machines;
-    machines.addMachines(entities.getAllEntity());
-
 
     // srand(time(NULL));
     population_t pop = population_t{
@@ -132,7 +128,7 @@ entities_t createEntities(int argc, const char *argv[])
                                                 {"model", "MODEL"},
                                                 {"recover_time", "OUTPLAN"},
                                                 {"prod_id", "PRODUCT"},
-                                                {"pin_pkg", "PIN_PKG"},
+                                                {"pin_package", "PIN_PKG"},
                                                 {"lot_number", "LOT#"},
                                                 {"customer", "CUST"},
                                                 {"bd_id", "BOND ID"},

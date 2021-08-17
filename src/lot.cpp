@@ -24,9 +24,21 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _wb_location = elements["wb_location"];
 
 
+    try {
+        _qty = std::stoi(elements["qty"]);
+    } catch (std::invalid_argument &e) {
+        std::cerr << e.what() << std::endl;
+        std::cerr << "exception is triggered in converting qty to integer"
+                  << std::endl;
+    }
+    try {
+        _oper = std::stoi(elements["oper"]);
+    } catch (std::invalid_argument &e) {
+        std::cerr << e.what() << std::endl;
+        std::cerr << "exception is triggered in converting oper to integer"
+                  << std::endl;
+    }
 
-    _qty = std::stoi(elements["qty"]);
-    _oper = std::stoi(elements["oper"]);
     _hold = (elements["hold"].compare("Y") == 0) ? true : false;
     _mvin = (elements["mvin"].compare("Y") == 0) ? true : false;
 
@@ -326,16 +338,16 @@ bool lot_t::isEntityCanRun(std::string model, std::string location)
     return false;
 }
 
-bool lot_t::addCanRunEntity(entity_t *ent)
-{
-    bool ret = isEntityCanRun(ent->model_name, ent->location);
-    if (ret) {
-        _can_run_entities.push_back(ent->entity_name);
-        _entity_process_times[ent->entity_name] =
-            _model_process_times[ent->model_name];
-    }
-    return ret;
-}
+// bool lot_t::addCanRunEntity(entity_t *ent)
+// {
+//     bool ret = isEntityCanRun(ent->getModelName(), ent->getLocation());
+//     if (ret) {
+//         _can_run_entities.push_back(ent->getEntityName());
+//         _entity_process_times[ent->getEntityName()] =
+//             _model_process_times[ent->getModelName()];
+//     }
+//     return ret;
+// }
 
 
 

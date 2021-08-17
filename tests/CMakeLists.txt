@@ -1,12 +1,34 @@
-find_package(GTest)
-find_package(CUDA REQUIRED)
-include_directories(${GTest_INCLUDE_DIRS})
-file(GLOB_RECURSE cppsources ${CMAKE_CURRENT_SOURCE_DIR}/*/test_*.cpp)
-file(GLOB_RECURSE cusources ${CMAKE_CURRENT_SOURCE_DIR}/*/*.cu)
-add_executable(test main.cpp ${cppsources} ${cusources})
-set_property(TARGET test PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-add_subdirectory(test_linked_list)
-add_subdirectory(test_job_base)
-add_subdirectory(test_machine_base)
-add_subdirectory(test_chromosome_base)
-target_link_libraries(test lib ${GTest_LIBS} gtest gtest_main Threads::Threads ${CUDA_LIBRARIES})
+
+set(CMAKE_CXX_STANDARD 11)
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+file(GLOB_RECURSE cuda_test_cpp_sources ${CMAKE_CURRENT_SOURCE_DIR}/cuda_test_*/test_*.cpp)
+file(GLOB_RECURSE cuda_test_cu_sources ${CMAKE_CURRENT_SOURCE_DIR}/cuda_test_*/*.cu)
+
+
+file(GLOB_RECURSE test_cpp_sources ${CMAKE_CURRENT_SOURCE_DIR}/test_*/test_*.cpp)
+
+add_executable(
+    test
+    main.cpp
+    ${test_cpp_sources}
+)
+
+target_link_libraries(
+    test
+    gtest_main
+    src
+    pgalib
+)
+
+include(GoogleTest)
+gtest_discover_tests(test)

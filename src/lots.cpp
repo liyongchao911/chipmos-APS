@@ -28,7 +28,15 @@ using namespace std;
 
 void lots_t::addLots(std::vector<lot_t> lots)
 {
-    this->lots = lots;
+    iter(lots, i)
+    {
+        if (lots[i].isPrescheduled()) {
+            this->prescheduled_lots.push_back(lots[i]);
+        } else {
+            this->lots.push_back(lots[i]);
+        }
+    }
+
     std::string part_id, part_no;
     iter(this->lots, i)
     {
@@ -147,134 +155,7 @@ map<string, int> lots_t::modelStatistic(
     return ret;
 }
 
-vector<lot_group_t> lots_t::round(entities_t machines)
-{
-    // loc_ents is a map container which maps location to several entities
-    map<string, vector<entity_t *> > loc_ents = machines.getLocEntity();
 
-    // model_location is a map conainer which store the model and its location
-    map<string, vector<string> > model_location = machines.getModelLocation();
-
-    vector<lot_group_t> selected_groups;
-
-    lot_group_t test_lot_group;
-
-    // initialize
-    iter(lots, i)
-    {
-        lots[i].clearCanRunLocation();
-        lots[i].setCanRunLocation(model_location);
-    }
-    machines.reset();
-    selected_groups = selectGroups(20);
-
-    // setup the number of tool and the number of wire
-    setupToolWireAmount(selected_groups);
-
-    // models statistic
-    string tool_wire_name;
-    iter(selected_groups, k)
-    {
-        if (selected_groups[k].machine_amount > 0) {
-            std::vector<lot_t *> lots =
-                this->tool_wire_lots[selected_groups[k].wire_tools_name];
-
-            selected_groups[k].models_statistic =
-                modelStatistic(lots, loc_ents);
-            selected_groups[k].bdid_statistic = bdidStatistic(lots);
-        }
-    }
-
-    // first round of getting the entities
-    // get the suitable entities
-    iter(selected_groups, i)
-    {
-        if (selected_groups[i].lot_amount < 10 &&
-            selected_groups[i].machine_amount > 10)
-            selected_groups[i].machine_amount = 3;
-
-        selected_groups[i].entities =
-            machines.getTheSuitableEntities(selected_groups[i].models_statistic,
-                                            selected_groups[i].bdid_statistic,
-                                            selected_groups[i].machine_amount);
-
-        selected_groups[i].machine_amount -= selected_groups[i].entities.size();
-
-        // printf("Group [%d]:", i);
-        // iter(selected_groups[i].entities, j){
-        //     cout<<selected_groups[i].entities[j]->entity_name<<" ";
-        // }
-        // printf("\n");
-    }
-
-    iter(selected_groups, i)
-    {
-        selected_groups[i].entities +=
-            machines.getRandomEntities(selected_groups[i].models_statistic,
-                                       selected_groups[i].bdid_statistic,
-                                       selected_groups[i].machine_amount);
-    }
-
-
-    test_lot_group = selected_groups[0];
-
-
-    std::vector<lot_t *> failed;
-    std::vector<lot_t *> successful;
-    std::set<entity_t *> entities_set;
-    std::vector<lot_group_t> ret;
-    iter(selected_groups, i)
-    {
-        // check if the entity is selected by at least 2 groups
-        iter(selected_groups[i].entities, j)
-        {
-            // if (selected_groups[i].entities[j]->entity_name.compare("BB789")
-            // == 0){
-            //     printf("halt");
-            // }
-
-            if (entities_set.count(selected_groups[i].entities[j]) == 0) {
-                entities_set.insert(selected_groups[i].entities[j]);
-            } else {
-                string err = "entities " +
-                             selected_groups[i].entities[j]->entity_name +
-                             " in group " + to_string(i) + " is duplicated!";
-
-                throw logic_error(err);
-            }
-        }
-
-        // update the machine_amount.
-        selected_groups[i].machine_amount = selected_groups[i].entities.size();
-        tool_wire_name = selected_groups[i].wire_tools_name;
-        std::vector<lot_t *> lots = tool_wire_lots[tool_wire_name];
-
-        successful.clear();
-        failed.clear();
-        iter(lots, j)
-        {
-            bool found = false;  // check there is a acceptable entity
-            iter(selected_groups[i].entities, k)
-            {
-                if (lots[j]->addCanRunEntity(selected_groups[i].entities[k])) {
-                    found = true;
-                }
-            }
-            if (found)
-                successful.push_back(lots[j]);
-            else {
-                failed.push_back(lots[j]);
-            }
-        }
-        tool_wire_lots[tool_wire_name] = failed;
-        selected_groups[i].lots = successful;
-        if (selected_groups[i].lots.size() > 0) {
-            ret.push_back(selected_groups[i]);
-        }
-    }
-
-    return ret;
-}
 
 bool lots_t::toolWireLotsHasLots()
 {
@@ -287,13 +168,13 @@ bool lots_t::toolWireLotsHasLots()
     return false;
 }
 
-std::vector<std::vector<lot_group_t> > lots_t::rounds(entities_t ents)
-{
-    std::vector<std::vector<lot_group_t> > round_groups;
-    while (toolWireLotsHasLots())
-        round_groups.push_back(round(ents));
-    return round_groups;
-}
+// std::vector<std::vector<lot_group_t> > lots_t::rounds(entities_t ents)
+// {
+//     std::vector<std::vector<lot_group_t> > round_groups;
+//     while (toolWireLotsHasLots())
+//         round_groups.push_back(round(ents));
+//     return round_groups;
+// }
 
 
 void lots_t::readWip(string filename,

@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "include/da.h"
+#include "include/entities.h"
+#include "include/entity.h"
 #include "include/lot.h"
 #include "include/route.h"
 
@@ -21,6 +23,7 @@ class lots_t
 {
 protected:
     std::vector<lot_t> lots;
+    std::vector<lot_t> prescheduled_lots;
     std::map<std::string, std::vector<lot_t *> > wire_lots;
     std::map<std::string, std::vector<lot_t *> > tool_lots;
     std::map<std::string, std::vector<lot_t *> > tool_wire_lots;
@@ -255,7 +258,7 @@ public:
      * @param machines
      * @return a vector of lot_group_t instance in a round of scheduling plan
      */
-    std::vector<lot_group_t> round(entities_t machines);
+    // std::vector<lot_group_t> round(entities_t machines);
 
     /**
      * rounds () - create multiple rounds until all lots are in scheduling plan
@@ -264,7 +267,7 @@ public:
      * each round.
      *
      */
-    std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
+    // std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
 
     /**
      * createLots () - create all lots by read multiple files
@@ -322,7 +325,14 @@ public:
     std::map<std::string, int> modelStatistic(
         std::vector<lot_t *> lots,
         std::map<std::string, std::vector<entity_t *> > loc_ents);
+
+    std::vector<lot_t> prescheduledLots();
 };
+
+inline std::vector<lot_t> lots_t::prescheduledLots()
+{
+    return prescheduled_lots;
+}
 
 inline std::map<std::string, int> lots_t::amountOfWires()
 {

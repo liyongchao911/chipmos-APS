@@ -1,6 +1,6 @@
-set(LIB_SRC common.cpp csv.cpp route.cpp job.cpp da.cpp)
-    add_library(lib STATIC ${
-        LIB_SRC}) target_compile_features(lib PUBLIC cxx_std_11)
-        set_target_properties(lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-#set_target_properties(lib PROPERTIES LINKER_LANGUAGE CXX)
-            target_include_directories(lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+file(GLOB_RECURSE cpp_src_files ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE c_src_files ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
+# message("cpp source file : ${src_files}")
+add_library(src STATIC ${cpp_src_files} ${c_src_files}) 
+target_compile_features(src PUBLIC cxx_std_11)
+target_include_directories(src PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
