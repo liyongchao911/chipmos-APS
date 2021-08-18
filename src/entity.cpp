@@ -1,8 +1,9 @@
-#include "include/entity.h"
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
+
 #include "include/entities.h"
+#include "include/entity.h"
 #include "include/infra.h"
 #include "include/lot.h"
 #include "include/machine.h"

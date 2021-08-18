@@ -1,7 +1,7 @@
 #ifndef __ENTITY_H__
 #define __ENTITY_H__
 
-#include <time.h>
+#include <ctime>
 #include <map>
 #include <string>
 #include <vector>
@@ -12,19 +12,6 @@
 
 unsigned int convertEntityNameToUInt(std::string name);
 std::string convertUIntToEntityName(unsigned int);
-
-// typedef struct {
-//     double recover_time;
-//     double outplan_time;
-//     std::string entity_name;
-//     machine_info_t name;
-//     std::string model_name;
-//     std::string location;
-//     bool hold;
-//     tool_t *tool;
-//     wire_t *wire;
-//     job_t job;
-// } entity_t;
 
 class entity_t;
 machine_t entityToMachine(entity_t ent);
@@ -40,6 +27,8 @@ private:
 
     lot_t _current_lot;
 
+    std::vector<lot_t *> _prescheduled_lots;
+
 public:
     entity_t() {}
 
@@ -50,6 +39,8 @@ public:
     std::string getEntityName();
     std::string getModelName();
     std::string getLocation();
+
+    void addPrescheduledLots(lot_t lot);
 
     virtual machine_t machine();
 
@@ -79,6 +70,11 @@ inline std::string entity_t::getModelName()
 inline std::string entity_t::getLocation()
 {
     return _location;
+}
+
+inline void entity_t::addPrescheduledLots(lot_t lot)
+{
+    this->_prescheduled_lots.push_back(lot);
 }
 
 

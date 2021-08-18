@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
 #include "include/csv.h"
 #include "include/infra.h"
 #include "include/job.h"
