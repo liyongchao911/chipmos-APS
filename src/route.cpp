@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "include/lot.h"
 
 route_t::route_t()
 {
@@ -174,7 +175,8 @@ int route_t::calculateQueueTime(lot_t &lot)
     // if can't locate the oper, idx will be less then 0
     if (idx < 0) {
         std::string error = "Can't locate lot.temp_oper(" +
-                            std::to_string(lot.tmp_oper) + ") on the route";
+                            std::to_string(lot.tmp_oper) + ") on the route|" +
+                            std::to_string(ERROR_INVALID_OPER_IN_ROUTE);
         throw std::logic_error(error);
     }
 
@@ -202,13 +204,11 @@ int route_t::calculateQueueTime(lot_t &lot)
     // check if lot is in DA
     // if lot is in DA,
     if (_da_stations.count(lot.tmp_oper) == 1) {  // lot is in DA
-        if (lot.tmp_mvin) {                       // lot is in DA and mvin
-            idx += 1;                             // advance
+        if (lot.tmp_mvin &&
+            lot.isSubLot()) {  // lot is in DA and mvin and which is sublot
+            idx += 1;          // advance
             lot.tmp_mvin = false;
-            if (!lot.isSubLot()) {
-                throw std::logic_error("Lot is in da but it isn't sublot");
-            }
-        } else {  // lot is in D/A and hasn't moved in
+        } else {  // lot is in D/A and hasn't moved in or which still is sublot
             lot.tmp_oper = _routes[routename][++idx].oper;  // advance
             return 2;  // advance and dispatch
         }
@@ -238,7 +238,8 @@ int route_t::calculateQueueTime(lot_t &lot)
                     std::string error_text =
                         std::to_string(prev) + " -> " + std::to_string(oper) +
                         " is invalid queue time combination, please check "
-                        "queue_time's input file.  ";
+                        "queue_time's input file. |" +
+                        std::to_string(ERROR_INVALID_QUEUE_TIME_COMBINATION);
 
                     throw std::logic_error(error_text);
                 }

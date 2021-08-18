@@ -1,5 +1,6 @@
 #include <include/da.h>
 #include <stdexcept>
+#include "include/lot.h"
 
 da_stations_t::da_stations_t(csv_t fcst)
 {
@@ -114,14 +115,14 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
         if (!da.finished) {
             tmp = (double) arrived_lots[i].qty() / da.upm;
             da.time += tmp;
-            arrived_lots[i].addLog("Lot passes DA station");
+            arrived_lots[i].addLog("Lot passes DA station", SUCCESS);
             result.push_back(arrived_lots[i]);
             if (da.time >
                 1440) {  // FIXME : should be 1440 ? or a variable number?
                 da.finished = true;
             }
         } else {
-            arrived_lots[i].addLog("Lot is pushed into remaining");
+            arrived_lots[i].addLog("Lot is pushed into remaining", SUCCESS);
             da.remaining.push_back(arrived_lots[i]);
         }
     }
@@ -146,7 +147,7 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
                 da.finished = true;
             }
         } else {
-            unarrived_lots[i].addLog("Lot is pushed into remaining.");
+            unarrived_lots[i].addLog("Lot is pushed into remaining.", SUCCESS);
             da.remaining.push_back(unarrived_lots[i]);
         }
     }
@@ -163,7 +164,7 @@ std::vector<lot_t> da_stations_t::splitSubLots(std::vector<lot_t> lots)
         if (!lots[i].isSubLot()) {
             temp_lots = lots[i].createSublots();
             result += temp_lots;
-            lots[i].addLog("Lot is split to several sub-lots");
+            lots[i].addLog("Lot is split to several sub-lots", SUCCESS);
             _parent_lots.push_back(lots[i]);
         } else {
             result.push_back(lots[i]);

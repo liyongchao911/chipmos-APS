@@ -11,9 +11,14 @@
 
 #define iter(vec, id) for (unsigned int id = 0; id < vec.size(); ++id)
 
-
 #define iter_range(vec, id, start, end) \
     for (unsigned int id = start; id < end; ++id)
+
+/**
+ * stringify
+ */
+#define _str(x) #x
+#define xstr(x) _str(x)
 
 std::vector<std::string> split(char *text, char delimiter);
 

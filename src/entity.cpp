@@ -11,6 +11,26 @@
 
 using namespace std;
 
+entity_t::entity_t(map<string, string> elements) : _prescheduled_lots()
+{
+    _outplan_time = _recover_time = timeConverter(elements["recover_time"]);
+    _entity_name = elements["entity"];
+    _model_name = elements["model"];
+    _location = elements["location"];
+    _current_lot = lot_t(elements);
+}
+
+bool prescheduledLotsOrderComparison(lot_t *lot1, lot_t *lot2)
+{
+    return lot1->prescheduledOrder() < lot2->prescheduledOrder();
+}
+
+void entity_t::prescheduleLots()
+{
+    sort(_prescheduled_lots.begin(), _prescheduled_lots.end(),
+         prescheduledLotsOrderComparison);
+}
+
 machine_t entity_t::machine()
 {
     return machine_t{
@@ -21,15 +41,6 @@ machine_t entity_t::machine()
         // .wire = ent.wire,
         // .current_job = ent.job,
         .quality = 0};
-}
-
-entity_t::entity_t(map<string, string> elements)
-{
-    _outplan_time = _recover_time = timeConverter(elements["recover_time"]);
-    _entity_name = elements["entity"];
-    _model_name = elements["model"];
-    _location = elements["location"];
-    _current_lot = lot_t(elements);
 }
 
 

@@ -26,11 +26,11 @@ using namespace std;
     t_name = tool_wire_name.substr(0, tool_wire_name.find("_")); \
     w_name = tool_wire_name.substr(tool_wire_name.find("_") + 1);
 
-void lots_t::addLots(std::vector<lot_t> lots)
+void lots_t::addLots(std::vector<lot_t *> lots)
 {
     iter(lots, i)
     {
-        if (lots[i].isPrescheduled()) {
+        if (lots[i]->isPrescheduled()) {
             this->prescheduled_lots.push_back(lots[i]);
         } else {
             this->lots.push_back(lots[i]);
@@ -40,17 +40,16 @@ void lots_t::addLots(std::vector<lot_t> lots)
     std::string part_id, part_no;
     iter(this->lots, i)
     {
-        part_id = this->lots[i].part_id();
-        part_no = this->lots[i].part_no();
-        this->tool_lots[part_no].push_back(&(this->lots[i]));
-        this->wire_lots[part_id].push_back(&(this->lots[i]));
-        this->tool_wire_lots[part_no + "_" + part_id].push_back(
-            &(this->lots[i]));
+        part_id = this->lots[i]->part_id();
+        part_no = this->lots[i]->part_no();
+        this->tool_lots[part_no].push_back(this->lots[i]);
+        this->wire_lots[part_id].push_back(this->lots[i]);
+        this->tool_wire_lots[part_no + "_" + part_id].push_back(this->lots[i]);
 
-        amount_of_tools[this->lots[i].part_no()] =
-            this->lots[i].getAmountOfTools();
-        amount_of_wires[this->lots[i].part_id()] =
-            this->lots[i].getAmountOfWires();
+        amount_of_tools[this->lots[i]->part_no()] =
+            this->lots[i]->getAmountOfTools();
+        amount_of_wires[this->lots[i]->part_id()] =
+            this->lots[i]->getAmountOfWires();
     }
 }
 
@@ -240,7 +239,7 @@ void lots_t::setPidBomId(string filename,
                       lots[i].lotNumber() +
                       " has no mapping relationship between its product id(" +
                       lots[i].prodId() + ") and its process_id";
-            lots[i].addLog(err_msg);
+            lots[i].addLog(err_msg, ERROR_PROCESS_ID);
             faulty_lots.push_back(lots[i]);
             continue;
         }
@@ -253,7 +252,7 @@ void lots_t::setPidBomId(string filename,
                       lots[i].lotNumber() +
                       "has no mapping relation between its product id(" +
                       lots[i].prodId() + ") and its bom_id";
-            lots[i].addLog(err_msg);
+            lots[i].addLog(err_msg, ERROR_BOM_ID);
             faulty_lots.push_back(lots[i]);
             continue;
         }
@@ -296,7 +295,7 @@ void lots_t::setLotSize(string filename,
                 ("Lot Entry" + to_string(i + 2) + ": " + lots[i].lotNumber() +
                  "has no mapping relation between its process id(" +
                  lots[i].processId() + ") and its lot_size");
-            lots[i].addLog(err_msg);
+            lots[i].addLog(err_msg, ERROR_LOT_SIZE);
             faulty_lots.push_back(lots[i]);
             continue;
         } catch (std::invalid_argument &e) {
@@ -304,7 +303,7 @@ void lots_t::setLotSize(string filename,
                       lots[i].lotNumber() + "the lot_size of process id(" +
                       lots[i].processId() + ") is" + to_string(lot_size) +
                       " which is less than 0";
-            lots[i].addLog(err_msg);
+            lots[i].addLog(err_msg, ERROR_INVALID_LOT_SIZE);
             faulty_lots.push_back(lots[i]);
             continue;
         }
@@ -349,10 +348,10 @@ vector<lot_t> lots_t::wb7Filter(vector<lot_t> alllots,
     iter(alllots, i)
     {
         if (alllots[i].hold()) {
-            alllots[i].addLog("Lot is hold");
+            alllots[i].addLog("Lot is hold", ERROR_HOLD);
             dontcare.push_back(alllots[i]);
         } else if (!routes.isLotInStations(alllots[i])) {
-            alllots[i].addLog("Lot is not in WB - 7");
+            alllots[i].addLog("Lot is not in WB - 7", ERROR_WB7);
             dontcare.push_back(alllots[i]);
         } else {
             lots.push_back(alllots[i]);
@@ -384,33 +383,39 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
                     err_msg =
                         "Error occures on routes.calculateQueueTime, the "
                         "reason is the lot can't reach W/B satation.";
-                    unfinished[i].addLog(err_msg);
+                    unfinished[i].addLog(err_msg, ERROR_WB7);
                     faulty_lots.push_back(unfinished[i]);
                     break;
                 case 0:  // lot is finished
-                    unfinished[i].addLog("Lot finishes traversing the route");
+                    unfinished[i].addLog("Lot finishes traversing the route",
+                                         SUCCESS);
                     finished.push_back(unfinished[i]);
                     break;
                 case 2:  // add to DA_arrived
                     unfinished[i].addLog(
                         "Lot is waiting on DA station, it is cataloged to "
-                        "arrived");
+                        "arrived",
+                        SUCCESS);
                     das.addArrivedLotToDA(unfinished[i]);
                     break;
                 case 1:  // add to DA_unarrived
                     unfinished[i].addLog(
                         "Lot traverses to DA station, it is cataloged to "
-                        "unarrived");
+                        "unarrived",
+                        SUCCESS);
                     das.addUnarrivedLotToDA(unfinished[i]);
                     break;
                 }
             } catch (std::out_of_range
                          &e) {  // for da_stations_t function member,
                                 // addArrivedLotToDA and addUnarrivedLotToDA
-                unfinished[i].addLog(e.what());
+                unfinished[i].addLog(e.what(), ERROR_DA_FCST_VALUE);
                 faulty_lots.push_back(unfinished[i]);
             } catch (std::logic_error &e) {  // for calculateQueueTime
-                unfinished[i].addLog(e.what());
+                char *text = strdup(e.what());
+                vector<string> what = split(text, '|');
+                unfinished[i].addLog(what[0],
+                                     static_cast<ERROR_T>(stoi(what[1])));
                 faulty_lots.push_back(unfinished[i]);
             }
         }
@@ -440,7 +445,8 @@ void lots_t::setCanRunModels(string bdid_model_mapping_models_filename,
                 cards.getModels(lots[i].recipe(), lots[i].tmp_oper).models);
             result.push_back(lots[i]);
         } catch (out_of_range &e) {
-            lots[i].addLog("Lot has no matched condition card");
+            lots[i].addLog("Lot has no matched condition card",
+                           ERROR_CONDITION_CARD);
             faulty_lots.push_back(lots[i]);
         }
     }
@@ -485,7 +491,7 @@ void lots_t::setPartId(string filename,
                       " has no mapping relationship between its oper :" +
                       to_string(lots[i].tmp_oper) + " bom id(" +
                       lots[i].bomId() + ") and its part_id";
-            lots[i].addLog(err_msg);
+            lots[i].addLog(err_msg, ERROR_PART_ID);
             faulty_lots.push_back(lots[i]);
             continue;
         }
@@ -534,7 +540,7 @@ void lots_t::setAmountOfWire(string filename,
                 lots[i].setAmountOfWires(amountOfWires);
                 result.push_back(lots[i]);
             } else {
-                lots[i].addLog("There is no wire.");
+                lots[i].addLog("There is no wire.", ERROR_NO_WIRE);
                 faulty_lots.push_back(lots[i]);
             }
         } catch (std::out_of_range &e) {
@@ -542,7 +548,7 @@ void lots_t::setAmountOfWire(string filename,
                       lots[i].lotNumber() +
                       " has no mapping relationship between its part id(" +
                       lots[i].part_id() + ") and its roll_length";
-            lots[i].addLog(err_msg);
+            lots[i].addLog(err_msg, ERROR_ROLL_LENGTH);
             faulty_lots.push_back(lots[i]);
         }
     }
@@ -588,7 +594,7 @@ void lots_t::setPartNo(string filename,
                       lots[i].lotNumber() +
                       " has no mapping relationship between its process id(" +
                       lots[i].processId() + ") and its remark";
-            lots[i].addLog(err_msg);
+            lots[i].addLog(err_msg, ERROR_PART_NO);
             faulty_lots.push_back(lots[i]);
             continue;
         }
@@ -634,7 +640,7 @@ void lots_t::setAmountOfTools(string filename,
                 lots[i].setAmountOfTools(amountOfTool);
                 result.push_back(lots[i]);
             } else {
-                lots[i].addLog("There is no tool for this lot.");
+                lots[i].addLog("There is no tool for this lot.", ERROR_NO_TOOL);
                 faulty_lots.push_back(lots[i]);
             }
         } catch (std::out_of_range &e) {
@@ -645,7 +651,7 @@ void lots_t::setAmountOfTools(string filename,
                       lots[i].lotNumber() +
                       " has no mapping relationship between its part_no(" +
                       lots[i].part_no() + ") and its qty1 and qty3";
-            lots[i].addLog(err_msg);
+            lots[i].addLog(err_msg, ERROR_TOOL_NUMBER);
             faulty_lots.push_back(lots[i]);
         }
     }
@@ -692,7 +698,7 @@ void lots_t::createLots(map<string, string> files)
     addLots(lots);
 }
 
-vector<lot_t> lots_t::createLots(
+vector<lot_t *> lots_t::createLots(
     string wip_file_name,            // wip
     string prod_pid_bomid_filename,  // pid_bomid
     string eim_lot_size_filename,    // lot_size
@@ -774,5 +780,8 @@ vector<lot_t> lots_t::createLots(
     iter(lots, i) { wip_csv.addData(lots[i].data()); }
     wip_csv.write();
 
-    return lots;
+    vector<lot_t *> lot_ptrs;
+    iter(lots, i) { lot_ptrs.push_back(new lot_t(lots[i])); }
+
+    return lot_ptrs;
 }

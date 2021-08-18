@@ -11,6 +11,36 @@
 #include "include/infra.h"
 #include "include/job.h"
 
+#define ERROR_TABLE                                                       \
+    X(SUCCESS, = 0x00, "SUCCESS")                                         \
+    X(ERROR_WIP_INFORMATION_LOSS, = 0x01, "ERROR_WIP_INFORMATION_LOSS")   \
+    X(ERROR_PROCESS_ID, = 0x02, "ERROR_PROCESS_ID")                       \
+    X(ERROR_BOM_ID, = 0x03, "ERROR_BOM_ID")                               \
+    X(ERROR_LOT_SIZE, = 0x04, "ERROR_LOT_SIZE")                           \
+    X(ERROR_INVALID_LOT_SIZE, = 0x05, "ERROR_INVALID_LOT_SIZE")           \
+    X(ERROR_DA_FCST_VALUE, = 0x06, "ERROR_DA_FCST_VALUE")                 \
+    X(ERROR_INVALID_OPER_IN_ROUTE, = 0x07, "ERROR_INVALID_OPER_IN_ROUTE") \
+    X(ERROR_INVALID_QUEUE_TIME_COMBINATION, = 0x08,                       \
+      "ERROR_INVALID_QUEUE_TIME_COMBINATION")                             \
+    X(ERROR_HOLD, = 0x09, "ERROR_HOLD")                                   \
+    X(ERROR_WB7, = 0x0A, "ERROR_WB7")                                     \
+    X(ERROR_CONDITION_CARD, = 0x0B, "ERROR_CONDITION_CARD")               \
+    X(ERROR_PART_ID, = 0x0C, "ERROR_PART_ID")                             \
+    X(ERROR_NO_WIRE, = 0x0D, "ERROR_NO_WIRE")                             \
+    X(ERROR_ROLL_LENGTH, = 0x0E, "ERROR_ROLL_LENGTH")                     \
+    X(ERROR_PART_NO, = 0x0F, "ERROR_PART_NO")                             \
+    X(ERROR_NO_TOOL, = 0x10, "ERROR_NO_TOOL")                             \
+    X(ERROR_TOOL_NUMBER, = 0x11, "ERROR_TOOL_NUMBER")                     \
+    X(ERROR_UPH_FILE_ERROR, = 0x12, "ERROR_UPH_FILE")                     \
+    X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")
+
+
+#define X(item, value, name) item value,
+enum ERROR_T { ERROR_TABLE };
+#undef X
+
+extern const char *ERROR_NAMES[];
+
 class lot_t
 {
 protected:
@@ -56,11 +86,13 @@ protected:
     std::map<std::string, double> _model_process_times;
     std::map<std::string, double> _entity_process_times;
 
+    enum ERROR_T _status;
+
 public:
     int tmp_oper;
     bool tmp_mvin;
 
-    lot_t() {}
+    lot_t();
 
     /**
      * constructor for lot_t
@@ -106,7 +138,7 @@ public:
     /**
      * addLog () - add log for this lot
      */
-    void addLog(std::string _text);
+    void addLog(std::string _text, enum ERROR_T code);
 
     /**
      * addQueueTime () - add queue time
@@ -489,6 +521,8 @@ public:
     std::string preScheduledEntity();
 
     bool isPrescheduled();
+
+    int prescheduledOrder();
 };
 
 inline void lot_t::clearCanRunLocation()
@@ -561,9 +595,14 @@ inline bool lot_t::mvin()
     return _mvin;
 }
 
-inline void lot_t::addLog(std::string _text)
+inline void lot_t::addLog(std::string _text, enum ERROR_T code)
 {
     _log.push_back(_text);
+    if (_status != SUCCESS) {
+        fprintf(stderr, "Warning: You set the unscess code to another code!\n");
+        _status = code;
+    } else
+        _status = code;
 }
 
 inline std::string lot_t::log()
@@ -766,6 +805,12 @@ inline bool lot_t::isPrescheduled()
 {
     return _prescheduled_order >= 0;
 }
+
+inline int lot_t::prescheduledOrder()
+{
+    return _prescheduled_order;
+}
+
 
 typedef struct {
     std::string wire_tools_name;

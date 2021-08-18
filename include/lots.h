@@ -22,8 +22,10 @@
 class lots_t
 {
 protected:
-    std::vector<lot_t> lots;
-    std::vector<lot_t> prescheduled_lots;
+    std::vector<lot_t *> lots;
+    std::vector<lot_t *> prescheduled_lots;
+    // std::vector<lot_t> lots;
+    // std::vector<lot_t> prescheduled_lots;
     std::map<std::string, std::vector<lot_t *> > wire_lots;
     std::map<std::string, std::vector<lot_t *> > tool_lots;
     std::map<std::string, std::vector<lot_t *> > tool_wire_lots;
@@ -56,7 +58,7 @@ protected:
      * @param uph_filename : uph
      * @return
      */
-    std::vector<lot_t> createLots(
+    std::vector<lot_t *> createLots(
         std::string wip_file_name,            // wip file
         std::string prod_pid_bomid_filename,  // production -> process_id
         std::string eim_lot_size_filename,
@@ -239,7 +241,7 @@ public:
      * vector of lots having complete information from external function.
      * @param lots
      */
-    void addLots(std::vector<lot_t> lots);
+    void addLots(std::vector<lot_t *> lots);
 
     /**
      * round () - determine which lot is in a round of scheduling.
@@ -326,10 +328,10 @@ public:
         std::vector<lot_t *> lots,
         std::map<std::string, std::vector<entity_t *> > loc_ents);
 
-    std::vector<lot_t> prescheduledLots();
+    std::vector<lot_t *> prescheduledLots();
 };
 
-inline std::vector<lot_t> lots_t::prescheduledLots()
+inline std::vector<lot_t *> lots_t::prescheduledLots()
 {
     return prescheduled_lots;
 }

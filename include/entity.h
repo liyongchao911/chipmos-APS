@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -40,7 +41,9 @@ public:
     std::string getModelName();
     std::string getLocation();
 
-    void addPrescheduledLots(lot_t lot);
+    void addPrescheduledLot(lot_t *lot);
+
+    void prescheduleLots();
 
     virtual machine_t machine();
 
@@ -72,9 +75,12 @@ inline std::string entity_t::getLocation()
     return _location;
 }
 
-inline void entity_t::addPrescheduledLots(lot_t lot)
+inline void entity_t::addPrescheduledLot(lot_t *lot)
 {
-    this->_prescheduled_lots.push_back(lot);
+    if (lot->isPrescheduled())
+        this->_prescheduled_lots.push_back(lot);
+    else
+        throw std::invalid_argument("lot is not prescheduled lot");
 }
 
 

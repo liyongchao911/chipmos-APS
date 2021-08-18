@@ -39,6 +39,24 @@ int main(int argc, const char *argv[])
 
     entities_t entities = createEntities(argc, argv);
 
+
+    vector<lot_t *> prescheduled_lots = lots.prescheduledLots();
+
+    iter(prescheduled_lots, i)
+    {
+        string prescheduled_entity = prescheduled_lots[i]->preScheduledEntity();
+        entity_t *entity = entities.getEntityByName(prescheduled_entity);
+        if (entity != nullptr)
+            entity->addPrescheduledLot(prescheduled_lots[i]);
+        else
+            std::cerr << "[" << prescheduled_lots[i]->lotNumber()
+                      << "] is unable to be prescheduled "
+                         "because its entity["
+                      << prescheduled_entity << "] is not found" << std::endl;
+    }
+
+
+
     // srand(time(NULL));
     population_t pop = population_t{
         .parameters =
@@ -98,14 +116,14 @@ lots_t createLots(int argc, const char *argv[])
     map<string, string> arguments = cfg.getElements(0);
 
     lots_t lots;
+    lot_t *lot;
     if (argc >= 3) {
         printf("Create lots by using pre-created lots.csv file : %s\n",
                argv[2]);
         csv_t lots_csv(argv[2], "r", true, true);
-        vector<lot_t> all_lots;
+        vector<lot_t *> all_lots;
         for (int i = 0, nrows = lots_csv.nrows(); i < nrows; ++i) {
-            printf("Entry[%d]\n", i);
-            lot_t lot(lots_csv.getElements(i));
+            lot = new lot_t(lots_csv.getElements(i));
             all_lots.push_back(lot);
         }
         lots.addLots(all_lots);

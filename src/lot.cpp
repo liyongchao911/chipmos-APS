@@ -10,8 +10,18 @@
 #include "include/job_base.h"
 #include "include/lot.h"
 
+#define X(item, value, name) name,
+const char *ERROR_NAMES[] = {ERROR_TABLE};
+#undef X
+
+lot_t::lot_t()
+{
+    _status = SUCCESS;
+}
+
 lot_t::lot_t(std::map<std::string, std::string> elements)
 {
+    _status = SUCCESS;
     _route = elements["route"];
     _lot_number = elements["lot_number"];
     _pin_package = elements["pin_package"];
@@ -25,16 +35,24 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     try {
         _qty = std::stoi(elements["qty"]);
     } catch (std::invalid_argument &e) {
+#ifdef LOG_ERROR
         std::cerr << e.what() << std::endl;
-        std::cerr << "exception is triggered in converting qty to integer"
+        std::cerr << "[" << _lot_number << "]"
+                  << "exception is triggered in converting qty to integer"
                   << std::endl;
+#endif
+        _qty = 0;
     }
     try {
         _oper = std::stoi(elements["oper"]);
     } catch (std::invalid_argument &e) {
+#ifdef LOG_ERROR
         std::cerr << e.what() << std::endl;
-        std::cerr << "exception is triggered in converting oper to integer"
+        std::cerr << "[" << _lot_number << "]"
+                  << "exception is triggered in converting oper to integer"
                   << std::endl;
+#endif
+        _oper = 0;
     }
 
     _hold = (elements["hold"].compare("Y") == 0) ? true : false;
@@ -80,7 +98,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
         std::vector<std::string> uphs = split(text, ',');
         free(text);
         _can_run_models = models;
-        if (models.size() != ptimes.size()) {
+        if (models.size() != ptimes.size() || models.size() != uphs.size()) {
             throw std::invalid_argument(
                 "vector size is not the same, lot_number : " + _lot_number);
         } else {
@@ -102,6 +120,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
         char *text = strdup(_wb_location.c_str());
         std::vector<std::string> machine_order = split(text, '-');
         _prescheduled_machine = machine_order[0];
+
         if (machine_order.size() >= 2) {
             try {
                 _prescheduled_order = stoi(machine_order[1]);
@@ -111,6 +130,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
         } else {
             _prescheduled_order = 0;
         }
+        free(text);
     }
 }
 
@@ -149,7 +169,7 @@ bool lot_t::checkFormation()
         error_msg += data_members.size() > 1 ? " are incorrect."
                                              : " is"
                                                " incorrect.";
-        addLog(error_msg);
+        addLog(error_msg, ERROR_WIP_INFORMATION_LOSS);
         return false;
     }
     return true;
@@ -169,7 +189,8 @@ std::vector<lot_t> lot_t::createSublots()
         lot_t tmp(*this);
         tmp._lot_number += str_number;
         tmp._is_sub_lot = true;
-        tmp.addLog("This lot is split from the parent lot " + _lot_number);
+        tmp.addLog("This lot is split from the parent lot " + _lot_number,
+                   SUCCESS);
         if (remain - _lot_size > 0) {
             tmp._qty = _lot_size;
             remain -= tmp._qty;
@@ -214,6 +235,7 @@ std::map<std::string, std::string> lot_t::data()
     d["wb_location"] = _wb_location;
     d["prescheduled_machine"] = _prescheduled_machine;
     d["prescheduled_order"] = std::to_string(_prescheduled_order);
+    d["code"] = std::string(ERROR_NAMES[_status]);
 
     std::vector<std::string> models;
     for (std::map<std::string, double>::iterator it = _uphs.begin();
@@ -247,7 +269,8 @@ bool lot_t::setUph(csv_t _uph_csv)
     _uph_csv = _uph_csv.filter("cust", _customer);
     if (_uph_csv.nrows() == 0) {
         this->addLog("(" + std::to_string(this->tmp_oper) + ", " + _recipe +
-                     ") is not in uph file");
+                         ") is not in uph file",
+                     ERROR_UPH_FILE_ERROR);
         return false;
     } else {
         int nrows = _uph_csv.nrows();
@@ -279,7 +302,7 @@ bool lot_t::setUph(csv_t _uph_csv)
     _can_run_models = valid_models;
 
     if (_uphs.size() == 0) {
-        addLog("All of uph is 0");
+        addLog("All of uph is 0", ERROR_UPH_0);
         return false;
     } else
         return true;
