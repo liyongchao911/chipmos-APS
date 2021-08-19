@@ -2,6 +2,7 @@
 #define __INFO_H__
 
 #include <stdbool.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,8 +17,12 @@ struct __info_t {
     unsigned int number_size : 3;
 };
 
+typedef struct __info_t info_t;
+
 
 bool isSameInfo(struct __info_t info1, struct __info_t info2);
+
+info_t emptyInfo();
 
 #ifdef __cplusplus
 }

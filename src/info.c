@@ -11,3 +11,10 @@ bool isSameInfo(struct __info_t info1, struct __info_t info2)
     }
     return true;
 }
+
+info_t emptyInfo()
+{
+    info_t info;
+    memset(&info, 0, sizeof(info_t));
+    return info;
+}

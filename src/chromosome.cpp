@@ -54,7 +54,8 @@ double decoding(chromosome_base_t chromosome,
                 weights_t weights,
                 scheduling_parameters_t scheduling_parameters)
 {
-    unsigned int machine_idx, machine_no;
+    unsigned int machine_idx;
+    machine_t *machine;
     for (map<unsigned int, machine_t *>::iterator it = machines.begin();
          it != machines.end(); it++) {
         machine_ops->reset(&(it->second->base));
@@ -64,8 +65,9 @@ double decoding(chromosome_base_t chromosome,
         job_ops->set_ms_gene_addr(&jobs[j].base, chromosome.ms_genes + j);
         job_ops->set_os_gene_addr(&jobs[j].base, chromosome.os_genes + j);
         machine_idx = job_ops->machine_selection(&jobs[j].base);
-        machine_no = jobs[j].base.machine_no;
-        machine_ops->add_job(&machines[machine_no]->base, &jobs[j].list);
+        // machine_no = jobs[j].base.machine_no;
+        machine = (machine_t *) jobs[j].base.current_machine;
+        machine_ops->add_job(&machine->base, &jobs[j].list);
     }
 
     // sorting;

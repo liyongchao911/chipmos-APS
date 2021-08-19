@@ -548,7 +548,7 @@ void lots_t::setAmountOfWire(string filename,
                       lots[i].lotNumber() +
                       " has no mapping relationship between its part id(" +
                       lots[i].part_id() + ") and its roll_length";
-            lots[i].addLog(err_msg, ERROR_ROLL_LENGTH);
+            lots[i].addLog(err_msg, ERROR_WIRE_MAPPING_ERROR);
             faulty_lots.push_back(lots[i]);
         }
     }
@@ -651,7 +651,7 @@ void lots_t::setAmountOfTools(string filename,
                       lots[i].lotNumber() +
                       " has no mapping relationship between its part_no(" +
                       lots[i].part_no() + ") and its qty1 and qty3";
-            lots[i].addLog(err_msg, ERROR_TOOL_NUMBER);
+            lots[i].addLog(err_msg, ERROR_TOOL_MAPPING_ERROR);
             faulty_lots.push_back(lots[i]);
         }
     }

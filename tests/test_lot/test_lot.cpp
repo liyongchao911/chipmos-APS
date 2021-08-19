@@ -1,8 +1,13 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <map>
 #include <stdexcept>
 #include <string>
+#include "include/info.h"
+#include "include/infra.h"
+#include "include/job.h"
+#include "include/job_base.h"
 
 #include <gtest/gtest.h>
 
@@ -32,12 +37,24 @@ public:
     map<string, string> test_lot_csv_data_1;
     map<string, string> test_lot_csv_data_2;
     map<string, string> test_lot_csv_data_3;
+    map<string, string> test_lot_csv_data_4;
 
 
     lot_t *lot;
 
+    lot_t *createALot(map<string, string> elements);
+
     void SetUp() override;
 };
+
+lot_t *test_lot_t::createALot(map<string, string> elements)
+{
+    lot_t *lot = nullptr;
+    lot = new lot_t(elements);
+    if (lot == nullptr)
+        exit(EXIT_FAILURE);
+    return lot;
+}
 
 void test_lot_t::SetUp()
 {
@@ -219,13 +236,27 @@ void test_lot_t::SetUp()
                              {"uphs", "23,45"},
                              {"part_id", "PART_ID"},
                              {"part_no", "PART_NO"}});
+
+    test_lot_csv_data_4 = test_lot_csv_data_1;
+    test_lot_csv_data_4["wb_location"] = "BB211-1";
+}
+
+TEST_F(test_lot_t, test_lot_default_ctor)
+{
+    lot = new lot_t();
+    if (lot == nullptr)
+        exit(EXIT_FAILURE);
+
+    EXPECT_EQ(lot->_status, SUCCESS);
+
+    delete lot;
+    lot = nullptr;
 }
 
 TEST_F(test_lot_t, test_lot_ctor_wip_data1)
 {
-    lot = new lot_t(test_wip_data_1);
-    if (lot == nullptr)
-        exit(EXIT_FAILURE);
+    lot = createALot(test_wip_data_1);
+
     EXPECT_EQ(lot->_route.compare("QFNS288"), 0);
     EXPECT_EQ(lot->_lot_number.compare("P23ASEA02"), 0);
     EXPECT_EQ(lot->_pin_package.compare("DFN-08YM2G"), 0);
@@ -244,15 +275,15 @@ TEST_F(test_lot_t, test_lot_ctor_wip_data1)
     EXPECT_EQ(lot->_prescheduled_order, 1);
     EXPECT_EQ(lot->_prescheduled_machine.compare("BB211"), 0);
 
+    EXPECT_EQ(lot->_status, SUCCESS);
+
     delete lot;
     lot = nullptr;
 }
 
 TEST_F(test_lot_t, test_lot_ctor_wip_data2)
 {
-    lot = new lot_t(test_wip_data_2);
-    if (lot == nullptr)
-        exit(EXIT_FAILURE);
+    lot = createALot(test_wip_data_2);
     EXPECT_EQ(lot->_lot_number.compare("P23ASEA"), 0);
     EXPECT_EQ(lot->_is_sub_lot, false);
     EXPECT_EQ(lot->_qty, 0);
@@ -263,9 +294,7 @@ TEST_F(test_lot_t, test_lot_ctor_wip_data2)
 
 TEST_F(test_lot_t, test_lot_ctor_wip_data3)
 {
-    lot = new lot_t(test_wip_data_3);
-    if (lot == nullptr)
-        exit(EXIT_FAILURE);
+    lot = createALot(test_wip_data_3);
 
     EXPECT_EQ(lot->_wb_location.compare("BB211"), 0);
     EXPECT_EQ(lot->_prescheduled_machine.compare("BB211"), 0);
@@ -278,9 +307,7 @@ TEST_F(test_lot_t, test_lot_ctor_wip_data3)
 
 TEST_F(test_lot_t, test_lot_ctor_csv_data1)
 {
-    lot = new lot_t(test_lot_csv_data_1);
-    if (lot == nullptr)
-        exit(EXIT_FAILURE);
+    lot = createALot(test_lot_csv_data_1);
 
     double uphs[] = {23, 45, 67};
     double process_times[] = {123.45, 456.78, 789.1};
@@ -316,9 +343,7 @@ TEST_F(test_lot_t, test_lot_ctor_csv_data3)
 
 TEST_F(test_lot_t, test_lot_isPrescheduled_true1)
 {
-    lot = new lot_t(test_wip_data_1);
-    if (lot == nullptr)
-        exit(EXIT_FAILURE);
+    lot = createALot(test_wip_data_1);
 
     EXPECT_EQ(lot->isPrescheduled(), true);
 
@@ -328,9 +353,7 @@ TEST_F(test_lot_t, test_lot_isPrescheduled_true1)
 
 TEST_F(test_lot_t, test_lot_isPrescheduled_true2)
 {
-    lot = new lot_t(test_wip_data_3);
-    if (lot == nullptr)
-        exit(EXIT_FAILURE);
+    lot = createALot(test_wip_data_3);
 
     EXPECT_EQ(lot->isPrescheduled(), true);
 
@@ -340,9 +363,7 @@ TEST_F(test_lot_t, test_lot_isPrescheduled_true2)
 
 TEST_F(test_lot_t, test_lot_isPrescheduled_false1)
 {
-    lot = new lot_t(test_wip_data_4);
-    if (lot == nullptr)
-        exit(EXIT_FAILURE);
+    lot = createALot(test_wip_data_4);
 
     EXPECT_EQ(lot->isPrescheduled(), false);
 
@@ -352,7 +373,7 @@ TEST_F(test_lot_t, test_lot_isPrescheduled_false1)
 
 TEST_F(test_lot_t, test_lot_isPrescheduled_false2)
 {
-    lot = new lot_t(test_wip_data_5);
+    lot = createALot(test_wip_data_5);
     if (lot == nullptr)
         exit(EXIT_FAILURE);
 
@@ -360,4 +381,43 @@ TEST_F(test_lot_t, test_lot_isPrescheduled_false2)
 
     delete lot;
     lot = nullptr;
+}
+
+TEST_F(test_lot_t, test_lot_job1)
+{
+    lot = createALot(test_lot_csv_data_1);
+    job_t job = lot->job();
+
+    EXPECT_EQ(strcmp(job.base.job_info.data.text, lot->_lot_number.c_str()), 0);
+
+    EXPECT_EQ(strcmp(job.part_no.data.text, lot->_part_no.c_str()), 0);
+    EXPECT_EQ(strcmp(job.part_id.data.text, lot->_part_id.c_str()), 0);
+    EXPECT_EQ(strcmp(job.prod_id.data.text, lot->_prod_id.c_str()), 0);
+
+    EXPECT_EQ(strcmp(job.pin_package.data.text, lot->_pin_package.c_str()), 0);
+    EXPECT_EQ(strcmp(job.customer.data.text, lot->_customer.c_str()), 0);
+    EXPECT_EQ(strcmp(job.bdid.data.text, lot->_recipe.c_str()), 0);
+
+    EXPECT_EQ(job.oper, lot->tmp_oper);
+
+    EXPECT_EQ(job.base.qty, lot->_qty);
+    EXPECT_EQ(job.base.start_time, 0);
+    EXPECT_EQ(job.base.end_time, 0);
+    EXPECT_EQ(job.base.arriv_t, lot->_queue_time);
+
+    info_t machine_no = job.base.machine_no;
+    info_t empty_info = emptyInfo();
+    EXPECT_EQ(bcmp(&machine_no, &empty_info, sizeof(info_t)), 0);
+}
+
+TEST_F(test_lot_t, test_lot_job2)
+{
+    lot = createALot(test_lot_csv_data_4);  // which has wb_location field
+    string machine_no("BB211");
+    info_t mc_info = stringToInfo(machine_no);
+
+    job_t job = lot->job();
+    EXPECT_EQ(isSameInfo(job.base.machine_no, mc_info), true);
+    EXPECT_EQ(job.weight, 1);
+    EXPECT_EQ(job.list.get_value, prescheduledJobGetValue);
 }

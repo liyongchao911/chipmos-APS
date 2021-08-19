@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <cstdio>
+#include <cstring>
 #include <iterator>
 #include <stdexcept>
 
@@ -11,36 +13,41 @@
 
 using namespace std;
 
-entity_t::entity_t(map<string, string> elements) : _prescheduled_lots()
+entity_t::entity_t(map<string, string> elements)
 {
+    _current_lot = nullptr;
     _outplan_time = _recover_time = timeConverter(elements["recover_time"]);
     _entity_name = elements["entity"];
     _model_name = elements["model"];
     _location = elements["location"];
-    _current_lot = lot_t(elements);
-}
+    _current_lot = new lot_t(elements);
 
-bool prescheduledLotsOrderComparison(lot_t *lot1, lot_t *lot2)
-{
-    return lot1->prescheduledOrder() < lot2->prescheduledOrder();
-}
-
-void entity_t::prescheduleLots()
-{
-    sort(_prescheduled_lots.begin(), _prescheduled_lots.end(),
-         prescheduledLotsOrderComparison);
+    if (_current_lot == nullptr) {
+        perror("new current_lot error");
+        exit(EXIT_FAILURE);
+    }
 }
 
 machine_t entity_t::machine()
 {
-    return machine_t{
-        .base = {.machine_no = convertEntityNameToUInt(_entity_name),
-                 .size_of_jobs = 0,
-                 .available_time = _recover_time},
-        // .tool = ent.tool,
-        // .wire = ent.wire,
-        // .current_job = ent.job,
-        .quality = 0};
+    machine_t machine =
+        machine_t{.base = {.machine_no = stringToInfo(_entity_name),
+                           .size_of_jobs = 0,
+                           .available_time = _recover_time},
+                  .model_name = stringToInfo(_model_name),
+                  .location = stringToInfo(_location),
+                  .tool = nullptr,
+                  .wire = nullptr,
+                  .current_job = _current_lot->job(),
+                  .makespan = 0,
+                  .total_completion_time = 0,
+                  .quality = 0,
+                  .setup_times = 0,
+                  .ptr_derived_object = nullptr};
+
+    machine.current_job.base.end_time = _recover_time;
+
+    return machine;
 }
 
 
@@ -62,11 +69,6 @@ unsigned int convertEntityNameToUInt(string name)
 }
 
 
-
-std::map<std::string, machine_t *> machines_t::getMachines()
-{
-    return _machines;
-}
 
 ancillary_resources_t::ancillary_resources_t(std::map<std::string, int> data)
 {
@@ -105,20 +107,6 @@ std::vector<tool_t *> ancillary_resources_t::aRound(std::string name,
 }
 
 
-
-void machines_t::addMachines(std::vector<entity_t *> ents)
-{
-    iter(ents, i)
-    {
-        machine_t m = ents[i]->machine();
-        machine_t *m_ptr = new machine_t;
-        *m_ptr = m;
-        m_ptr->ptr_derived_object = ents[i];
-        m_ptr->current_job.base.ptr_derived_object = &(m_ptr->current_job);
-        m_ptr->base.ptr_derived_object = m_ptr;
-        // _machines[ents[i]->entity_name] = m_ptr;
-    }
-}
 
 std::string convertUIntToEntityName(unsigned int mno)
 {

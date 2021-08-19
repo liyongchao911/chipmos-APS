@@ -1,6 +1,8 @@
 #ifndef __ENTITY_H__
 #define __ENTITY_H__
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <ctime>
 #include <map>
 #include <stdexcept>
@@ -26,7 +28,7 @@ private:
     std::string _model_name;
     std::string _location;
 
-    lot_t _current_lot;
+    lot_t *_current_lot;
 
     std::vector<lot_t *> _prescheduled_lots;
 
@@ -40,10 +42,7 @@ public:
     std::string getEntityName();
     std::string getModelName();
     std::string getLocation();
-
-    void addPrescheduledLot(lot_t *lot);
-
-    void prescheduleLots();
+    std::string getRecipe();
 
     virtual machine_t machine();
 
@@ -75,14 +74,10 @@ inline std::string entity_t::getLocation()
     return _location;
 }
 
-inline void entity_t::addPrescheduledLot(lot_t *lot)
+inline std::string entity_t::getRecipe()
 {
-    if (lot->isPrescheduled())
-        this->_prescheduled_lots.push_back(lot);
-    else
-        throw std::invalid_argument("lot is not prescheduled lot");
+    return _current_lot->recipe();
 }
-
 
 
 class ancillary_resources_t
@@ -96,16 +91,6 @@ public:
     std::vector<tool_t *> aRound(std::string, int);
 };
 
-class machines_t
-{
-private:
-    std::map<std::string, machine_t *> _machines;
-
-public:
-    void addMachines(std::vector<entity_t *> ents);
-
-    std::map<std::string, machine_t *> getMachines();
-};
 
 
 #endif

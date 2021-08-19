@@ -27,10 +27,10 @@
     X(ERROR_CONDITION_CARD, = 0x0B, "ERROR_CONDITION_CARD")               \
     X(ERROR_PART_ID, = 0x0C, "ERROR_PART_ID")                             \
     X(ERROR_NO_WIRE, = 0x0D, "ERROR_NO_WIRE")                             \
-    X(ERROR_ROLL_LENGTH, = 0x0E, "ERROR_ROLL_LENGTH")                     \
+    X(ERROR_WIRE_MAPPING_ERROR, = 0x0E, "ERROR_WIRE_MAPPING_ERROR")       \
     X(ERROR_PART_NO, = 0x0F, "ERROR_PART_NO")                             \
     X(ERROR_NO_TOOL, = 0x10, "ERROR_NO_TOOL")                             \
-    X(ERROR_TOOL_NUMBER, = 0x11, "ERROR_TOOL_NUMBER")                     \
+    X(ERROR_TOOL_MAPPING_ERROR, = 0x11, "ERROR_TOOL_MAPPING_ERROR")       \
     X(ERROR_UPH_FILE_ERROR, = 0x12, "ERROR_UPH_FILE")                     \
     X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")
 

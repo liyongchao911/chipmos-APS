@@ -35,7 +35,7 @@ extern "C" {
 
 typedef struct machine_base_t machine_base_t;
 
-machine_base_t *machine_base_new(unsigned int machine_no);
+machine_base_t *machine_base_new(info_t machine_no);
 
 /**
  * @struct machine_base_t
@@ -72,7 +72,7 @@ struct machine_base_t {
     list_ele_t *tail;
 
     /// the machine's number
-    unsigned int machine_no;
+    info_t machine_no;
 
     /// the amount of jobs
     unsigned int size_of_jobs;

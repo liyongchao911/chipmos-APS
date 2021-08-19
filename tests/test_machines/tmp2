@@ -1,0 +1,129 @@
+{
+  base = {
+    ptr_derived_object = 0x0000000000000000
+    root = nullptr
+    tail = nullptr
+    machine_no = {
+      data = {
+        text = "BB211"
+        number = ([0] = 825377346, [1] = 49, [2] = 0, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+      }
+      text_size = 5
+      number_size = 2
+    }
+    size_of_jobs = 0
+    available_time = 61584823440
+  }
+  model_name = {
+    data = {
+      text = "UTC3000"
+      number = ([0] = 860050517, [1] = 3158064, [2] = 0, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+    }
+    text_size = 7
+    number_size = 2
+  }
+  location = {
+    data = {
+      text = "TA-A"
+      number = ([0] = 1093484884, [1] = 0, [2] = 0, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+    }
+    text_size = 4
+    number_size = 2
+  }
+  tool = nullptr
+  wire = nullptr
+  current_job = {
+    part_no = {
+      data = {
+        text = "PART_NO"
+        number = ([0] = 1414676816, [1] = 5197407, [2] = 0, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+      }
+      text_size = 7
+      number_size = 2
+    }
+    pin_package = {
+      data = {
+        text = "TSOP1-48/M2"
+        number = ([0] = 1347375956, [1] = 942943537, [2] = 3296559, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+      }
+      text_size = 11
+      number_size = 3
+    }
+    customer = {
+      data = {
+        text = "MXIC"
+        number = ([0] = 1128880205, [1] = 0, [2] = 0, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+      }
+      text_size = 4
+      number_size = 2
+    }
+    urgent_code = '\0'
+    base = {
+      ptr_derived_object = 0x0000000000000000
+      ms_gene = 0x0000000000000000
+      os_seq_gene = 0x0000000000000000
+      partition = 0
+      process_time = nullptr
+      size_of_process_time = 0
+      qty = 1280
+      job_info = {
+        data = {
+          text = "P23AWDV31"
+          number = ([0] = 1093874256, [1] = 861291607, [2] = 49, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+        }
+        text_size = 9
+        number_size = 3
+      }
+      machine_no = {
+        data = {
+          text = ""
+          number = ([0] = 0, [1] = 0, [2] = 0, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+        }
+        text_size = 0
+        number_size = 0
+      }
+      current_machine = 0x0000000000000000
+      arriv_t = 0
+      start_time = 0
+      end_time = 61584823440
+      ptime = 0
+    }
+    list = {
+      next = nullptr
+      prev = nullptr
+      ptr_derived_object = 0x0000000000000000
+      get_value = 0x0000000100086530 (test`jobGetValue(void*) at job.cpp:4)
+    }
+    part_id = {
+      data = {
+        text = "PART_ID"
+        number = ([0] = 1414676816, [1] = 4475231, [2] = 0, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+      }
+      text_size = 7
+      number_size = 2
+    }
+    bdid = {
+      data = {
+        text = "AAW048TP1041B"
+        number = ([0] = 811024705, [1] = 1347696692, [2] = 825503793, [3] = 66, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+      }
+      text_size = 13
+      number_size = 3
+    }
+    prod_id = {
+      data = {
+        text = "048TPAW086"
+        number = ([0] = 1412969520, [1] = 811024720, [2] = 13880, [3] = 0, [4] = 0, [5] = 0, [6] = 0, [7] = 0)
+      }
+      text_size = 10
+      number_size = 3
+    }
+    oper = 2200
+    weight = -31
+  }
+  makespan = 0
+  total_completion_time = 0
+  quality = 0
+  setup_times = 0
+  ptr_derived_object = 0x0000000000000000
+}

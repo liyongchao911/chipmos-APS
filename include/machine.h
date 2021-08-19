@@ -24,14 +24,17 @@ typedef ares_t wire_t;
 
 typedef struct __machine_t {
     machine_base_t base;
+
+    info_t model_name;
+    info_t location;
     ares_t *tool;
     ares_t *wire;
     job_t current_job;
-    void *ptr_derived_object;
     double makespan;
     double total_completion_time;
     double quality;
     int setup_times;
+    void *ptr_derived_object;
 } machine_t;
 
 

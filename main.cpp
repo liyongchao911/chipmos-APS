@@ -39,24 +39,6 @@ int main(int argc, const char *argv[])
 
     entities_t entities = createEntities(argc, argv);
 
-
-    vector<lot_t *> prescheduled_lots = lots.prescheduledLots();
-
-    iter(prescheduled_lots, i)
-    {
-        string prescheduled_entity = prescheduled_lots[i]->preScheduledEntity();
-        entity_t *entity = entities.getEntityByName(prescheduled_entity);
-        if (entity != nullptr)
-            entity->addPrescheduledLot(prescheduled_lots[i]);
-        else
-            std::cerr << "[" << prescheduled_lots[i]->lotNumber()
-                      << "] is unable to be prescheduled "
-                         "because its entity["
-                      << prescheduled_entity << "] is not found" << std::endl;
-    }
-
-
-
     // srand(time(NULL));
     population_t pop = population_t{
         .parameters =
@@ -150,7 +132,8 @@ entities_t createEntities(int argc, const char *argv[])
                                                 {"lot_number", "LOT#"},
                                                 {"customer", "CUST"},
                                                 {"bd_id", "BOND ID"},
-                                                {"oper", "OPER"}}));
+                                                {"oper", "OPER"},
+                                                {"qty", "WIP"}}));
 
     csv_t location_csv(arguments["locations"], "r", true, true);
     location_csv.trim(" ");
@@ -165,20 +148,19 @@ entities_t createEntities(int argc, const char *argv[])
 
 map<string, string> outputJob(job_t job)
 {
-    return map<string, string>(
-        {{"lot_number", job.base.job_info.data.text},
-         {"bd_id", job.bdid.data.text},
-         {"part_no", job.part_no.data.text},
-         {"part_id", job.part_id.data.text},
-         {"cust", job.customer.data.text},
-         {"pin_pkg", job.pin_package.data.text},
-         {"prod_id", job.prod_id.data.text},
-         {"qty", to_string(job.base.qty)},
-         {"entity", convertUIntToEntityName(job.base.machine_no)},
-         {"start_time", to_string(job.base.start_time)},
-         {"end_time", to_string(job.base.end_time)},
-         {"oper", to_string(job.oper)},
-         {"process_time", to_string(job.base.ptime)}});
+    return map<string, string>({{"lot_number", job.base.job_info.data.text},
+                                {"bd_id", job.bdid.data.text},
+                                {"part_no", job.part_no.data.text},
+                                {"part_id", job.part_id.data.text},
+                                {"cust", job.customer.data.text},
+                                {"pin_pkg", job.pin_package.data.text},
+                                {"prod_id", job.prod_id.data.text},
+                                {"qty", to_string(job.base.qty)},
+                                {"entity", job.base.machine_no.data.text},
+                                {"start_time", to_string(job.base.start_time)},
+                                {"end_time", to_string(job.base.end_time)},
+                                {"oper", to_string(job.oper)},
+                                {"process_time", to_string(job.base.ptime)}});
 }
 
 void outputJobInMachine(map<string, machine_t *> machines, csv_t *csv)

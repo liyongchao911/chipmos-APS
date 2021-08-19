@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <map>
 #include <string>
+#include "include/info.h"
 
 
 #include <gtest/gtest.h>
@@ -113,69 +114,55 @@ TEST_F(test_entity_t, test_entity_setup)
 
 TEST_F(test_entity_t, test_entity_current_lot_setup)
 {
-    EXPECT_EQ(ent->_current_lot._lot_number.compare("P23AWDV31"), 0);
-    EXPECT_EQ(ent->_current_lot._pin_package.compare("TSOP1-48/M2"), 0);
-    EXPECT_EQ(ent->_current_lot._recipe.compare("AAW048TP1041B"), 0);
-    EXPECT_EQ(ent->_current_lot._customer.compare("MXIC"), 0);
-    EXPECT_EQ(ent->_current_lot._qty, 1280);
-    EXPECT_EQ(ent->_current_lot._oper, 2200);
-    EXPECT_EQ(ent->_current_lot._part_id.compare("PART_ID"), 0);
-    EXPECT_EQ(ent->_current_lot._part_no.compare("PART_NO"), 0);
+    EXPECT_EQ(ent->_current_lot->_lot_number.compare("P23AWDV31"), 0);
+    EXPECT_EQ(ent->_current_lot->_pin_package.compare("TSOP1-48/M2"), 0);
+    EXPECT_EQ(ent->_current_lot->_recipe.compare("AAW048TP1041B"), 0);
+    EXPECT_EQ(ent->_current_lot->_customer.compare("MXIC"), 0);
+    EXPECT_EQ(ent->_current_lot->_qty, 1280);
+    EXPECT_EQ(ent->_current_lot->_oper, 2200);
+    EXPECT_EQ(ent->_current_lot->_part_id.compare("PART_ID"), 0);
+    EXPECT_EQ(ent->_current_lot->_part_no.compare("PART_NO"), 0);
 }
 
-TEST_F(test_entity_t, test_entity_addPrescheduledLot_successful)
+
+TEST_F(test_entity_t, test_entity_machine_basic_content)
 {
-    lot_t *lot = createALot(lot_data_case1);
+    machine_t machine = ent->machine();
 
-    ent->addPrescheduledLot(lot);
-    EXPECT_EQ(ent->_prescheduled_lots[0], lot);
+    EXPECT_EQ(
+        strcmp(machine.base.machine_no.data.text, ent->_entity_name.c_str()),
+        0);
+    EXPECT_EQ(machine.base.size_of_jobs, 0);
+    EXPECT_EQ(machine.base.available_time, ent->_recover_time);
 
-    delete lot;
-    lot = nullptr;
+    EXPECT_EQ(strcmp(machine.model_name.data.text, ent->_model_name.c_str()),
+              0);
+    EXPECT_EQ(strcmp(machine.location.data.text, ent->_location.c_str()), 0);
+    EXPECT_EQ(machine.tool, nullptr);
+    EXPECT_EQ(machine.wire, nullptr);
+    EXPECT_EQ(machine.makespan, 0);
+    EXPECT_EQ(machine.total_completion_time, 0);
+    EXPECT_EQ(machine.quality, 0);
+    EXPECT_EQ(machine.setup_times, 0);
+    EXPECT_EQ(machine.ptr_derived_object, nullptr);
 }
 
-TEST_F(test_entity_t, test_entity_addPrescheduledLot_failed)
+TEST_F(test_entity_t, test_entity_machine_current_job)
 {
-    lot_t *lot = createALot(lot_data_case2);
+    machine_t machine = ent->machine();
 
-    EXPECT_THROW(ent->addPrescheduledLot(lot), invalid_argument);
+    job_t job = machine.current_job;
 
-    delete lot;
-    lot = nullptr;
-}
+    EXPECT_EQ(job.oper, 2200);
+    EXPECT_EQ(strcmp(job.bdid.data.text, "AAW048TP1041B"), 0);
+    EXPECT_EQ(strcmp(job.customer.data.text, "MXIC"), 0);
+    EXPECT_EQ(strcmp(job.part_id.data.text, "PART_ID"), 0);
+    EXPECT_EQ(strcmp(job.part_no.data.text, "PART_NO"), 0);
+    EXPECT_EQ(strcmp(job.pin_package.data.text, "TSOP1-48/M2"), 0);
+    EXPECT_EQ(strcmp(job.prod_id.data.text, "048TPAW086"), 0);
 
-TEST_F(test_entity_t, test_entity_prescheduleLots1)
-{
-    lot_t *lot1 = createALot(lot_data_case1);
-    lot_t *lot2 = createALot(lot_data_case3);
-
-    ent->addPrescheduledLot(lot1);
-    ent->addPrescheduledLot(lot2);
-
-    ent->prescheduleLots();
-
-    EXPECT_EQ(ent->_prescheduled_lots[0], lot1);
-    EXPECT_EQ(ent->_prescheduled_lots[1], lot2);
-
-
-    delete lot1;
-    delete lot2;
-}
-
-TEST_F(test_entity_t, test_entity_prescheduleLots2)
-{
-    lot_t *lot1 = createALot(lot_data_case1);
-    lot_t *lot2 = createALot(lot_data_case3);
-
-    ent->addPrescheduledLot(lot2);
-    ent->addPrescheduledLot(lot1);
-
-    ent->prescheduleLots();
-
-    EXPECT_EQ(ent->_prescheduled_lots[0], lot1);
-    EXPECT_EQ(ent->_prescheduled_lots[1], lot2);
-
-
-    delete lot1;
-    delete lot2;
+    EXPECT_EQ(job.base.start_time, 0);
+    EXPECT_EQ(job.base.end_time, ent->_recover_time);
+    EXPECT_EQ(job.base.qty, 1280);
+    EXPECT_EQ(strcmp(job.base.job_info.data.text, "P23AWDV31"), 0);
 }

@@ -26,5 +26,7 @@ void job_initialize(job_t *job);
 
 double jobGetValue(void *_self);
 
+double prescheduledJobGetValue(void *_self);
+
 
 #endif

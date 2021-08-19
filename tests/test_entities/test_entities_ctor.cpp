@@ -102,14 +102,14 @@ TEST_F(test_entities_t, test_addMachine_entity_current_lot_setup)
     map<string, string> data = getData();
     entity_t *ent = entities->addMachine(data);
 
-    EXPECT_EQ(ent->_current_lot._lot_number.compare("P23AWDV31"), 0);
-    EXPECT_EQ(ent->_current_lot._pin_package.compare("TSOP1-48/M2"), 0);
-    EXPECT_EQ(ent->_current_lot._recipe.compare("AAW048TP1041B"), 0);
-    EXPECT_EQ(ent->_current_lot._customer.compare("MXIC"), 0);
-    EXPECT_EQ(ent->_current_lot._qty, 1280);
-    EXPECT_EQ(ent->_current_lot._oper, 2200);
-    EXPECT_EQ(ent->_current_lot._part_id.compare("PART_ID"), 0);
-    EXPECT_EQ(ent->_current_lot._part_no.compare("PART_NO"), 0);
+    EXPECT_EQ(ent->_current_lot->_lot_number.compare("P23AWDV31"), 0);
+    EXPECT_EQ(ent->_current_lot->_pin_package.compare("TSOP1-48/M2"), 0);
+    EXPECT_EQ(ent->_current_lot->_recipe.compare("AAW048TP1041B"), 0);
+    EXPECT_EQ(ent->_current_lot->_customer.compare("MXIC"), 0);
+    EXPECT_EQ(ent->_current_lot->_qty, 1280);
+    EXPECT_EQ(ent->_current_lot->_oper, 2200);
+    EXPECT_EQ(ent->_current_lot->_part_id.compare("PART_ID"), 0);
+    EXPECT_EQ(ent->_current_lot->_part_no.compare("PART_NO"), 0);
 }
 
 TEST_F(test_entities_t, test_addMachine_entities_containers)

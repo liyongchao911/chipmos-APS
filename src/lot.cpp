@@ -5,6 +5,7 @@
 #include <string>
 
 #include "include/entity.h"
+#include "include/info.h"
 #include "include/infra.h"
 #include "include/job.h"
 #include "include/job_base.h"
@@ -302,7 +303,7 @@ bool lot_t::setUph(csv_t _uph_csv)
     _can_run_models = valid_models;
 
     if (_uphs.size() == 0) {
-        addLog("All of uph is 0", ERROR_UPH_0);
+        addLog("All of uph are 0", ERROR_UPH_0);
         return false;
     } else
         return true;
@@ -359,33 +360,23 @@ bool lot_t::isEntityCanRun(std::string model, std::string location)
     return false;
 }
 
-// bool lot_t::addCanRunEntity(entity_t *ent)
-// {
-//     bool ret = isEntityCanRun(ent->getModelName(), ent->getLocation());
-//     if (ret) {
-//         _can_run_entities.push_back(ent->getEntityName());
-//         _entity_process_times[ent->getEntityName()] =
-//             _model_process_times[ent->getModelName()];
-//     }
-//     return ret;
-// }
-
-
 
 job_t lot_t::job()
 {
     job_t j;
     job_base_init(&j.base);
     _list_init(&j.list);
-    j.list.get_value = jobGetValue;
+
+    j.base.job_info = stringToInfo(_lot_number);
 
     j.part_no = stringToInfo(_part_no);
-    j.pin_package = stringToInfo(_pin_package);
-    j.base.job_info = stringToInfo(_lot_number);
-    j.customer = stringToInfo(_customer);
     j.part_id = stringToInfo(_part_id);
-    j.bdid = stringToInfo(_recipe);
     j.prod_id = stringToInfo(_prod_id);
+
+    j.pin_package = stringToInfo(_pin_package);
+    j.customer = stringToInfo(_customer);
+    j.bdid = stringToInfo(_recipe);
+
     j.oper = tmp_oper;
     float lot_order;
     try {
@@ -398,7 +389,6 @@ job_t lot_t::job()
         std::cout << e.what() << std::endl;
     }
 
-    j.weight = lot_order;
 
     if (_urgent.length()) {
         j.urgent_code = _urgent[0];
@@ -408,6 +398,16 @@ job_t lot_t::job()
     j.base.qty = _qty;
     j.base.start_time = j.base.end_time = 0;
     j.base.arriv_t = _queue_time;
+
+    if (isPrescheduled()) {
+        j.list.get_value = prescheduledJobGetValue;
+        j.base.machine_no = stringToInfo(_prescheduled_machine);
+        j.weight = _prescheduled_order;
+    } else {
+        j.list.get_value = jobGetValue;
+        j.base.machine_no = emptyInfo();
+        j.weight = lot_order;
+    }
 
     return j;
 }
