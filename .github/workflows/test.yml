@@ -14,5 +14,7 @@ jobs:
         cmake --build build 
 
     - name: Test
-      run : cd build && ./test
+      run : |
+        cd build
+        ./test --gtest_repeat=1000
 
