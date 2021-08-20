@@ -69,6 +69,7 @@ protected:
         std::string pid_heatblock_filename,
         std::string ems_heatblock_filename,
         std::string gw_filename,
+        std::string wire_stock_filename,
         std::string bdid_mapping_models_filename,
         std::string uph_filename);
 
@@ -185,10 +186,12 @@ protected:
     /**
      * setAmountOfWire () - read the file and set the number of rolls of wire
      * @param filename
+     * @param wire_stock_filename
      * @param lots
      * @param faulty_lots
      */
-    void setAmountOfWire(std::string filename,
+    void setAmountOfWire(std::string gw_filename,
+                         std::string wire_stock_filename,
                          std::vector<lot_t> &lots,
                          std::vector<lot_t> &faulty_lots);
 

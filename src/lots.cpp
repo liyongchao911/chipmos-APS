@@ -518,29 +518,51 @@ void lots_t::setPartId(string filename,
     lots = result;
 }
 
-void lots_t::setAmountOfWire(string filename,
+void lots_t::setAmountOfWire(string gw_filename,
+                             string wire_stock_filename,
                              vector<lot_t> &lots,
                              vector<lot_t> &faulty_lots)
 {
     // filename = "GW Inventory.csv"
-    csv_t gw(filename, "r", true, true);
+    csv_t gw(gw_filename, "r", true, true);
     gw.trim(" ");
     gw.setHeaders(map<string, string>(
         {{"gw_part_no", "gw_part_no"}, {"roll_length", "roll_length"}}));
     map<string, int> part_roll;
     for (unsigned int i = 0; i < gw.nrows(); ++i) {
         map<string, string> tmp = gw.getElements(i);
-        if (part_roll.count(tmp["gw_part_no"]) == 0) {
-            part_roll[tmp["gw_part_no"]] = 0;
+        if (tmp["code_flag"].compare("A") == 0 ||
+            tmp["code_flag"].compare("N") == 0 ||
+            tmp["code_flag"].compare("O") == 0 ||
+            tmp["code_flag"].compare("R") == 0) {
+            if (part_roll.count(tmp["gw_part_no"]) == 0) {
+                part_roll[tmp["gw_part_no"]] = 0;
+            }
+
+            if (tmp["gw_part_no"][4] ==
+                    'A' &&  // gw_part_no[4] is 'A' --> which is golden wire
+                stod(tmp["roll_length"]) >= 500.0) {
+                part_roll[tmp["gw_part_no"]] += 1;
+            } else if (tmp["gw_part_no"][4] != 'A' &&
+                       stod(tmp["roll_length"]) >= 200.0) {
+                part_roll[tmp["gw_part_no"]] += 1;
+            }
+        }
+    }
+
+    csv_t wire_stock(wire_stock_filename, "r", true, true);
+    wire_stock.trim(" ");
+    for (unsigned int i = 0; i < wire_stock.nrows(); ++i) {
+        map<string, string> elements = wire_stock.getElements(i);
+        if (part_roll.count(elements["MATNR"]) == 0) {
+            part_roll[elements["MATNR"]] = 0;
         }
 
-        if (tmp["gw_part_no"][4] ==
-                'A' &&  // gw_part_no[4] is 'A' --> which is golden wire
-            stod(tmp["roll_length"]) >= 1000.0) {
-            part_roll[tmp["gw_part_no"]] += 1;
-        } else if (tmp["gw_part_no"][4] == 'A' &&
-                   stod(tmp["roll_length"]) >= 200.0) {
-            part_roll[tmp["gw_part_no"]] += 1;
+        if (elements["MATNR"][4] == 'A' && stod(elements["CLABS"]) >= 500) {
+            part_roll[elements["MATNR"]] += 1;
+        } else if (elements["MATNR"][4] != 'A' &&
+                   stod(elements["CLABS"]) >= 200) {
+            part_roll[elements["MATNR"]] += 1;
         }
     }
 
@@ -710,7 +732,8 @@ void lots_t::createLots(map<string, string> files)
         files["wip"], files["pid_bomid"], files["lot_size"], files["fcst"],
         files["routelist"], files["queue_time"], files["bom_list"],
         files["pid_heatblock"], files["ems_heatblock"], files["gw_inventory"],
-        files["bdid_model_mapping"], files["uph"]);
+        files["wire_stock"], files["bdid_model_mapping"], files["uph"]);
+
     addLots(lots);
 }
 
@@ -725,6 +748,7 @@ vector<lot_t *> lots_t::createLots(
     string pid_heatblock_filename,   // pid_heatblock mapping file
     string ems_heatblock_filename,   // ems heatblock for the number of tools
     string gw_filename,              // gw_inventory for the number of wires
+    string wire_stock_filename,
     string bdid_mapping_models_filename,
     string uph_filename)
 {
@@ -761,7 +785,7 @@ vector<lot_t *> lots_t::createLots(
 
     // setPartId
     setPartId(bomlist_filename, lots, faulty_lots);
-    setAmountOfWire(gw_filename, lots, faulty_lots);
+    setAmountOfWire(gw_filename, wire_stock_filename, lots, faulty_lots);
     // setPartNo
     setPartNo(pid_heatblock_filename, lots, faulty_lots);
     setAmountOfTools(ems_heatblock_filename, lots, faulty_lots);
