@@ -57,6 +57,7 @@ protected:
     std::string _customer;
     std::string _wb_location;
     std::string _prescheduled_machine;
+    std::string _prescheduled_model;
 
     int _qty;
     int _oper;
@@ -523,7 +524,22 @@ public:
     bool isPrescheduled();
 
     int prescheduledOrder();
+
+    void setPrescheduledModel(std::string model);
+
+    void setNotPrescheduled();
 };
+
+inline void lot_t::setNotPrescheduled()
+{
+    _prescheduled_order = -1;
+}
+
+inline void lot_t::setPrescheduledModel(std::string model)
+{
+    // FIXME : Is it necessary to check whether the lot is preshceduled or not?
+    _prescheduled_model = model;
+}
 
 inline void lot_t::clearCanRunLocation()
 {

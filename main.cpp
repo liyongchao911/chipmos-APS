@@ -3,17 +3,23 @@
 #include <map>
 #include <string>
 
+#define LOG_ERROR
+
 #include "include/csv.h"
 #include "include/da.h"
 #include "include/entity.h"
 #include "include/infra.h"
 #include "include/lot.h"
 #include "include/lots.h"
+#include "include/machines.h"
 #include "include/population.h"
 
 using namespace std;
 
 void output(population_t *pop, csv_t *csv);
+
+map<string, string> outputJob(job_t job);
+map<string, string> outputJobInMachine(machine_t *machine);
 
 void outputJobInMachine(map<string, machine_t *>, csv_t *csv);
 
@@ -32,12 +38,11 @@ int main(int argc, const char *argv[])
     map<string, string> arguments = cfg.getElements(0);
 
     lots_t lots = createLots(argc, argv);
-
-
-    ancillary_resources_t tools(lots.amountOfTools());
-    ancillary_resources_t wires(lots.amountOfWires());
-
     entities_t entities = createEntities(argc, argv);
+
+    // ancillary_resources_t tools(lots.amountOfTools());
+    // ancillary_resources_t wires(lots.amountOfWires());
+
 
     // srand(time(NULL));
     population_t pop = population_t{
@@ -67,7 +72,48 @@ int main(int argc, const char *argv[])
                  }},
     };
 
-    // csv_t result("output/result.csv", "w");
+    machines_t *machines = new machines_t(pop.parameters.scheduling_parameters,
+                                          pop.parameters.weights);
+
+    vector<entity_t *> all_entities = entities.allEntities();
+    iter(all_entities, i) { machines->addMachine(all_entities[i]->machine()); }
+
+    vector<lot_t *> prescheduled_lots = lots.prescheduledLots();
+    vector<job_t *> prescheduled_jobs;
+    iter(prescheduled_lots, i)
+    {
+        job_t *job = new job_t();
+        try {
+            string prescheduled_model = machines->getModelByEntityName(
+                prescheduled_lots[i]->preScheduledEntity());
+            prescheduled_lots[i]->setPrescheduledModel(prescheduled_model);
+            *job = prescheduled_lots[i]->job();
+            machines->addPrescheduledJob(job);
+            prescheduled_jobs.push_back(job);
+        } catch (out_of_range &e) {
+            delete job;
+            lots.pushBackNotPrescheduledLot(prescheduled_lots[i]);
+        }
+    }
+
+    machines->prescheduleJobs();
+
+    const vector<machine_t *> scheduled_machines =
+        machines->scheduledMachines();
+    csv_t result("output/result.csv", "w");
+
+    iter(scheduled_machines, i)
+    {
+        result.addData(outputJobInMachine(scheduled_machines[i]));
+    }
+
+    iter(prescheduled_jobs, i)
+    {
+        result.addData(outputJob(*prescheduled_jobs[i]));
+    }
+
+    result.write();
+
     // outputJobInMachine(machines.getMachines(), &result);
     // initializeOperations(&pop);
 
@@ -127,6 +173,7 @@ entities_t createEntities(int argc, const char *argv[])
     machine_csv.setHeaders(map<string, string>({{"entity", "ENTITY"},
                                                 {"model", "MODEL"},
                                                 {"recover_time", "OUTPLAN"},
+                                                {"in_time", "IN TIME"},
                                                 {"prod_id", "PRODUCT"},
                                                 {"pin_package", "PIN_PKG"},
                                                 {"lot_number", "LOT#"},
@@ -161,6 +208,11 @@ map<string, string> outputJob(job_t job)
                                 {"end_time", to_string(job.base.end_time)},
                                 {"oper", to_string(job.oper)},
                                 {"process_time", to_string(job.base.ptime)}});
+}
+
+map<string, string> outputJobInMachine(machine_t *machine)
+{
+    return outputJob(machine->current_job);
 }
 
 void outputJobInMachine(map<string, machine_t *> machines, csv_t *csv)

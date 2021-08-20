@@ -33,9 +33,9 @@ private:
     std::vector<lot_t *> _prescheduled_lots;
 
 public:
-    entity_t() {}
+    entity_t();
 
-    entity_t(std::map<std::string, std::string> elements);
+    entity_t(std::map<std::string, std::string> elements, time_t base_time = 0);
 
     double getRecoverTime() const;
     double getOutplanTime() const;
@@ -43,6 +43,8 @@ public:
     std::string getModelName();
     std::string getLocation();
     std::string getRecipe();
+
+    void setBaseTime(time_t time);
 
     virtual machine_t machine();
 

@@ -42,9 +42,7 @@ __qualifier__ void set_arrival_time(job_base_t *self, double arriv_time)
 __qualifier__ void set_start_time(job_base_t *self, double start_time)
 {
     self->start_time = start_time;
-    if (self->process_time) {
-        self->end_time = self->start_time + self->ptime;
-    }
+    self->end_time = self->start_time + self->ptime;
 }
 
 // getter

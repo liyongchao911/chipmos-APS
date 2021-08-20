@@ -82,7 +82,10 @@ void entities_t::setTime(string time)
 entity_t *entities_t::addMachine(map<string, string> elements)
 {
     if (elements["recover_time"].length() == 0) {
-        throw std::invalid_argument("recover time is empty");
+        elements["recover_time"] = elements["in_time"];
+        if (elements["recover_time"].length() == 0) {
+            throw std::invalid_argument("recover time is empty");
+        }
     }
 
     string model, location;
@@ -96,7 +99,7 @@ entity_t *entities_t::addMachine(map<string, string> elements)
     elements["part_no"] = part_no;
     elements["part_id"] = part_id;
 
-    entity_t *ent = new entity_t(elements);
+    entity_t *ent = new entity_t(elements, _time);
     if (ent) {
         _ents.push_back(ent);
         _entities[model][location].push_back(ent);
@@ -147,14 +150,5 @@ void entities_t::addMachines(csv_t _machines, csv_t _location)
             elements["log"] = "information is loss";
             _faulty_machine.push_back(elements);
         }
-    }
-
-    iter(_ents, i)
-    {
-        // _ents[i]->recover_time = ((_ents[i]->recover_time - _time) > 0
-        //                           ? (_ents[i]->recover_time - _time)
-        //                           : 0) /
-        //                          60.0;
-        // _ents[i]->job.base.end_time = _ents[i]->recover_time;
     }
 }

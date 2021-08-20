@@ -19,6 +19,7 @@
 #undef private
 #undef protected
 
+
 using namespace std;
 
 class test_lot_t : public testing::Test
@@ -45,6 +46,8 @@ public:
     lot_t *createALot(map<string, string> elements);
 
     void SetUp() override;
+
+    void TearDown() override;
 };
 
 lot_t *test_lot_t::createALot(map<string, string> elements)
@@ -54,6 +57,13 @@ lot_t *test_lot_t::createALot(map<string, string> elements)
     if (lot == nullptr)
         exit(EXIT_FAILURE);
     return lot;
+}
+
+void test_lot_t::TearDown()
+{
+    if (lot != nullptr)
+        delete lot;
+    lot = nullptr;
 }
 
 void test_lot_t::SetUp()
@@ -169,7 +179,7 @@ void test_lot_t::SetUp()
         map<string, string>({{"route", "QFNS288"},
                              {"lot_number", "P23ASEA02"},
                              {"pin_package", "DFN-08YM2G"},
-                             {"bd_id", "AAS008YM2024A"},
+                             {"recipe", "AAS008YM2024A"},
                              {"prod_id", "008YMAS034"},
                              {"urgent_code", "urgent"},
                              {"customer", ""},
@@ -193,7 +203,7 @@ void test_lot_t::SetUp()
         map<string, string>({{"route", "QFNS288"},
                              {"lot_number", "P23ASEA02"},
                              {"pin_package", "DFN-08YM2G"},
-                             {"bd_id", "AAS008YM2024A"},
+                             {"recipe", "AAS008YM2024A"},
                              {"prod_id", "008YMAS034"},
                              {"urgent_code", "urgent"},
                              {"customer", ""},
@@ -217,7 +227,7 @@ void test_lot_t::SetUp()
         map<string, string>({{"route", "QFNS288"},
                              {"lot_number", "P23ASEA02"},
                              {"pin_package", "DFN-08YM2G"},
-                             {"bd_id", "AAS008YM2024A"},
+                             {"recipe", "AAS008YM2024A"},
                              {"prod_id", "008YMAS034"},
                              {"urgent_code", "urgent"},
                              {"customer", ""},
@@ -420,4 +430,15 @@ TEST_F(test_lot_t, test_lot_job2)
     EXPECT_EQ(isSameInfo(job.base.machine_no, mc_info), true);
     EXPECT_EQ(job.weight, 1);
     EXPECT_EQ(job.list.get_value, prescheduledJobGetValue);
+    EXPECT_EQ(job.base.ptime, -1);
+}
+
+TEST_F(test_lot_t, test_lot_job3)
+{
+    lot = createALot(test_lot_csv_data_4);
+    lot->setPrescheduledModel("UTC1000S");
+    job_t job = lot->job();
+    info_t empty_info = emptyInfo();
+    EXPECT_NE(strcmp(job.bdid.data.text, empty_info.data.text), 0);
+    EXPECT_NEAR(job.base.ptime, 123.45, 0.000001);
 }

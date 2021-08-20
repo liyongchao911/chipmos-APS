@@ -27,14 +27,19 @@ protected:
     machine_base_operations_t *machine_ops;
     job_base_operations_t *job_ops;
 
+    scheduling_parameters_t _param;
+    weights_t _weights;
+
     void _init(scheduling_parameters_t param);
 
 public:
     machines_t();
 
-    machines_t(scheduling_parameters_t param);
+    machines_t(scheduling_parameters_t param, weights_t weight);
 
     machines_t(machines_t &other);
+
+    const std::vector<machine_t *> scheduledMachines();
 
     void addMachine(machine_t machine);
 
@@ -42,8 +47,27 @@ public:
 
     void prescheduleJobs();
 
+    std::string getModelByEntityName(std::string entity_name);
+
     ~machines_t();
 };
 
+inline std::string machines_t::getModelByEntityName(std::string entity_name)
+{
+    return std::string(_machines.at(entity_name)->model_name.data.text);
+}
+
+inline const std::vector<machine_t *> machines_t::scheduledMachines()
+{
+    std::vector<machine_t *> machines;
+    for (std::map<std::string, machine_t *>::iterator it = _machines.begin();
+         it != _machines.end(); ++it) {
+        if (it->second->base.size_of_jobs > 0) {
+            machines.push_back(it->second);
+        }
+    }
+
+    return machines;
+}
 
 #endif

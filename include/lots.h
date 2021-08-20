@@ -243,6 +243,8 @@ public:
      */
     void addLots(std::vector<lot_t *> lots);
 
+    void pushBackNotPrescheduledLot(lot_t *lot);
+
     /**
      * round () - determine which lot is in a round of scheduling.
      * The function is used determine which group of lot can be scheduled in

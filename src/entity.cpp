@@ -13,7 +13,12 @@
 
 using namespace std;
 
-entity_t::entity_t(map<string, string> elements)
+entity_t::entity_t()
+{
+    _outplan_time = _recover_time = 0;
+}
+
+entity_t::entity_t(map<string, string> elements, time_t base_time)
 {
     _current_lot = nullptr;
     _outplan_time = _recover_time = timeConverter(elements["recover_time"]);
@@ -26,6 +31,16 @@ entity_t::entity_t(map<string, string> elements)
         perror("new current_lot error");
         exit(EXIT_FAILURE);
     }
+
+    setBaseTime(base_time);
+}
+
+void entity_t::setBaseTime(time_t base_time)
+{
+    double tmp_time = _recover_time - base_time;
+    _recover_time = ((tmp_time > 0) ? tmp_time : 0) / 60;
+
+    _outplan_time = _recover_time;
 }
 
 machine_t entity_t::machine()
@@ -46,6 +61,7 @@ machine_t entity_t::machine()
                   .ptr_derived_object = nullptr};
 
     machine.current_job.base.end_time = _recover_time;
+    machine.current_job.base.machine_no = stringToInfo(_entity_name);
 
     return machine;
 }

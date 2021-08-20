@@ -26,6 +26,24 @@ using namespace std;
     t_name = tool_wire_name.substr(0, tool_wire_name.find("_")); \
     w_name = tool_wire_name.substr(tool_wire_name.find("_") + 1);
 
+void lots_t::pushBackNotPrescheduledLot(lot_t *lot)
+{
+    if (lot->isPrescheduled()) {
+        lot->setNotPrescheduled();
+    }
+
+    this->lots.push_back(lot);
+    std::string part_id, part_no;
+    part_id = lot->part_id();
+    part_no = lot->part_no();
+    this->tool_lots[part_no].push_back(lot);
+    this->wire_lots[part_id].push_back(lot);
+    this->tool_wire_lots[part_no + "_" + part_id].push_back(lot);
+
+    amount_of_tools[part_no] = lot->getAmountOfTools();
+    amount_of_wires[part_id] = lot->getAmountOfWires();
+}
+
 void lots_t::addLots(std::vector<lot_t *> lots)
 {
     iter(lots, i)
@@ -46,10 +64,8 @@ void lots_t::addLots(std::vector<lot_t *> lots)
         this->wire_lots[part_id].push_back(this->lots[i]);
         this->tool_wire_lots[part_no + "_" + part_id].push_back(this->lots[i]);
 
-        amount_of_tools[this->lots[i]->part_no()] =
-            this->lots[i]->getAmountOfTools();
-        amount_of_wires[this->lots[i]->part_id()] =
-            this->lots[i]->getAmountOfWires();
+        amount_of_tools[part_no] = this->lots[i]->getAmountOfTools();
+        amount_of_wires[part_id] = this->lots[i]->getAmountOfWires();
     }
 }
 

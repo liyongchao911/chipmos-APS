@@ -172,8 +172,12 @@ void scheduling(machine_t *machine,
         it = it->next;
     }
     machine->makespan = start_time;
-    machine->tool->time = start_time;
-    machine->wire->time = start_time;
+    if (machine->tool != nullptr) {
+        machine->tool->time = start_time;
+    }
+    if (machine->wire != nullptr) {
+        machine->wire->time = start_time;
+    }
     machine->total_completion_time = total_completion_time;
     machine->quality =
         weights.WEIGHT_SETUP_TIMES * setup_times +

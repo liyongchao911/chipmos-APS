@@ -68,6 +68,9 @@ public:
      */
     void addMachines(csv_t machines_csv, csv_t location_csv);
 
+
+    std::vector<entity_t *> allEntities();
+
     void setTime(std::string text);
 
     entity_t *getEntityByName(std::string entity_name);
@@ -82,6 +85,11 @@ inline entity_t *entities_t::getEntityByName(std::string entity_name)
         ent = nullptr;
     }
     return ent;
+}
+
+inline std::vector<entity_t *> entities_t::allEntities()
+{
+    return _ents;
 }
 
 

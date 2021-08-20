@@ -14,13 +14,20 @@ using namespace std;
 machines_t::machines_t()
 {
     scheduling_parameters_t param;
+    weights_t weights;
     memset(&param, 0, sizeof(param));
-    _init(param);
+    _param = param;
+
+    memset(&weights, 0, sizeof(weights));
+    _weights = weights;
+
+    _init(_param);
 }
 
-machines_t::machines_t(scheduling_parameters_t param)
+machines_t::machines_t(scheduling_parameters_t param, weights_t weights)
 {
     _init(param);
+    _weights = weights;
 }
 
 machines_t::~machines_t()
@@ -37,7 +44,7 @@ machines_t::~machines_t()
 
 machines_t::machines_t(machines_t &other)
 {
-    throw logic_error("copy constructor hasn't been implemented");
+    throw invalid_argument("copy constructor hasn't been implemented");
 }
 
 void machines_t::_init(scheduling_parameters_t parameters)
@@ -64,7 +71,8 @@ void machines_t::_init(scheduling_parameters_t parameters)
     machine_ops->setup_time_functions[4] = {setupTimeSC, parameters.TIME_SC};
     machine_ops->setup_time_functions[5] = {setupTimeCSC, parameters.TIME_CSC};
     machine_ops->setup_time_functions[6] = {setupTimeUSC, parameters.TIME_USC};
-    machine_ops->sizeof_setup_time_function_array = num_of_setup_time_units;
+    machine_ops->sizeof_setup_time_function_array =
+        num_of_setup_time_units - 1;  // -1 is for ICSI
     machine_ops->reset = machineReset;
 }
 
@@ -86,6 +94,11 @@ void machines_t::addMachine(machine_t machine)
     }
     *machine_ptr = machine;
 
+    machine_ptr->current_job.base.ptr_derived_object =
+        &machine_ptr->current_job;
+    machine_ptr->current_job.list.ptr_derived_object =
+        &machine_ptr->current_job;
+
     // add into container
     _machines[machine_name] = machine_ptr;
 
@@ -100,6 +113,8 @@ void machines_t::addMachine(machine_t machine)
 
 void machines_t::addPrescheduledJob(job_t *job)
 {
+    job->base.ptr_derived_object = job;
+    job->list.ptr_derived_object = job;
     string machine_no(job->base.machine_no.data.text);
     machine_ops->add_job(&_machines.at(machine_no)->base, &job->list);
 }
@@ -107,7 +122,12 @@ void machines_t::addPrescheduledJob(job_t *job)
 void machines_t::prescheduleJobs()
 {
     for (map<string, machine_t *>::iterator it = _machines.begin();
-         it != _machines.end(); it++) {
+         it != _machines.end(); ++it) {
         machine_ops->sort_job(&it->second->base, list_ops);
+    }
+
+    for (map<string, machine_t *>::iterator it = _machines.begin();
+         it != _machines.end(); ++it) {
+        scheduling(it->second, machine_ops, _weights, _param);
     }
 }

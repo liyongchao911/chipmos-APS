@@ -77,7 +77,7 @@ void test_machines_t::SetUp()
                             {"pin_package", "TSOP1-48/M2"},
                             {"lot_number", "P23AWDV31"},
                             {"customer", "MXIC"},
-                            {"bd_id", "AAW048TP1041B"},
+                            {"bd_id", "AAS008YM2024A"},
                             {"oper", "2200"},
                             {"qty", "1280"},
                             {"location", "TA-A"},
@@ -186,7 +186,7 @@ TEST_F(test_machines_t, test_machines_addMachine2)
     EXPECT_THROW(machines->addMachine(ent2->machine()), invalid_argument);
 }
 
-TEST_F(test_machines_t, test_machine_addPrescheduledJob1)
+TEST_F(test_machines_t, test_machines_addPrescheduledJob1)
 {
     lot_t *lot1 = createALot(test_job_case1);
 
@@ -217,7 +217,7 @@ TEST_F(test_machines_t, test_machine_addPrescheduledJob1)
     ent = nullptr;
 }
 
-TEST_F(test_machines_t, test_machine_addPrescheduledJob2)
+TEST_F(test_machines_t, test_machines_addPrescheduledJob2)
 {
     lot_t *lot1 = createALot(test_job_case1);
     lot_t *lot2 = createALot(test_job_case2);
@@ -253,7 +253,7 @@ TEST_F(test_machines_t, test_machine_addPrescheduledJob2)
     ent = nullptr;
 }
 
-TEST_F(test_machines_t, test_machine_addPrescheduledJob3)
+TEST_F(test_machines_t, test_machines_addPrescheduledJob3)
 {
     lot_t *lot1 = createALot(test_job_case1);
     lot_t *lot2 = createALot(test_job_case2);
@@ -289,10 +289,15 @@ TEST_F(test_machines_t, test_machine_addPrescheduledJob3)
     ent = nullptr;
 }
 
-TEST_F(test_machines_t, test_machine_prescheduleJobs1)
+TEST_F(test_machines_t, test_machines_prescheduleJobs_sortJob1)
 {
     lot_t *lot1 = createALot(test_job_case1);
     lot_t *lot2 = createALot(test_job_case2);
+
+    ent = createAnEntity(test_entity_case1);
+
+    lot1->setPrescheduledModel(ent->_model_name);
+    lot2->setPrescheduledModel(ent->_model_name);
 
     job_t *job1 = new job_t(lot1->job());
     job_t *job2 = new job_t(lot2->job());
@@ -304,7 +309,6 @@ TEST_F(test_machines_t, test_machine_prescheduleJobs1)
     job2->base.ptr_derived_object = job2;
     job2->list.ptr_derived_object = job2;
 
-    ent = createAnEntity(test_entity_case1);
 
 
     ASSERT_NO_THROW(machines->addMachine(ent->machine()));
@@ -330,10 +334,14 @@ TEST_F(test_machines_t, test_machine_prescheduleJobs1)
     ent = nullptr;
 }
 
-TEST_F(test_machines_t, test_machine_prescheduleJobs2)
+TEST_F(test_machines_t, test_machines_prescheduleJobs_sortJob2)
 {
+    ent = createAnEntity(test_entity_case1);
     lot_t *lot1 = createALot(test_job_case1);
     lot_t *lot2 = createALot(test_job_case2);
+
+    lot1->setPrescheduledModel(ent->_model_name);
+    lot2->setPrescheduledModel(ent->_model_name);
 
     job_t *job1 = new job_t(lot1->job());
     job_t *job2 = new job_t(lot2->job());
@@ -345,7 +353,6 @@ TEST_F(test_machines_t, test_machine_prescheduleJobs2)
     job2->base.ptr_derived_object = job2;
     job2->list.ptr_derived_object = job2;
 
-    ent = createAnEntity(test_entity_case1);
 
 
     ASSERT_NO_THROW(machines->addMachine(ent->machine()));
@@ -363,6 +370,57 @@ TEST_F(test_machines_t, test_machine_prescheduleJobs2)
 
     EXPECT_EQ(machine->base.root->ptr_derived_object, job1);
     EXPECT_EQ(machine->base.root->next->ptr_derived_object, job2);
+
+    delete job1;
+    delete job2;
+    delete ent;
+    job1 = job2 = nullptr;
+    ent = nullptr;
+}
+
+TEST_F(test_machines_t, test_machines_prescheduleJobs_scheduling1)
+{
+    ent = createAnEntity(test_entity_case1);
+    lot_t *lot1 = createALot(test_job_case1);
+    lot_t *lot2 = createALot(test_job_case2);
+
+    lot1->setPrescheduledModel(ent->_model_name);
+    lot2->setPrescheduledModel(ent->_model_name);
+
+    job_t *job1 = new job_t(lot1->job());
+    job_t *job2 = new job_t(lot2->job());
+
+
+    job1->base.ptr_derived_object = job1;
+    job1->list.ptr_derived_object = job1;
+
+    job2->base.ptr_derived_object = job2;
+    job2->list.ptr_derived_object = job2;
+
+
+
+    ASSERT_NO_THROW(machines->addMachine(ent->machine()));
+
+    ASSERT_NO_THROW(machines->addPrescheduledJob(job2));
+    ASSERT_NO_THROW(machines->addPrescheduledJob(job1));
+
+    machine_t *machine;
+    ASSERT_NO_THROW(machine = machines->_machines.at("BB211"));
+
+    EXPECT_EQ(machine->base.root->ptr_derived_object, job2);
+    EXPECT_EQ(machine->base.root->next->ptr_derived_object, job1);
+
+    machines->prescheduleJobs();
+
+    EXPECT_EQ(machine->base.root->ptr_derived_object, job1);
+    EXPECT_EQ(machine->base.root->next->ptr_derived_object, job2);
+
+
+    EXPECT_NEAR(job1->base.end_time - job1->base.start_time, job1->base.ptime,
+                0.001);
+    EXPECT_NEAR(job2->base.end_time - job2->base.start_time, job2->base.ptime,
+                0.001);
+    EXPECT_NEAR(job2->base.start_time, job1->base.end_time, 0.000001);
 
     delete job1;
     delete job2;

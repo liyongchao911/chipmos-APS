@@ -26,7 +26,8 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _route = elements["route"];
     _lot_number = elements["lot_number"];
     _pin_package = elements["pin_package"];
-    _recipe = elements["bd_id"];
+    _recipe =
+        elements.count("recipe") == 1 ? elements["recipe"] : elements["bd_id"];
     _prod_id = elements["prod_id"];
     _urgent = elements["urgent_code"];
     _customer = elements["customer"];
@@ -387,6 +388,9 @@ job_t lot_t::job()
         lot_order /= (float) _sub_lots;
     } catch (std::invalid_argument &e) {
         std::cout << e.what() << std::endl;
+        lot_order = 1;
+    } catch (std::out_of_range &e) {
+        lot_order = 1;
     }
 
 
@@ -403,10 +407,21 @@ job_t lot_t::job()
         j.list.get_value = prescheduledJobGetValue;
         j.base.machine_no = stringToInfo(_prescheduled_machine);
         j.weight = _prescheduled_order;
+        try {
+            j.base.ptime = _model_process_times.at(_prescheduled_model);
+        } catch (std::out_of_range &e) {
+#ifdef LOG_ERROR
+            std::cerr << "Warning : Attempt to create job without setting "
+                         "prescheduled model. The ptime will be set as -1"
+                      << std::endl;
+#endif
+            j.base.ptime = -1;
+        }
     } else {
         j.list.get_value = jobGetValue;
         j.base.machine_no = emptyInfo();
         j.weight = lot_order;
+        j.base.ptime = 0.0;
     }
 
     return j;
