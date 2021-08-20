@@ -276,11 +276,21 @@ bool lot_t::setUph(csv_t _uph_csv)
         return false;
     } else {
         int nrows = _uph_csv.nrows();
+        std::map<std::string, double> uphs;
+
         for (int i = 0; i < nrows; ++i) {
             std::map<std::string, std::string> elements =
                 _uph_csv.getElements(i);
-            if (_uphs.count(elements["model"]) != 0) {
-                setUph(elements["model"], std::stof(elements["uph"]));
+            double value = std::stof(elements["uph"]);
+            if (value - 0.0 > 0.00000001) {
+                uphs[elements["model"]] = value;
+            }
+        }
+
+        for (std::map<std::string, double>::iterator it = uphs.begin();
+             it != uphs.end(); it++) {
+            if (_uphs.count(it->first) != 0) {
+                setUph(it->first, it->second);
             }
         }
     }
