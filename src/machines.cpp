@@ -1,12 +1,15 @@
 #include "include/machines.h"
+#include "include/info.h"
 #include "include/job_base.h"
 #include "include/linked_list.h"
+#include "include/machine.h"
 #include "include/machine_base.h"
 #include "include/parameters.h"
 
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <iostream>
 #include <stdexcept>
 
 using namespace std;
@@ -81,6 +84,8 @@ void machines_t::addMachine(machine_t machine)
 {
     // check if machine exist
     string machine_name(machine.base.machine_no.data.text);
+    string model_name(machine.model_name.data.text);
+    string location(machine.location.data.text);
     if (_machines.count(machine_name) == 1) {
         throw std::invalid_argument("[" + machine_name + "] is added twice");
     }
@@ -109,6 +114,16 @@ void machines_t::addMachine(machine_t machine)
     _tool_machines[part_no].push_back(machine_ptr);
     _wire_machines[part_id].push_back(machine_ptr);
     _tool_wire_machines[part_no + "_" + part_id].push_back(machine_ptr);
+
+    if (_model_locations.count(model_name) == 0) {
+        _model_locations[model_name] = vector<string>();
+    }
+
+    if (find(_model_locations[model_name].begin(),
+             _model_locations[model_name].end(),
+             location) == _model_locations[model_name].end()) {
+        _model_locations[model_name].push_back(location);
+    }
 }
 
 void machines_t::addPrescheduledJob(job_t *job)
@@ -124,10 +139,104 @@ void machines_t::prescheduleJobs()
     for (map<string, machine_t *>::iterator it = _machines.begin();
          it != _machines.end(); ++it) {
         machine_ops->sort_job(&it->second->base, list_ops);
+        scheduling(it->second, machine_ops, _weights, _param);
+        setJob2Scheduled(it->second);
+        setLastJobInMachine(it->second);
+    }
+}
+
+bool machinePtrComparison(machine_t *m1, machine_t *m2)
+{
+    return m1->base.available_time < m2->base.available_time;
+}
+
+bool jobPtrComparison(job_t *j1, job_t *j2)
+{
+    return j1->base.arriv_t < j2->base.arriv_t;
+}
+
+void machines_t::addGroupJobs(string recipe, vector<job_t *> jobs)
+{
+    if (_groups.count(recipe) != 0)
+        cerr << "Warning : you add group of jobs twice, recipe is [" << recipe
+             << "]" << endl;
+
+    vector<machine_t *> machines;
+    for (auto it = _machines.begin(); it != _machines.end(); it++) {
+        if (strcmp(it->second->current_job.bdid.data.text, recipe.c_str()) ==
+            0) {
+            machines.push_back(it->second);
+        }
     }
 
-    for (map<string, machine_t *>::iterator it = _machines.begin();
-         it != _machines.end(); ++it) {
-        scheduling(it->second, machine_ops, _weights, _param);
+    _groups[recipe] =
+        (struct __machine_group_t){.machines = machines,
+                                   .unscheduled_jobs = jobs,
+                                   .scheduled_jobs = vector<job_t *>()};
+}
+
+vector<machine_t *> machines_t::_sortedMachines(vector<machine_t *> &ms)
+{
+    sort(ms.begin(), ms.end(), machinePtrComparison);
+    return ms;
+}
+
+vector<job_t *> machines_t::_sortedJobs(std::vector<job_t *> &jobs)
+{
+    sort(jobs.begin(), jobs.end(), jobPtrComparison);
+    return jobs;
+}
+
+
+void machines_t::_scheduleAGroup(struct __machine_group_t *group)
+{
+    vector<machine_t *> machines = group->machines;
+    vector<job_t *> unscheduled_jobs = group->unscheduled_jobs;
+
+    sort(machines.begin(), machines.end(), machinePtrComparison);
+    sort(unscheduled_jobs.begin(), unscheduled_jobs.end(), jobPtrComparison);
+    bool end = true;
+    while (end) {
+        int num_scheduled_jobs = 0;
+        iter(machines, i)
+        {
+            string location(machines[i]->location.data.text);
+            string model(machines[i]->model_name.data.text);
+
+            iter(unscheduled_jobs, j)
+            {
+                if (unscheduled_jobs[j]->is_scheduled)
+                    continue;
+
+                // check the location is suitable
+                string lot_number(unscheduled_jobs[j]->base.job_info.data.text);
+                vector<string> locations = _job_can_run_locations[lot_number];
+
+                if (find(locations.begin(), locations.end(), location) !=
+                        locations.end() &&
+                    unscheduled_jobs[j]->base.arriv_t <=
+                        machines[i]->base.available_time) {
+                    unscheduled_jobs[j]->base.ptime =
+                        _job_process_times[lot_number][model];
+                    staticAddJob(machines[i], unscheduled_jobs[j], machine_ops);
+                    unscheduled_jobs[j]->is_scheduled = true;
+                    num_scheduled_jobs += 1;
+                    break;
+                }
+            }
+        }
+        if (num_scheduled_jobs == 0)
+            end = false;
+    }
+
+    group->unscheduled_jobs.clear();
+    group->scheduled_jobs.clear();
+    iter(unscheduled_jobs, i)
+    {
+        if (unscheduled_jobs[i]->is_scheduled) {
+            group->scheduled_jobs.push_back(unscheduled_jobs[i]);
+        } else {
+            group->unscheduled_jobs.push_back(unscheduled_jobs[i]);
+        }
     }
 }

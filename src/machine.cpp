@@ -1,5 +1,7 @@
 #include "include/machine.h"
 #include <string.h>
+#include "include/job_base.h"
+#include "include/linked_list.h"
 #include "include/machine_base.h"
 #include "include/parameters.h"
 
@@ -199,6 +201,7 @@ void setLastJobInMachine(machine_t *machine)
     machine->current_job = *job;
     machine->current_job.base.ptr_derived_object = &machine->current_job;
     machine->current_job.list.ptr_derived_object = &machine->current_job;
+    machine->base.available_time = job->base.end_time;
 }
 
 
@@ -289,4 +292,25 @@ void insertAlgorithm(machine_t *machine,
         }
         it = it->next;
     }
+}
+
+void setJob2Scheduled(machine_t *machine)
+{
+    list_ele_t *it = machine->base.root;
+    job_t *job;
+    while (it) {
+        job = (job_t *) it->ptr_derived_object;
+        job->is_scheduled = true;
+        it = it->next;
+    }
+}
+
+void staticAddJob(machine_t *machine,
+                  job_t *job,
+                  machine_base_operations_t *machine_ops)
+{
+    machine_ops->add_job(&machine->base, &job->list);
+    set_start_time(&job->base, machine->base.available_time);
+    machine->base.available_time = get_end_time(&job->base);
+    machine->current_job = *job;
 }

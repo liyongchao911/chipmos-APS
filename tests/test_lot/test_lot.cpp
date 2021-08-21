@@ -414,6 +414,7 @@ TEST_F(test_lot_t, test_lot_job1)
     EXPECT_EQ(job.base.start_time, 0);
     EXPECT_EQ(job.base.end_time, 0);
     EXPECT_EQ(job.base.arriv_t, lot->_queue_time);
+    EXPECT_EQ(job.is_scheduled, false);
 
     info_t machine_no = job.base.machine_no;
     info_t empty_info = emptyInfo();

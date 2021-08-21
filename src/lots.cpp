@@ -825,3 +825,19 @@ vector<lot_t *> lots_t::createLots(
 
     return lot_ptrs;
 }
+
+map<string, vector<lot_t *> > lots_t::getLotsRecipeGroups()
+{
+    map<string, vector<lot_t *> > groups;
+
+    iter(this->lots, i)
+    {
+        string recipe = this->lots[i]->recipe();
+        if (groups.count(recipe) == 0)
+            groups[recipe] = vector<lot_t *>();
+
+        groups[recipe].push_back(this->lots[i]);
+    }
+
+    return groups;
+}

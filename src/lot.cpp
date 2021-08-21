@@ -112,6 +112,13 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
         }
     }
 
+    // if(elements.count("CAN_RUN_LOCATIONS") != 0){
+    //     char * text = strdup(elements["CAN_RUN_LOCATIONS"].c_str());
+    //     std::vector<std::string> locations = split(text, ',');
+    //     free(text);
+    //     _can_run_locations = locations;
+    // }
+
     _part_id = elements.count("part_id") == 0 ? "" : elements["part_id"];
     _part_no = elements.count("part_no") == 0 ? "" : elements["part_no"];
     _sub_lots =
@@ -260,6 +267,7 @@ std::map<std::string, std::string> lot_t::data()
 
     d["CAN_RUN_MODELS"] = join(models, ",");
     d["PROCESS_TIME"] = join(process_times, ",");
+    // d["CAN_RUN_LOCATIONS"] = join(_can_run_locations, ",");
     d["uphs"] = join(uphs, ",");
     return d;
 }
@@ -360,13 +368,16 @@ void lot_t::setCanRunLocation(
     }
 }
 
-bool lot_t::isEntityCanRun(std::string model, std::string location)
+bool lot_t::isEntitySuitable(std::string location)
 {
-    if (_uphs.count(model) != 0) {
-        if (find(_can_run_locations.begin(), _can_run_locations.end(),
-                 location) != _can_run_locations.end()) {
-            return true;
-        }
+    // Edit in 2021/8/21
+    // In previous version, the code check for model first and than check the
+    // location Actually, Model spreads in several locations but there is only
+    // one kind of model in a location. So, we just need to check the entity's
+    // location to determine if the entity can run or not;
+    if (find(_can_run_locations.begin(), _can_run_locations.end(), location) !=
+        _can_run_locations.end()) {
+        return true;
     }
     return false;
 }
@@ -377,6 +388,7 @@ job_t lot_t::job()
     job_t j;
     job_base_init(&j.base);
     _list_init(&j.list);
+    j.is_scheduled = false;
 
     j.base.job_info = stringToInfo(_lot_number);
 
@@ -412,6 +424,7 @@ job_t lot_t::job()
     j.base.qty = _qty;
     j.base.start_time = j.base.end_time = 0;
     j.base.arriv_t = _queue_time;
+
 
     if (isPrescheduled()) {
         j.list.get_value = prescheduledJobGetValue;

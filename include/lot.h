@@ -468,21 +468,11 @@ public:
     std::vector<std::string> getCanRunLocations();
 
     /**
-     * isEntityCanRun () - check if the lot can run on this model and location
-     * @param model : model's name of this entity.
+     * isEntitySuitable () - check if the lot can run on this model and location
      * @param location : location of this entity.
      * @return
      */
-    bool isEntityCanRun(std::string model, std::string location);
-
-    // /**
-    //  * addCanRunEntity () - add can run entity's name to can run entity
-    //  vector
-    //  * @param ent
-    //  * @return
-    //  */
-    // bool addCanRunEntity(entity_t *ent);
-
+    bool isEntitySuitable(std::string location);
 
     /**
      * getCanRunEntities () - get can run entities vector
@@ -528,7 +518,14 @@ public:
     void setPrescheduledModel(std::string model);
 
     void setNotPrescheduled();
+
+    std::map<std::string, double> getModelProcessTimes();
 };
+
+inline std::map<std::string, double> lot_t::getModelProcessTimes()
+{
+    return _model_process_times;
+}
 
 inline void lot_t::setNotPrescheduled()
 {

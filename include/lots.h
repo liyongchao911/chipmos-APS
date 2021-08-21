@@ -334,6 +334,8 @@ public:
         std::map<std::string, std::vector<entity_t *> > loc_ents);
 
     std::vector<lot_t *> prescheduledLots();
+
+    std::map<std::string, std::vector<lot_t *> > getLotsRecipeGroups();
 };
 
 inline std::vector<lot_t *> lots_t::prescheduledLots()

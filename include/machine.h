@@ -56,11 +56,17 @@ void scheduling(machine_t *mahcine,
                 weights_t weights,
                 scheduling_parameters_t scheduling_parameters);
 
+void staticAddJob(machine_t *machine,
+                  job_t *job,
+                  machine_base_operations_t *ops);
+
 void insertAlgorithm(machine_t *machine,
                      machine_base_operations_t *ops,
                      weights_t weights,
                      scheduling_parameters_t scheduling_parameters);
 
 void setLastJobInMachine(machine_t *machine);
+
+void setJob2Scheduled(machine_t *machine);
 
 #endif

@@ -5,8 +5,8 @@
 
 #define LOG_ERROR
 
+#include "include/algorithm.h"
 #include "include/csv.h"
-#include "include/da.h"
 #include "include/entity.h"
 #include "include/infra.h"
 #include "include/lot.h"
@@ -24,8 +24,8 @@ map<string, string> outputJobInMachine(machine_t *machine);
 void outputJobInMachine(map<string, machine_t *>, csv_t *csv);
 
 lots_t createLots(int argc, const char *argv[]);
-
 entities_t createEntities(int argc, const char *argv[]);
+
 
 int main(int argc, const char *argv[])
 {
@@ -39,9 +39,6 @@ int main(int argc, const char *argv[])
 
     lots_t lots = createLots(argc, argv);
     entities_t entities = createEntities(argc, argv);
-
-    // ancillary_resources_t tools(lots.amountOfTools());
-    // ancillary_resources_t wires(lots.amountOfWires());
 
 
     // srand(time(NULL));
@@ -78,41 +75,24 @@ int main(int argc, const char *argv[])
     vector<entity_t *> all_entities = entities.allEntities();
     iter(all_entities, i) { machines->addMachine(all_entities[i]->machine()); }
 
-    vector<lot_t *> prescheduled_lots = lots.prescheduledLots();
-    vector<job_t *> prescheduled_jobs;
-    iter(prescheduled_lots, i)
-    {
-        job_t *job = new job_t();
-        try {
-            string prescheduled_model = machines->getModelByEntityName(
-                prescheduled_lots[i]->preScheduledEntity());
-            prescheduled_lots[i]->setPrescheduledModel(prescheduled_model);
-            *job = prescheduled_lots[i]->job();
-            machines->addPrescheduledJob(job);
-            prescheduled_jobs.push_back(job);
-        } catch (out_of_range &e) {
-            delete job;
-            lots.pushBackNotPrescheduledLot(prescheduled_lots[i]);
-        }
-    }
+    prescheduling(machines, &lots);
+    // stage2Scheduling(machines, &lots);
 
-    machines->prescheduleJobs();
+    // const vector<machine_t *> scheduled_machines =
+    //     machines->scheduledMachines();
+    // csv_t result("output/result.csv", "w");
 
-    const vector<machine_t *> scheduled_machines =
-        machines->scheduledMachines();
-    csv_t result("output/result.csv", "w");
+    // iter(scheduled_machines, i)
+    // {
+    //     result.addData(outputJobInMachine(scheduled_machines[i]));
+    // }
 
-    iter(scheduled_machines, i)
-    {
-        result.addData(outputJobInMachine(scheduled_machines[i]));
-    }
+    // iter(prescheduled_jobs, i)
+    // {
+    //     result.addData(outputJob(*prescheduled_jobs[i]));
+    // }
 
-    iter(prescheduled_jobs, i)
-    {
-        result.addData(outputJob(*prescheduled_jobs[i]));
-    }
-
-    result.write();
+    // result.write();
 
     // outputJobInMachine(machines.getMachines(), &result);
     // initializeOperations(&pop);
@@ -137,6 +117,8 @@ int main(int argc, const char *argv[])
 
     return 0;
 }
+
+
 
 lots_t createLots(int argc, const char *argv[])
 {
