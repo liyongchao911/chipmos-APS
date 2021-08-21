@@ -6,11 +6,14 @@
 #include "include/machine_base.h"
 #include "include/parameters.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
+
 
 using namespace std;
 
