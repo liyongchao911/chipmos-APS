@@ -191,17 +191,20 @@ void scheduling(machine_t *machine,
 void setLastJobInMachine(machine_t *machine)
 {
     list_ele_t *it = machine->base.root;
+    // Protect the job declared below not to be nullptr in loop;
     if (!it)
         return;
-    job_t *job;
+    job_t *job = nullptr;
     while (it) {
         job = (job_t *) it->ptr_derived_object;
         it = it->next;
     }
-    machine->current_job = *job;
-    machine->current_job.base.ptr_derived_object = &machine->current_job;
-    machine->current_job.list.ptr_derived_object = &machine->current_job;
-    machine->base.available_time = job->base.end_time;
+    if (job != nullptr) {
+        machine->current_job = *job;
+        machine->current_job.base.ptr_derived_object = &machine->current_job;
+        machine->current_job.list.ptr_derived_object = &machine->current_job;
+        machine->base.available_time = job->base.end_time;
+    }
 }
 
 
@@ -310,7 +313,10 @@ void staticAddJob(machine_t *machine,
                   machine_base_operations_t *machine_ops)
 {
     machine_ops->add_job(&machine->base, &job->list);
-    set_start_time(&job->base, machine->base.available_time);
+    double start_time = (job->base.arriv_t > machine->base.available_time)
+                            ? job->base.arriv_t
+                            : machine->base.available_time;
+    set_start_time(&job->base, start_time);
     machine->base.available_time = get_end_time(&job->base);
     machine->current_job = *job;
 }

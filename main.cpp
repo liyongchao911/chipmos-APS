@@ -76,23 +76,12 @@ int main(int argc, const char *argv[])
     iter(all_entities, i) { machines->addMachine(all_entities[i]->machine()); }
 
     prescheduling(machines, &lots);
-    // stage2Scheduling(machines, &lots);
+    stage2Scheduling(machines, &lots);
 
-    // const vector<machine_t *> scheduled_machines =
-    //     machines->scheduledMachines();
-    // csv_t result("output/result.csv", "w");
-
-    // iter(scheduled_machines, i)
-    // {
-    //     result.addData(outputJobInMachine(scheduled_machines[i]));
-    // }
-
-    // iter(prescheduled_jobs, i)
-    // {
-    //     result.addData(outputJob(*prescheduled_jobs[i]));
-    // }
-
-    // result.write();
+    const vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
+    csv_t result("output/result.csv", "w");
+    iter(scheduled_jobs, i) { result.addData(outputJob(*scheduled_jobs[i])); }
+    result.write();
 
     // outputJobInMachine(machines.getMachines(), &result);
     // initializeOperations(&pop);
@@ -189,6 +178,7 @@ map<string, string> outputJob(job_t job)
                                 {"start_time", to_string(job.base.start_time)},
                                 {"end_time", to_string(job.base.end_time)},
                                 {"oper", to_string(job.oper)},
+                                {"arrival_time", to_string(job.base.arriv_t)},
                                 {"process_time", to_string(job.base.ptime)}});
 }
 

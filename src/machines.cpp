@@ -139,12 +139,32 @@ void machines_t::addPrescheduledJob(job_t *job)
 
 void machines_t::prescheduleJobs()
 {
+    job_t *job_on_machine;
+
     for (map<string, machine_t *>::iterator it = _machines.begin();
          it != _machines.end(); ++it) {
         machine_ops->sort_job(&it->second->base, list_ops);
         scheduling(it->second, machine_ops, _weights, _param);
         setJob2Scheduled(it->second);
-        setLastJobInMachine(it->second);
+
+        // collect the job which is on the machine
+        job_on_machine = new job_t();
+        *job_on_machine = it->second->current_job;
+        _scheduled_jobs.push_back(job_on_machine);
+
+        setLastJobInMachine(
+            it->second);  // if the machine is scheduled, it will be set
+    }
+
+    // collect scheduled jobs
+    list_ele_t *list;
+    for (map<string, machine_t *>::iterator it = _machines.begin();
+         it != _machines.end(); ++it) {
+        list = it->second->base.root;
+        while (list) {
+            _scheduled_jobs.push_back((job_t *) list->ptr_derived_object);
+            list = list->next;
+        }
     }
 }
 
@@ -217,12 +237,15 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
 
                 if (find(locations.begin(), locations.end(), location) !=
                         locations.end() &&
-                    unscheduled_jobs[j]->base.arriv_t <=
-                        machines[i]->base.available_time) {
+                    (unscheduled_jobs[j]->base.arriv_t -
+                         machines[i]->base.available_time <=
+                     60)) {
                     unscheduled_jobs[j]->base.ptime =
                         _job_process_times[lot_number][model];
                     staticAddJob(machines[i], unscheduled_jobs[j], machine_ops);
                     unscheduled_jobs[j]->is_scheduled = true;
+                    unscheduled_jobs[j]->base.machine_no =
+                        machines[i]->base.machine_no;
                     num_scheduled_jobs += 1;
                     break;
                 }
@@ -241,5 +264,26 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
         } else {
             group->unscheduled_jobs.push_back(unscheduled_jobs[i]);
         }
+    }
+}
+
+void machines_t::scheduleGroups()
+{
+    std::map<std::string, struct __machine_group_t> ngroups;
+    for (map<string, struct __machine_group_t>::iterator it = _groups.begin();
+         it != _groups.end(); it++) {
+        _scheduleAGroup(&it->second);
+        _scheduled_jobs += it->second.scheduled_jobs;  // collect scheduled lots
+        if (it->second.unscheduled_jobs.size() != 0) {
+            ngroups[it->first] = it->second;
+            ngroups[it->first].scheduled_jobs.clear();
+            ngroups[it->first].machines.clear();
+        }
+    }
+    _groups = ngroups;
+    for (map<string, struct __machine_group_t>::iterator it = _groups.begin();
+         it != _groups.end(); it++) {
+        printf("[%s] : %lu jobs\n", it->first.c_str(),
+               it->second.unscheduled_jobs.size());
     }
 }

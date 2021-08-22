@@ -30,10 +30,10 @@ private:
     map<string, string> lot_data_bd2;
 
     vector<entity_t *> entities;
-    map<string, vector<lot_t *> > recipe_lots;
     time_t base_time;
 
 public:
+    map<string, vector<lot_t *> > recipe_lots;
     machines_t *machines;
     void SetUp() override;
     void TearDown() override;
@@ -80,7 +80,7 @@ void test_machines_t_scheduleAGroup::SetUp()
                              {"amount_of_tools", "10"},
                              {"amount_of_wires", "20"},
                              {"CAN_RUN_MODELS", "UTC1000,UTC2000,UTC3000"},
-                             {"PROCESS_TIME", "123.45,456.78,789.1"},
+                             {"PROCESS_TIME", "10,10,10"},
                              {"uphs", "23,45,67"},
                              {"part_id", "PART_ID"},
                              {"part_no", "PART_NO"}});
@@ -132,24 +132,6 @@ void test_machines_t_scheduleAGroup::SetUp()
         lot_data_bd2["queue_time"] = to_string(0);
         recipe_lots["BD2"].push_back(new lot_t(lot_data_bd1));
     }
-
-    for (map<string, vector<lot_t *> >::iterator it = recipe_lots.begin();
-         it != recipe_lots.end(); ++it) {
-        vector<job_t *> jobs;
-        for (unsigned int i = 0; i < it->second.size(); i++) {
-            it->second[i]->setCanRunLocation(machines->getModelLocations());
-            machines->addJobLocation(it->second[i]->lotNumber(),
-                                     it->second[i]->getCanRunLocations());
-            machines->addJobProcessTimes(it->second[i]->lotNumber(),
-                                         it->second[i]->getModelProcessTimes());
-            job_t *job = new job_t();
-            *job = it->second[i]->job();
-            job->base.ptr_derived_object = job;
-            job->list.ptr_derived_object = job;
-            jobs.push_back(job);
-        }
-        machines->addGroupJobs(it->first, jobs);
-    }
 }
 
 void test_machines_t_scheduleAGroup::TearDown()
@@ -170,6 +152,23 @@ void test_machines_t_scheduleAGroup::TearDown()
 
 TEST_F(test_machines_t_scheduleAGroup, test_group_setting)
 {
+    for (map<string, vector<lot_t *> >::iterator it = recipe_lots.begin();
+         it != recipe_lots.end(); ++it) {
+        vector<job_t *> jobs;
+        for (unsigned int i = 0; i < it->second.size(); i++) {
+            it->second[i]->setCanRunLocation(machines->getModelLocations());
+            machines->addJobLocation(it->second[i]->lotNumber(),
+                                     it->second[i]->getCanRunLocations());
+            machines->addJobProcessTimes(it->second[i]->lotNumber(),
+                                         it->second[i]->getModelProcessTimes());
+            job_t *job = new job_t();
+            *job = it->second[i]->job();
+            job->base.ptr_derived_object = job;
+            job->list.ptr_derived_object = job;
+            jobs.push_back(job);
+        }
+        machines->addGroupJobs(it->first, jobs);
+    }
     EXPECT_EQ(machines->_groups.count("BD1"), 1);
     EXPECT_EQ(machines->_groups.count("BD2"), 1);
 
@@ -183,6 +182,24 @@ TEST_F(test_machines_t_scheduleAGroup, test_group_setting)
 
 TEST_F(test_machines_t_scheduleAGroup, test_sorting)
 {
+    for (map<string, vector<lot_t *> >::iterator it = recipe_lots.begin();
+         it != recipe_lots.end(); ++it) {
+        vector<job_t *> jobs;
+        for (unsigned int i = 0; i < it->second.size(); i++) {
+            it->second[i]->setCanRunLocation(machines->getModelLocations());
+            machines->addJobLocation(it->second[i]->lotNumber(),
+                                     it->second[i]->getCanRunLocations());
+            machines->addJobProcessTimes(it->second[i]->lotNumber(),
+                                         it->second[i]->getModelProcessTimes());
+            job_t *job = new job_t();
+            *job = it->second[i]->job();
+            job->base.ptr_derived_object = job;
+            job->list.ptr_derived_object = job;
+            jobs.push_back(job);
+        }
+        machines->addGroupJobs(it->first, jobs);
+    }
+
     for (map<string, struct __machine_group_t>::iterator it =
              machines->_groups.begin();
          it != machines->_groups.end(); ++it) {
@@ -199,8 +216,25 @@ TEST_F(test_machines_t_scheduleAGroup, test_sorting)
     }
 }
 
-TEST_F(test_machines_t_scheduleAGroup, test_correctness1)
+TEST_F(test_machines_t_scheduleAGroup, test_correctness_full_scheduled1)
 {
+    for (map<string, vector<lot_t *> >::iterator it = recipe_lots.begin();
+         it != recipe_lots.end(); ++it) {
+        vector<job_t *> jobs;
+        for (unsigned int i = 0; i < it->second.size(); i++) {
+            it->second[i]->setCanRunLocation(machines->getModelLocations());
+            machines->addJobLocation(it->second[i]->lotNumber(),
+                                     it->second[i]->getCanRunLocations());
+            machines->addJobProcessTimes(it->second[i]->lotNumber(),
+                                         it->second[i]->getModelProcessTimes());
+            job_t *job = new job_t();
+            *job = it->second[i]->job();
+            job->base.ptr_derived_object = job;
+            job->list.ptr_derived_object = job;
+            jobs.push_back(job);
+        }
+        machines->addGroupJobs(it->first, jobs);
+    }
     // edit the time make all of jobs be able to be scheduled
     for (map<string, machine_t *>::iterator it = machines->_machines.begin();
          it != machines->_machines.end(); it++) {
@@ -220,4 +254,194 @@ TEST_F(test_machines_t_scheduleAGroup, test_correctness1)
          it != machines->_machines.end(); it++) {
         EXPECT_EQ(it->second->base.size_of_jobs, 2);
     }
+}
+
+TEST_F(test_machines_t_scheduleAGroup, test_correctness_full_scheduled2)
+{
+    for (map<string, vector<lot_t *> >::iterator it = recipe_lots.begin();
+         it != recipe_lots.end(); ++it) {
+        vector<job_t *> jobs;
+        for (unsigned int i = 0; i < it->second.size(); i++) {
+            it->second[i]->setCanRunLocation(machines->getModelLocations());
+            machines->addJobLocation(it->second[i]->lotNumber(),
+                                     it->second[i]->getCanRunLocations());
+            machines->addJobProcessTimes(it->second[i]->lotNumber(),
+                                         it->second[i]->getModelProcessTimes());
+            job_t *job = new job_t();
+            *job = it->second[i]->job();
+            job->base.ptr_derived_object = job;
+            job->list.ptr_derived_object = job;
+            jobs.push_back(job);
+        }
+
+        for (unsigned int i = 0; i < jobs.size(); ++i) {
+            if (i % 2 == 0)
+                jobs[i]->base.arriv_t = 10;
+            else
+                jobs[i]->base.arriv_t = 0;
+        }
+
+        machines->addGroupJobs(it->first, jobs);
+    }
+    // edit the time make all of jobs be able to be scheduled
+    for (map<string, machine_t *>::iterator it = machines->_machines.begin();
+         it != machines->_machines.end(); it++) {
+        it->second->base.available_time = 0;
+    }
+    machines->_scheduleAGroup(&machines->_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+
+    // check
+    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 8);
+
+
+    for (map<string, machine_t *>::iterator it = machines->_machines.begin();
+         it != machines->_machines.end(); it++) {
+        EXPECT_EQ(it->second->base.size_of_jobs, 2);
+    }
+}
+
+TEST_F(test_machines_t_scheduleAGroup, test_correctness_full_scheduled3_gap_60)
+{
+    for (map<string, vector<lot_t *> >::iterator it = recipe_lots.begin();
+         it != recipe_lots.end(); ++it) {
+        vector<job_t *> jobs;
+        for (unsigned int i = 0; i < it->second.size(); i++) {
+            it->second[i]->setCanRunLocation(machines->getModelLocations());
+            machines->addJobLocation(it->second[i]->lotNumber(),
+                                     it->second[i]->getCanRunLocations());
+            machines->addJobProcessTimes(it->second[i]->lotNumber(),
+                                         it->second[i]->getModelProcessTimes());
+            job_t *job = new job_t();
+            *job = it->second[i]->job();
+            job->base.ptr_derived_object = job;
+            job->list.ptr_derived_object = job;
+            jobs.push_back(job);
+        }
+
+        for (unsigned int i = 0; i < jobs.size(); ++i) {
+            if (i % 2 == 0)
+                jobs[i]->base.arriv_t = 70;
+            else
+                jobs[i]->base.arriv_t = 0;
+        }
+
+        machines->addGroupJobs(it->first, jobs);
+    }
+    // edit the time make all of jobs be able to be scheduled
+    for (map<string, machine_t *>::iterator it = machines->_machines.begin();
+         it != machines->_machines.end(); it++) {
+        it->second->base.available_time = 0;
+    }
+    machines->_scheduleAGroup(&machines->_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+
+    // check
+    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 8);
+
+
+    for (map<string, machine_t *>::iterator it = machines->_machines.begin();
+         it != machines->_machines.end(); it++) {
+        EXPECT_EQ(it->second->base.size_of_jobs, 2);
+    }
+}
+
+
+
+TEST_F(test_machines_t_scheduleAGroup, test_correctness_half_scheduled1)
+{
+    for (map<string, vector<lot_t *> >::iterator it = recipe_lots.begin();
+         it != recipe_lots.end(); ++it) {
+        vector<job_t *> jobs;
+        for (unsigned int i = 0; i < it->second.size(); i++) {
+            it->second[i]->setCanRunLocation(machines->getModelLocations());
+            machines->addJobLocation(it->second[i]->lotNumber(),
+                                     it->second[i]->getCanRunLocations());
+            machines->addJobProcessTimes(it->second[i]->lotNumber(),
+                                         it->second[i]->getModelProcessTimes());
+            job_t *job = new job_t();
+            *job = it->second[i]->job();
+            job->base.ptr_derived_object = job;
+            job->list.ptr_derived_object = job;
+            jobs.push_back(job);
+        }
+
+        for (unsigned int i = 0; i < jobs.size(); ++i) {
+            if (i % 2 == 0)
+                jobs[i]->base.arriv_t = 90;
+            else
+                jobs[i]->base.arriv_t = 0;
+        }
+
+        machines->addGroupJobs(it->first, jobs);
+    }
+    // edit the time make all of jobs be able to be scheduled
+    for (map<string, machine_t *>::iterator it = machines->_machines.begin();
+         it != machines->_machines.end(); it++) {
+        it->second->base.available_time = 0;
+    }
+    machines->_scheduleAGroup(&machines->_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+
+    // check
+    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 4);
+    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 4);
+    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 4);
+    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 4);
+
+
+    for (map<string, machine_t *>::iterator it = machines->_machines.begin();
+         it != machines->_machines.end(); it++) {
+        EXPECT_EQ(it->second->base.size_of_jobs, 1);
+    }
+}
+
+TEST_F(test_machines_t_scheduleAGroup, test_correctness_half_scheduled2)
+{
+    for (map<string, vector<lot_t *> >::iterator it = recipe_lots.begin();
+         it != recipe_lots.end(); ++it) {
+        vector<job_t *> jobs;
+        for (unsigned int i = 0; i < it->second.size(); i++) {
+            it->second[i]->setCanRunLocation(machines->getModelLocations());
+            machines->addJobLocation(it->second[i]->lotNumber(),
+                                     it->second[i]->getCanRunLocations());
+            machines->addJobProcessTimes(it->second[i]->lotNumber(),
+                                         it->second[i]->getModelProcessTimes());
+            job_t *job = new job_t();
+            *job = it->second[i]->job();
+            job->base.ptr_derived_object = job;
+            job->list.ptr_derived_object = job;
+            jobs.push_back(job);
+        }
+
+        for (unsigned int i = 0; i < jobs.size(); ++i) {
+            jobs[i]->base.arriv_t = (i >> 1) * 10 + (i >> 1) * 60;
+        }
+
+        machines->addGroupJobs(it->first, jobs);
+    }
+    // edit the time make all of jobs be able to be scheduled
+    for (map<string, machine_t *>::iterator it = machines->_machines.begin();
+         it != machines->_machines.end(); it++) {
+        it->second->base.available_time = 0;
+    }
+    machines->_scheduleAGroup(&machines->_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+
+    // check
+    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 8);
+
+    vector<machine_t *> scheduled_machines = machines->scheduledMachines();
+    EXPECT_EQ(scheduled_machines.size(), 4);
+    for (unsigned int i = 0; i < scheduled_machines.size(); ++i)
+        EXPECT_EQ(scheduled_machines[i]->base.size_of_jobs, 4);
 }

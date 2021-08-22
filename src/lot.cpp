@@ -77,7 +77,9 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
 
     _finish_traversal = false;
 
-    tmp_oper = _oper;
+    tmp_oper = (elements.count("dest_oper") == 0)
+                   ? _oper
+                   : std::stoi(elements["dest_oper"]);
     tmp_mvin = _mvin;
 
     _is_sub_lot = _lot_number.length() > 8 ? true : false;
@@ -342,7 +344,7 @@ void lot_t::setCanRunLocation(
                 locations[j].compare("TA-U") == 0) {
                 if (_pin_package.find("DFN") != std::string::npos ||
                     _pin_package.find("QFN") != std::string::npos ||
-                    _part_no[4] != 'A') {
+                    _part_id[4] != 'A') {
                     continue;
                 } else {
                     _can_run_locations.push_back(locations[j]);
@@ -356,7 +358,7 @@ void lot_t::setCanRunLocation(
                 }
             } else if (locations[j].compare("TB-P") == 0) {
                 if (_pin_package.find("TSOP1") != std::string::npos ||
-                    _part_no[4] == 'A') {
+                    _part_id[4] == 'A') {
                     continue;
                 } else {
                     _can_run_locations.push_back(locations[j]);

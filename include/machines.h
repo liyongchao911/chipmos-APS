@@ -31,6 +31,9 @@ protected:
     // model->locations
     std::map<std::string, std::vector<std::string> > _model_locations;
 
+    // scheduled jobs
+    std::vector<job_t *> _scheduled_jobs;
+
     list_operations_t *list_ops;
     machine_base_operations_t *machine_ops;
     job_base_operations_t *job_ops;
@@ -79,8 +82,15 @@ public:
 
     std::map<std::string, std::vector<std::string> > getModelLocations();
 
+    const std::vector<job_t *> getScheduledJobs();
+
     ~machines_t();
 };
+
+inline const std::vector<job_t *> machines_t::getScheduledJobs()
+{
+    return this->_scheduled_jobs;
+}
 
 inline std::map<std::string, std::vector<std::string> >
 machines_t::getModelLocations()
