@@ -12,4 +12,6 @@ void prescheduling(machines_t *machines, lots_t *lots);
 
 void stage2Scheduling(machines_t *machines, lots_t *lots);
 
+void stage3Scheduling(machines_t *machines, lots_t *lots);
+
 #endif

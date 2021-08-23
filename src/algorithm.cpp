@@ -57,3 +57,14 @@ void stage2Scheduling(machines_t *machines, lots_t *lots)
 
     machines->scheduleGroups();
 }
+
+
+void stage3Scheduling(machines_t *machines, lots_t *lots)
+{
+    machines->setNumberOfTools(lots->amountOfTools());
+    machines->setNumberOfWires(lots->amountOfWires());
+
+    machines->groupJobsByToolAndWire();
+    machines->distributeTools();
+    machines->distributeWires();
+}

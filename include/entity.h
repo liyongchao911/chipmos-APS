@@ -13,12 +13,6 @@
 #include "include/lot.h"
 #include "include/machine.h"
 
-unsigned int convertEntityNameToUInt(std::string name);
-std::string convertUIntToEntityName(unsigned int);
-
-class entity_t;
-machine_t entityToMachine(entity_t ent);
-
 class entity_t
 {
 private:
@@ -80,19 +74,6 @@ inline std::string entity_t::getRecipe()
 {
     return _current_lot->recipe();
 }
-
-
-class ancillary_resources_t
-{
-private:
-    std::map<std::string, std::vector<ares_t *> > _tools;
-
-public:
-    ancillary_resources_t(std::map<std::string, int> tools);
-    std::vector<tool_t *> aRound(std::map<std::string, int> amount);
-    std::vector<tool_t *> aRound(std::string, int);
-};
-
 
 
 #endif

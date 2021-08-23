@@ -11,10 +11,10 @@ typedef struct __info_t tool_info_t;
 typedef struct __info_t wire_info_t;
 
 
-typedef struct ancillary_resource_t {
+typedef struct auxiliary_resource_t {
     unsigned int no;
     struct __info_t name;
-    unsigned int machine_no;
+    struct __info_t machine_no;
     double time;
 } ares_t;
 

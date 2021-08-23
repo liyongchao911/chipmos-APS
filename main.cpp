@@ -77,6 +77,7 @@ int main(int argc, const char *argv[])
 
     prescheduling(machines, &lots);
     stage2Scheduling(machines, &lots);
+    stage3Scheduling(machines, &lots);
 
     const vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
     csv_t result("output/result.csv", "w");

@@ -203,31 +203,35 @@ TEST_F(test_machines_t_addGroupsJobs, machines_collection)
     machines->addGroupJobs(lot1->_recipe, g1);
     machines->addGroupJobs(lot3->_recipe, g2);
 
-    EXPECT_EQ(machines->_groups.count("AAS008YM2024A"), 1);
-    EXPECT_EQ(machines->_groups.count("BDID"), 1);
+    EXPECT_EQ(machines->_dispatch_groups.count("AAS008YM2024A"), 1);
+    EXPECT_EQ(machines->_dispatch_groups.count("BDID"), 1);
 
-    EXPECT_EQ(machines->_groups["AAS008YM2024A"].unscheduled_jobs[0], j1);
-    EXPECT_EQ(machines->_groups["AAS008YM2024A"].unscheduled_jobs[1], j2);
-    EXPECT_EQ(strcmp(machines->_groups["AAS008YM2024A"]
+    EXPECT_EQ(machines->_dispatch_groups["AAS008YM2024A"].unscheduled_jobs[0],
+              j1);
+    EXPECT_EQ(machines->_dispatch_groups["AAS008YM2024A"].unscheduled_jobs[1],
+              j2);
+    EXPECT_EQ(strcmp(machines->_dispatch_groups["AAS008YM2024A"]
                          .machines[0]
                          ->base.machine_no.data.text,
                      ent1->_entity_name.c_str()),
               0);
-    EXPECT_EQ(strcmp(machines->_groups["AAS008YM2024A"]
+    EXPECT_EQ(strcmp(machines->_dispatch_groups["AAS008YM2024A"]
                          .machines[1]
                          ->base.machine_no.data.text,
                      ent2->_entity_name.c_str()),
               0);
 
 
-    EXPECT_EQ(machines->_groups["BDID"].unscheduled_jobs[0], j3);
-    EXPECT_EQ(machines->_groups["BDID"].unscheduled_jobs[1], j4);
-    EXPECT_EQ(
-        strcmp(machines->_groups["BDID"].machines[0]->base.machine_no.data.text,
-               ent3->_entity_name.c_str()),
-        0);
-    EXPECT_EQ(
-        strcmp(machines->_groups["BDID"].machines[1]->base.machine_no.data.text,
-               ent4->_entity_name.c_str()),
-        0);
+    EXPECT_EQ(machines->_dispatch_groups["BDID"].unscheduled_jobs[0], j3);
+    EXPECT_EQ(machines->_dispatch_groups["BDID"].unscheduled_jobs[1], j4);
+    EXPECT_EQ(strcmp(machines->_dispatch_groups["BDID"]
+                         .machines[0]
+                         ->base.machine_no.data.text,
+                     ent3->_entity_name.c_str()),
+              0);
+    EXPECT_EQ(strcmp(machines->_dispatch_groups["BDID"]
+                         .machines[1]
+                         ->base.machine_no.data.text,
+                     ent4->_entity_name.c_str()),
+              0);
 }

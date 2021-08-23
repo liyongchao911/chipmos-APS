@@ -110,6 +110,8 @@ void machines_t::addMachine(machine_t machine)
     // add into container
     _machines[machine_name] = machine_ptr;
 
+    _v_machines.push_back(machine_ptr);
+
 
     string part_id(machine_ptr->current_job.part_id.data.text),
         part_no(machine_ptr->current_job.part_no.data.text);
@@ -180,7 +182,7 @@ bool jobPtrComparison(job_t *j1, job_t *j2)
 
 void machines_t::addGroupJobs(string recipe, vector<job_t *> jobs)
 {
-    if (_groups.count(recipe) != 0)
+    if (_dispatch_groups.count(recipe) != 0)
         cerr << "Warning : you add group of jobs twice, recipe is [" << recipe
              << "]" << endl;
 
@@ -192,7 +194,7 @@ void machines_t::addGroupJobs(string recipe, vector<job_t *> jobs)
         }
     }
 
-    _groups[recipe] =
+    _dispatch_groups[recipe] =
         (struct __machine_group_t){.machines = machines,
                                    .unscheduled_jobs = jobs,
                                    .scheduled_jobs = vector<job_t *>()};
@@ -239,7 +241,8 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
                         locations.end() &&
                     (unscheduled_jobs[j]->base.arriv_t -
                          machines[i]->base.available_time <=
-                     60)) {
+                     60) &&
+                    machines[i]->base.available_time <= 4320) {
                     unscheduled_jobs[j]->base.ptime =
                         _job_process_times[lot_number][model];
                     staticAddJob(machines[i], unscheduled_jobs[j], machine_ops);
@@ -270,8 +273,9 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
 void machines_t::scheduleGroups()
 {
     std::map<std::string, struct __machine_group_t> ngroups;
-    for (map<string, struct __machine_group_t>::iterator it = _groups.begin();
-         it != _groups.end(); it++) {
+    for (map<string, struct __machine_group_t>::iterator it =
+             _dispatch_groups.begin();
+         it != _dispatch_groups.end(); it++) {
         _scheduleAGroup(&it->second);
         _scheduled_jobs += it->second.scheduled_jobs;  // collect scheduled lots
         if (it->second.unscheduled_jobs.size() != 0) {
@@ -280,10 +284,219 @@ void machines_t::scheduleGroups()
             ngroups[it->first].machines.clear();
         }
     }
-    _groups = ngroups;
-    for (map<string, struct __machine_group_t>::iterator it = _groups.begin();
-         it != _groups.end(); it++) {
+    _dispatch_groups = ngroups;
+    for (map<string, struct __machine_group_t>::iterator it =
+             _dispatch_groups.begin();
+         it != _dispatch_groups.end(); it++) {
         printf("[%s] : %lu jobs\n", it->first.c_str(),
                it->second.unscheduled_jobs.size());
     }
+}
+
+
+void machines_t::groupJobsByToolAndWire()
+{
+    for (map<string, struct __machine_group_t>::iterator it =
+             _dispatch_groups.begin();
+         it != _dispatch_groups.end(); it++) {
+        iter(it->second.unscheduled_jobs, i)
+        {
+            string part_id(it->second.unscheduled_jobs[i]->part_id.data.text);
+            string part_no(it->second.unscheduled_jobs[i]->part_no.data.text);
+            string key = part_no + "_" + part_id;
+            if (_tool_wire_jobs_groups.count(key) == 0) {
+                _tool_wire_jobs_groups[key] = new (struct __job_group_t);
+                *(_tool_wire_jobs_groups[key]) = (struct __job_group_t){
+                    .part_no = part_no,
+                    .part_id = part_id,
+                    .number_of_tools = _number_of_tools.count(part_no) == 0
+                                           ? 0
+                                           : _number_of_tools[part_no],
+                    .number_of_wires = _number_of_wires.count(part_id) == 0
+                                           ? 0
+                                           : _number_of_wires[part_id]};
+            }
+            _tool_wire_jobs_groups[key]->jobs.push_back(
+                it->second.unscheduled_jobs[i]);
+        }
+    }
+
+    for (map<string, struct __job_group_t *>::iterator it =
+             _tool_wire_jobs_groups.begin();
+         it != _tool_wire_jobs_groups.end(); it++) {
+        string part_id = it->second->part_id;
+        string part_no = it->second->part_no;
+        _wire_jobs_groups[part_id].push_back(it->second);
+        _tool_jobs_groups[part_no].push_back(it->second);
+        _jobs_groups.push_back(it->second);
+    }
+}
+
+
+bool distEntryComparison(struct __distribution_entry_t ent1,
+                         struct __distribution_entry_t ent2)
+{
+    return ent1.ratio < ent2.ratio;
+}
+
+map<string, int> machines_t::_distributeAResource(
+    int number_of_resources,
+    map<string, int> groups_statistic)
+{
+    vector<struct __distribution_entry_t> data;
+
+    double sum = 0;
+    for (map<string, int>::iterator it = groups_statistic.begin();
+         it != groups_statistic.end(); ++it) {
+        sum += it->second;
+    }
+
+    for (map<string, int>::iterator it = groups_statistic.begin();
+         it != groups_statistic.end(); ++it) {
+        data.push_back((struct __distribution_entry_t){
+            .name = it->first, .ratio = it->second / sum});
+    }
+
+    sort(data.begin(), data.end(), distEntryComparison);
+
+    int original_number_of_resources = number_of_resources;
+    int i = 0;
+    map<string, int> result;
+    while (i < data.size() - 1 && number_of_resources > 0) {
+        int _n_res = data[i].ratio * original_number_of_resources;
+        if (_n_res == 0) {
+            _n_res = 1;
+        }
+        number_of_resources -= _n_res;
+        ++i;
+    }
+
+    result[data.back().name] = number_of_resources;
+
+    return result;
+}
+
+void machines_t::distributeTools()
+{
+    // distribute tools
+    for (map<string, std::vector<struct __job_group_t *> >::iterator it =
+             _tool_jobs_groups.begin();
+         it != _tool_jobs_groups.end(); ++it) {
+        string part_no = it->first;
+        map<string, int> data;
+        // collect the data
+        iter(it->second, i)
+        {
+            // set part_id to a key because I am distributing the number of
+            // tools All the groups in it->second have the same part_no, but
+            // part_id is different
+            data[it->second[i]->part_id] = it->second[i]->jobs.size();
+        }
+
+        // calculate
+        data = _distributeAResource(_number_of_tools[it->first], data);
+
+        // setup
+        for (map<string, int>::iterator it2 = data.begin(); it2 != data.end();
+             it2++) {
+            string part_id = it2->first;
+            string key = part_no + "_" + part_id;
+            _tool_wire_jobs_groups.at(key)->number_of_tools = it2->second;
+        }
+    }
+}
+
+void machines_t::distributeWires()
+{
+    // distribute tools
+    for (map<string, std::vector<struct __job_group_t *> >::iterator it =
+             _wire_jobs_groups.begin();
+         it != _wire_jobs_groups.end(); ++it) {
+        string part_id = it->first;
+        map<string, int> data;
+        // collect the data
+        iter(it->second, i)
+        {
+            // set part_no to a key because I am distributing the number of
+            // wires All the groups in it->second have the same part_id, but
+            // part_no is different
+            data[it->second[i]->part_no] = it->second[i]->jobs.size();
+        }
+
+        // calculate
+        data = _distributeAResource(_number_of_wires[it->first], data);
+
+        // setup
+        for (map<string, int>::iterator it2 = data.begin(); it2 != data.end();
+             it2++) {
+            string part_no = it2->first;
+            string key = part_no + "_" + part_id;
+            _tool_wire_jobs_groups.at(key)->number_of_wires = it2->second;
+        }
+    }
+
+    for (map<string, struct __job_group_t *>::iterator it =
+             _tool_wire_jobs_groups.begin();
+         it != _tool_wire_jobs_groups.end(); ++it) {
+        printf("[%s]-[%s] : (%d)#(%d) -> %d\n", it->second->part_no.c_str(),
+               it->second->part_id.c_str(), it->second->number_of_tools,
+               it->second->number_of_wires, it->second->jobs.size());
+    }
+}
+
+void machines_t::_conservativelyChooseMachines(struct __job_group_t *group) {}
+
+void machines_t::_chooseMachinesForAGroup(struct __job_group_t *group)
+{
+    vector<job_t *> good_jobs;  // which means that the job has more than one
+                                // can_run machines
+    vector<job_t *> bad_jobs;   // the job has no any can-run machines
+
+    bad_jobs = group->jobs;
+
+    // go through the machines
+    int i = 0;
+    for (i = 0; i < _v_machines.size(); ++i) {
+        string model(_v_machines[i]->model_name.data.text);
+        string location(_v_machines[i]->location.data.text);
+
+        iter(bad_jobs, i) {}
+    }
+
+    // if not enough
+}
+
+void machines_t::_initializeNumberOfExpectedMachines()
+{
+    for (map<string, struct __job_group_t *>::iterator it =
+             _tool_wire_jobs_groups.begin();
+         it != _tool_wire_jobs_groups.end(); ++it) {
+        int expected_num_of_machines =
+            min(it->second->number_of_wires, it->second->number_of_tools);
+        it->second->number_of_machines =
+            expected_num_of_machines > 0 ? expected_num_of_machines : 0;
+    }
+}
+
+// sorting comparison function from big to small
+bool jobGroupComparisonByNumberOfMachines(struct __job_group_t *g1,
+                                          struct __job_group_t *g2)
+{
+    return g1->number_of_machines > g2->number_of_machines;
+}
+
+void machines_t::chooseMachinesForGroups()
+{
+    // initialize the number of expected machines
+    _initializeNumberOfExpectedMachines();
+
+    // sort the the group by num_of_machines
+    sort(_jobs_groups.begin(), _jobs_groups.end(),
+         jobGroupComparisonByNumberOfMachines);
+
+    // sort the machines by available time
+
+    _v_machines = _sortedMachines(_v_machines);
+
+    iter(_jobs_groups, i) { _chooseMachinesForAGroup(_jobs_groups[i]); }
 }

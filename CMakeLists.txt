@@ -10,7 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_executable(
     main 
-    main.cpp 
+    main.cpp
 )
 
 add_subdirectory(lib)

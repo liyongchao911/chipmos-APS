@@ -24,6 +24,8 @@ set(TEST_SRC
         test_machines/test_machines_scheduleAGroup.cpp
         test_machines/test_machines_addGroupJobs.cpp
         test_algorithm/test_prescheduling.cpp
+        test_machines/test_machines_groupBy.cpp
+        test_machines/test_machines_distributeAResource.cpp
         )
 
 add_executable(

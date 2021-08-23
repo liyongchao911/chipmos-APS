@@ -17,11 +17,31 @@ struct __machine_group_t {
     std::vector<job_t *> scheduled_jobs;
 };
 
+struct __job_group_t {
+    std::string part_no;
+    std::string part_id;
+    int number_of_tools;
+    int number_of_wires;
+
+    int number_of_machines;
+
+    std::vector<job_t *> jobs;
+    std::vector<job_t *> orphan_jobs;
+};
+
+struct __distribution_entry_t {
+    std::string name;
+    double ratio;
+};
+
 class machines_t
 {
 protected:
     // entity_name -> machine_t *
     std::map<std::string, machine_t *> _machines;
+
+    // vector machines
+    std::vector<machine_t *> _v_machines;
 
     // tool_wire_name -> machine_t *
     std::map<std::string, std::vector<machine_t *> > _tool_wire_machines;
@@ -34,25 +54,54 @@ protected:
     // scheduled jobs
     std::vector<job_t *> _scheduled_jobs;
 
+    // operations
     list_operations_t *list_ops;
     machine_base_operations_t *machine_ops;
     job_base_operations_t *job_ops;
 
+    // parameters and weights
     scheduling_parameters_t _param;
     weights_t _weights;
 
+    // other job information such as can_run_location and process_times
     std::map<std::string, std::vector<std::string> > _job_can_run_locations;
     std::map<std::string, std::map<std::string, double> > _job_process_times;
 
-    std::map<std::string, struct __machine_group_t> _groups;
+    // store other job information such as can run machine
+    std::map<std::string, std::vector<std::string> > _job_can_run_machines;
 
+    // store the the wire and tool carried by the machines;
+    std::map<std::string, std::vector<std::string> > _machines_tools;
+    std::map<std::string, std::vector<std::string> > _machines_wires;
+
+    // groups
+    std::map<std::string, struct __machine_group_t> _dispatch_groups;
+
+    std::map<std::string, std::vector<struct __job_group_t *> >
+        _wire_jobs_groups;
+    std::map<std::string, std::vector<struct __job_group_t *> >
+        _tool_jobs_groups;
+    std::map<std::string, struct __job_group_t *> _tool_wire_jobs_groups;
+    std::vector<struct __job_group_t *> _jobs_groups;
+
+    // number of tools and wires
+    std::map<std::string, int> _number_of_tools;
+    std::map<std::string, int> _number_of_wires;
 
     void _init(scheduling_parameters_t param);
-
+    void _scheduleAGroup(struct __machine_group_t *group);
     std::vector<machine_t *> _sortedMachines(std::vector<machine_t *> &ms);
     std::vector<job_t *> _sortedJobs(std::vector<job_t *> &jobs);
 
-    void _scheduleAGroup(struct __machine_group_t *group);
+    std::map<std::string, int> _distributeAResource(
+        int number_of_resources,
+        std::map<std::string, int> groups_statistic);
+
+    void _chooseMachinesForAGroup(struct __job_group_t *group);
+
+    void _initializeNumberOfExpectedMachines();
+
+    void _conservativelyChooseMachines(struct __job_group_t *group);
 
 public:
     machines_t();
@@ -72,6 +121,9 @@ public:
     void addJobProcessTimes(std::string lot_number,
                             std::map<std::string, double> uphs);
 
+    void setNumberOfTools(std::map<std::string, int> tool_number);
+    void setNumberOfWires(std::map<std::string, int> wire_number);
+
     void addGroupJobs(std::string recipe, std::vector<job_t *> jobs);
 
     void prescheduleJobs();
@@ -83,6 +135,15 @@ public:
     std::map<std::string, std::vector<std::string> > getModelLocations();
 
     const std::vector<job_t *> getScheduledJobs();
+
+    void groupJobsByToolAndWire();
+
+
+    void distributeTools();
+
+    void distributeWires();
+
+    void chooseMachinesForGroups();
 
     ~machines_t();
 };
@@ -137,6 +198,14 @@ inline void machines_t::addJobProcessTimes(
     _job_process_times[lot_number] = process_times;
 }
 
+inline void machines_t::setNumberOfTools(std::map<std::string, int> tool_number)
+{
+    this->_number_of_tools = tool_number;
+}
 
+inline void machines_t::setNumberOfWires(std::map<std::string, int> wire_number)
+{
+    this->_number_of_wires = wire_number;
+}
 
 #endif

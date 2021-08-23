@@ -1,10 +1,7 @@
-#include <algorithm>
 #include <cstdio>
-#include <cstring>
 #include <iterator>
 #include <stdexcept>
 
-#include "include/entities.h"
 #include "include/entity.h"
 #include "include/infra.h"
 #include "include/lot.h"
@@ -64,76 +61,4 @@ machine_t entity_t::machine()
     machine.current_job.base.machine_no = stringToInfo(_entity_name);
 
     return machine;
-}
-
-
-bool entityComparisonByTime(entity_t *ent1, entity_t *ent2)
-{
-    return ent1->getRecoverTime() < ent2->getRecoverTime();
-}
-
-
-unsigned int convertEntityNameToUInt(string name)
-{
-    union {
-        char text[4];
-        unsigned int number;
-    } data;
-    string substr = name.substr(name.length() - 4);
-    strncpy(data.text, substr.c_str(), 4);
-    return data.number;
-}
-
-
-
-ancillary_resources_t::ancillary_resources_t(std::map<std::string, int> data)
-{
-    tool_t *t;
-    for (std::map<std::string, int>::iterator it = data.begin();
-         it != data.end(); it++) {
-        for (int i = 0; i < it->second; ++i) {
-            t = new tool_t;
-            t->time = 0;
-            t->machine_no = 0;
-            _tools[it->first].push_back(t);
-        }
-    }
-}
-
-std::vector<tool_t *> ancillary_resources_t::aRound(
-    std::map<std::string, int> amounts)
-{
-    std::vector<tool_t *> ts;
-    for (std::map<std::string, int>::iterator it = amounts.begin();
-         it != amounts.end(); it++) {
-        std::vector<tool_t *> tmp = aRound(it->first, it->second);
-        ts += tmp;
-    }
-
-    return ts;
-}
-
-std::vector<tool_t *> ancillary_resources_t::aRound(std::string name,
-                                                    int amount)
-{
-    sort(_tools[name].begin(), _tools[name].end(), aresPtrComp);
-    std::vector<tool_t *> ts(_tools[name].begin(),
-                             _tools[name].begin() + amount);
-    return ts;
-}
-
-
-
-std::string convertUIntToEntityName(unsigned int mno)
-{
-    std::string text = "B";
-    union {
-        char text[5];
-        unsigned int number;
-    } data;
-
-    data.number = mno;
-    data.text[4] = '\0';
-    text += data.text;
-    return text;
 }

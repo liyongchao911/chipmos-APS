@@ -169,14 +169,14 @@ TEST_F(test_machines_t_scheduleAGroup, test_group_setting)
         }
         machines->addGroupJobs(it->first, jobs);
     }
-    EXPECT_EQ(machines->_groups.count("BD1"), 1);
-    EXPECT_EQ(machines->_groups.count("BD2"), 1);
+    EXPECT_EQ(machines->_dispatch_groups.count("BD1"), 1);
+    EXPECT_EQ(machines->_dispatch_groups.count("BD2"), 1);
 
-    EXPECT_EQ(machines->_groups.at("BD1").unscheduled_jobs.size(), 8);
-    EXPECT_EQ(machines->_groups.at("BD2").unscheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups.at("BD1").unscheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups.at("BD2").unscheduled_jobs.size(), 8);
 
-    EXPECT_EQ(machines->_groups.at("BD1").machines.size(), 4);
-    EXPECT_EQ(machines->_groups.at("BD2").machines.size(), 4);
+    EXPECT_EQ(machines->_dispatch_groups.at("BD1").machines.size(), 4);
+    EXPECT_EQ(machines->_dispatch_groups.at("BD2").machines.size(), 4);
 }
 
 
@@ -201,8 +201,8 @@ TEST_F(test_machines_t_scheduleAGroup, test_sorting)
     }
 
     for (map<string, struct __machine_group_t>::iterator it =
-             machines->_groups.begin();
-         it != machines->_groups.end(); ++it) {
+             machines->_dispatch_groups.begin();
+         it != machines->_dispatch_groups.end(); ++it) {
         vector<machine_t *> ms = machines->_sortedMachines(it->second.machines);
         vector<job_t *> js = machines->_sortedJobs(it->second.unscheduled_jobs);
         for (unsigned int i = 1; i < ms.size(); ++i) {
@@ -240,14 +240,14 @@ TEST_F(test_machines_t_scheduleAGroup, test_correctness_full_scheduled1)
          it != machines->_machines.end(); it++) {
         it->second->base.available_time = 0;
     }
-    machines->_scheduleAGroup(&machines->_groups["BD1"]);
-    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD2"]);
 
     // check
-    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 0);
-    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 0);
-    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 8);
-    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].scheduled_jobs.size(), 8);
 
 
     for (map<string, machine_t *>::iterator it = machines->_machines.begin();
@@ -288,14 +288,14 @@ TEST_F(test_machines_t_scheduleAGroup, test_correctness_full_scheduled2)
          it != machines->_machines.end(); it++) {
         it->second->base.available_time = 0;
     }
-    machines->_scheduleAGroup(&machines->_groups["BD1"]);
-    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD2"]);
 
     // check
-    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 0);
-    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 0);
-    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 8);
-    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].scheduled_jobs.size(), 8);
 
 
     for (map<string, machine_t *>::iterator it = machines->_machines.begin();
@@ -336,14 +336,14 @@ TEST_F(test_machines_t_scheduleAGroup, test_correctness_full_scheduled3_gap_60)
          it != machines->_machines.end(); it++) {
         it->second->base.available_time = 0;
     }
-    machines->_scheduleAGroup(&machines->_groups["BD1"]);
-    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD2"]);
 
     // check
-    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 0);
-    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 0);
-    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 8);
-    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].scheduled_jobs.size(), 8);
 
 
     for (map<string, machine_t *>::iterator it = machines->_machines.begin();
@@ -386,14 +386,14 @@ TEST_F(test_machines_t_scheduleAGroup, test_correctness_half_scheduled1)
          it != machines->_machines.end(); it++) {
         it->second->base.available_time = 0;
     }
-    machines->_scheduleAGroup(&machines->_groups["BD1"]);
-    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD2"]);
 
     // check
-    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 4);
-    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 4);
-    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 4);
-    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 4);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].unscheduled_jobs.size(), 4);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].unscheduled_jobs.size(), 4);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].scheduled_jobs.size(), 4);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].scheduled_jobs.size(), 4);
 
 
     for (map<string, machine_t *>::iterator it = machines->_machines.begin();
@@ -431,14 +431,14 @@ TEST_F(test_machines_t_scheduleAGroup, test_correctness_half_scheduled2)
          it != machines->_machines.end(); it++) {
         it->second->base.available_time = 0;
     }
-    machines->_scheduleAGroup(&machines->_groups["BD1"]);
-    machines->_scheduleAGroup(&machines->_groups["BD2"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD1"]);
+    machines->_scheduleAGroup(&machines->_dispatch_groups["BD2"]);
 
     // check
-    EXPECT_EQ(machines->_groups["BD1"].unscheduled_jobs.size(), 0);
-    EXPECT_EQ(machines->_groups["BD2"].unscheduled_jobs.size(), 0);
-    EXPECT_EQ(machines->_groups["BD1"].scheduled_jobs.size(), 8);
-    EXPECT_EQ(machines->_groups["BD2"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].unscheduled_jobs.size(), 0);
+    EXPECT_EQ(machines->_dispatch_groups["BD1"].scheduled_jobs.size(), 8);
+    EXPECT_EQ(machines->_dispatch_groups["BD2"].scheduled_jobs.size(), 8);
 
     vector<machine_t *> scheduled_machines = machines->scheduledMachines();
     EXPECT_EQ(scheduled_machines.size(), 4);
