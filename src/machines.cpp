@@ -379,7 +379,7 @@ map<string, int> machines_t::_distributeAResource(
 void machines_t::distributeTools()
 {
     // distribute tools
-    for (map<string, std::vector<struct __job_group_t *> >::iterator it =
+    for (map<string, std::vector<struct __job_group_t *>>::iterator it =
              _tool_jobs_groups.begin();
          it != _tool_jobs_groups.end(); ++it) {
         string part_no = it->first;
@@ -409,7 +409,7 @@ void machines_t::distributeTools()
 void machines_t::distributeWires()
 {
     // distribute tools
-    for (map<string, std::vector<struct __job_group_t *> >::iterator it =
+    for (map<string, std::vector<struct __job_group_t *>>::iterator it =
              _wire_jobs_groups.begin();
          it != _wire_jobs_groups.end(); ++it) {
         string part_id = it->first;
@@ -438,32 +438,101 @@ void machines_t::distributeWires()
     for (map<string, struct __job_group_t *>::iterator it =
              _tool_wire_jobs_groups.begin();
          it != _tool_wire_jobs_groups.end(); ++it) {
-        printf("[%s]-[%s] : (%d)#(%d) -> %d\n", it->second->part_no.c_str(),
+        printf("[%s]-[%s] : (%d)#(%d) -> %lu\n", it->second->part_no.c_str(),
                it->second->part_id.c_str(), it->second->number_of_tools,
                it->second->number_of_wires, it->second->jobs.size());
     }
 }
 
-void machines_t::_conservativelyChooseMachines(struct __job_group_t *group) {}
+bool machines_t::_canJobRunOnTheMachine(job_t *job, machine_t *machine)
+{
+    string lot_number(job->base.job_info.data.text);
+    string location(machine->location.data.text);
+    string model(machine->model_name.data.text);
+    vector<string> locations = _job_can_run_locations[lot_number];
+    map<string, double> process_times = _job_process_times[lot_number];
+    return find(locations.begin(), locations.end(), location) !=
+               locations.end() &&
+           process_times.count(model) != 0;
+}
+
+bool machines_t::_addNewResource(
+    machine_t *machine,
+    std::string resource_name,
+    std::map<std::string, std::vector<std::string>> &container)
+{
+    string name(machine->base.machine_no.data.text);
+    vector<string> &resources = container[name];
+    if (find(resources.begin(), resources.end(), resource_name) ==
+        resources.end()) {
+        resources.push_back(resource_name);
+        return true;
+    } else
+        return false;
+}
 
 void machines_t::_chooseMachinesForAGroup(struct __job_group_t *group)
 {
+    // FIXME : need to be well tested but I have no time
     vector<job_t *> good_jobs;  // which means that the job has more than one
                                 // can_run machines
     vector<job_t *> bad_jobs;   // the job has no any can-run machines
 
     bad_jobs = group->jobs;
 
-    // go through the machines
-    int i = 0;
-    for (i = 0; i < _v_machines.size(); ++i) {
-        string model(_v_machines[i]->model_name.data.text);
-        string location(_v_machines[i]->location.data.text);
+    int number_of_tools = group->number_of_tools;
+    int number_of_wires = group->number_of_wires;
+    string part_id = group->part_id;
+    string part_no = group->part_no;
 
-        iter(bad_jobs, i) {}
+    vector<string> can_run_machines;
+
+    // go through the machines
+    // until tools and wires are
+    int i = 0;
+    for (i = 0;
+         i < _v_machines.size() && number_of_tools > 0 && number_of_wires > 0;
+         ++i) {
+        vector<job_t *> nbad_jobs;
+        vector<job_t *> ngood_jobs;
+        iter(bad_jobs, j)
+        {
+            string lot_number(bad_jobs[j]->base.job_info.data.text);
+            if (_canJobRunOnTheMachine(bad_jobs[j], _v_machines[i])) {
+                _job_can_run_machines[lot_number].push_back(
+                    string(_v_machines[i]->base.machine_no.data.text));
+                ngood_jobs.push_back(bad_jobs[j]);
+            } else {
+                nbad_jobs.push_back(bad_jobs[j]);
+            }
+        }
+        // if ngood_jobs has jobs means that the machine is a good machine
+        if (ngood_jobs.size() || bad_jobs.size() == 0) {
+            iter(good_jobs, j)
+            {
+                string lot_number(good_jobs[j]->base.job_info.data.text);
+                if (_canJobRunOnTheMachine(good_jobs[j], _v_machines[i])) {
+                    _job_can_run_machines[lot_number].push_back(
+                        string(_v_machines[i]->base.machine_no.data.text));
+                }
+            }
+            good_jobs += ngood_jobs;  // update the good_jobs container
+
+            // update the tool and wire carried by the machines
+            // update tool
+            if (_addNewResource(_v_machines[i], part_no, _machines_tools)) {
+                number_of_tools -= 1;
+            }
+
+            if (_addNewResource(_v_machines[i], part_id, _machines_wires)) {
+                number_of_wires -= 1;
+            }
+        }
+        bad_jobs = nbad_jobs;
     }
 
-    // if not enough
+    group->orphan_jobs = bad_jobs;
+    group->jobs = good_jobs;
 }
 
 void machines_t::_initializeNumberOfExpectedMachines()
@@ -499,4 +568,31 @@ void machines_t::chooseMachinesForGroups()
     _v_machines = _sortedMachines(_v_machines);
 
     iter(_jobs_groups, i) { _chooseMachinesForAGroup(_jobs_groups[i]); }
+
+    // iter(_jobs_groups, i){
+    //     if(_jobs_groups[i]->orphan_jobs.size()){
+    //         printf("%s-%s : %lu jobs\n", _jobs_groups[i]->part_no.c_str(),
+    //         _jobs_groups[i]->part_id.c_str(),
+    //         _jobs_groups[i]->orphan_jobs.size());
+    //     }
+    // }
+
+    iter(_jobs_groups, i)
+    {
+        cout << "[" << _jobs_groups[i]->part_no << "]-["
+             << _jobs_groups[i]->part_no
+             << "] : " << _jobs_groups[i]->number_of_machines << endl;
+        iter(_jobs_groups[i]->jobs, j)
+        {
+            string lot_number =
+                string(_jobs_groups[i]->jobs[j]->base.job_info.data.text);
+            vector<string> can_rn_machines = _job_can_run_machines[lot_number];
+            cout << "\t" << lot_number << " : " << endl;
+            iter(can_rn_machines, k)
+            {
+                cout << "\t\t" << can_rn_machines[k] << endl;
+            }
+        }
+        cout << endl;
+    }
 }

@@ -88,10 +88,16 @@ protected:
     std::map<std::string, int> _number_of_tools;
     std::map<std::string, int> _number_of_wires;
 
+    bool _canJobRunOnTheMachine(job_t *job, machine_t *machine);
     void _init(scheduling_parameters_t param);
     void _scheduleAGroup(struct __machine_group_t *group);
     std::vector<machine_t *> _sortedMachines(std::vector<machine_t *> &ms);
     std::vector<job_t *> _sortedJobs(std::vector<job_t *> &jobs);
+
+    bool _addNewResource(
+        machine_t *machine,
+        std::string resource_name,
+        std::map<std::string, std::vector<std::string> > &container);
 
     std::map<std::string, int> _distributeAResource(
         int number_of_resources,
@@ -101,7 +107,6 @@ protected:
 
     void _initializeNumberOfExpectedMachines();
 
-    void _conservativelyChooseMachines(struct __job_group_t *group);
 
 public:
     machines_t();

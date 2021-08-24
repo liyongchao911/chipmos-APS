@@ -67,4 +67,5 @@ void stage3Scheduling(machines_t *machines, lots_t *lots)
     machines->groupJobsByToolAndWire();
     machines->distributeTools();
     machines->distributeWires();
+    machines->chooseMachinesForGroups();
 }
