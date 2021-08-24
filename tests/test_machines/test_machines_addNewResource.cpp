@@ -8,6 +8,10 @@
 #undef protected
 #undef private
 
+#include <string>
+
+using namespace std;
+
 class test_machines_t_addNewResource : public testing::Test
 {
 public:
@@ -32,19 +36,21 @@ void test_machines_t_addNewResource::TearDown()
 
 TEST_F(test_machines_t_addNewResource, add_new_resource)
 {
+    string part_no("PART_NO");
     EXPECT_TRUE(
-        machines->_addNewResource(m, "PART_NO", machines->_machines_tools));
+        machines->_addNewResource(m, part_no, machines->_machines_tools));
     EXPECT_EQ(machines->_machines_tools["M"].size(), 1);
     EXPECT_NE(find(machines->_machines_tools["M"].begin(),
-                   machines->_machines_tools["M"].end(), "PART_NO"),
+                   machines->_machines_tools["M"].end(), part_no),
               machines->_machines_tools["M"].end());
 }
 
 TEST_F(test_machines_t_addNewResource, add_existent_resource)
 {
+    string part_no("PART_NO");
     EXPECT_TRUE(
-        machines->_addNewResource(m, "PART_NO", machines->_machines_tools));
+        machines->_addNewResource(m, part_no, machines->_machines_tools));
     EXPECT_FALSE(
-        machines->_addNewResource(m, "PART_NO", machines->_machines_tools));
+        machines->_addNewResource(m, part_no, machines->_machines_tools));
     EXPECT_EQ(machines->_machines_tools["M"].size(), 1);
 }
