@@ -8,6 +8,7 @@
 #undef protected
 #undef private
 
+#include <algorithm>
 #include <string>
 
 using namespace std;
