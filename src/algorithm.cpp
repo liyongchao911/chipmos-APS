@@ -68,4 +68,14 @@ void stage3Scheduling(machines_t *machines, lots_t *lots)
     machines->distributeTools();
     machines->distributeWires();
     machines->chooseMachinesForGroups();
+    machines->setupToolAndWire();
+
+    machine_t **machine_array;
+    int NUMBER_OF_MACHINES;
+
+    machines->prepareMachines(&NUMBER_OF_MACHINES, &machine_array);
+
+    job_t **jobs;
+    int NUMBER_OF_JOBS;
+    machines->prepareJobs(&NUMBER_OF_JOBS, &jobs);
 }

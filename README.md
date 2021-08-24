@@ -31,3 +31,18 @@ python3 main.py config.json
 ```shell=
 ./main config.csv
 ```
+
+
+## TODO
+
+### Testing
+
+- _chooseMachinesForAGroup
+- _initializeNumberOfExpectedMachines
+- _setupContainerForMachines
+- _setupResources
+- _loadResource
+- _loadResourcesOnTheMachine
+- prepareMachines
+- _linkMachineToAJob
+- prepareJobs

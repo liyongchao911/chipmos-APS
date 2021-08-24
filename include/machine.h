@@ -1,6 +1,8 @@
 #ifndef __MACHINE_H__
 #define __MACHINE_H__
 
+#include <stdbool.h>
+
 #include "include/infra.h"
 #include "include/job.h"
 #include "include/machine_base.h"
@@ -16,19 +18,24 @@ typedef struct auxiliary_resource_t {
     struct __info_t name;
     struct __info_t machine_no;
     double time;
+    bool used;
 } ares_t;
 
 typedef ares_t tool_t;
 typedef ares_t wire_t;
 
+typedef struct resources_t {
+    ares_t **areses;
+    int number;
+} resources_t;
 
 typedef struct __machine_t {
     machine_base_t base;
 
     info_t model_name;
     info_t location;
-    ares_t *tool;
-    ares_t *wire;
+    resources_t tools;
+    resources_t wires;
     job_t current_job;
     double makespan;
     double total_completion_time;

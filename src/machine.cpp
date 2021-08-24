@@ -7,7 +7,7 @@
 
 bool aresPtrComp(ares_t *a1, ares_t *a2)
 {
-    return a1->time < a2->time;
+    return a1->time > a2->time;
 }
 
 bool aresComp(ares_t a1, ares_t a2)
@@ -21,8 +21,6 @@ void machineReset(machine_base_t *base)
     machine_base_reset(base);
     m->makespan = 0;
     m->total_completion_time = 0;
-    m->tool->time = 0;
-    m->wire->time = 0;
 }
 
 double setupTimeCWN(job_base_t *_prev, job_base_t *_next, double time)
@@ -174,12 +172,12 @@ void scheduling(machine_t *machine,
         it = it->next;
     }
     machine->makespan = start_time;
-    if (machine->tool != nullptr) {
-        machine->tool->time = start_time;
-    }
-    if (machine->wire != nullptr) {
-        machine->wire->time = start_time;
-    }
+    // if (machine->tool != nullptr) {
+    //     machine->tool->time = start_time;
+    // }
+    // if (machine->wire != nullptr) {
+    //     machine->wire->time = start_time;
+    // }
     machine->total_completion_time = total_completion_time;
     machine->quality =
         weights.WEIGHT_SETUP_TIMES * setup_times +

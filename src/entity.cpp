@@ -48,8 +48,6 @@ machine_t entity_t::machine()
                            .available_time = _recover_time},
                   .model_name = stringToInfo(_model_name),
                   .location = stringToInfo(_location),
-                  .tool = nullptr,
-                  .wire = nullptr,
                   .current_job = _current_lot->job(),
                   .makespan = 0,
                   .total_completion_time = 0,

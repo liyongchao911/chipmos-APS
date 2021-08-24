@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
-#include <exception>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -268,6 +267,7 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
             group->unscheduled_jobs.push_back(unscheduled_jobs[i]);
         }
     }
+    iter(machines, i) { setLastJobInMachine(machines[i]); }
 }
 
 void machines_t::scheduleGroups()
@@ -473,7 +473,7 @@ bool machines_t::_addNewResource(
 
 void machines_t::_chooseMachinesForAGroup(struct __job_group_t *group)
 {
-    // FIXME : need to be well tested but I have no time
+    // FIXME : need to be well tested but I have no time FUCK
     vector<job_t *> good_jobs;  // which means that the job has more than one
                                 // can_run machines
     vector<job_t *> bad_jobs;   // the job has no any can-run machines
@@ -568,31 +568,186 @@ void machines_t::chooseMachinesForGroups()
     _v_machines = _sortedMachines(_v_machines);
 
     iter(_jobs_groups, i) { _chooseMachinesForAGroup(_jobs_groups[i]); }
+}
 
-    // iter(_jobs_groups, i){
-    //     if(_jobs_groups[i]->orphan_jobs.size()){
-    //         printf("%s-%s : %lu jobs\n", _jobs_groups[i]->part_no.c_str(),
-    //         _jobs_groups[i]->part_id.c_str(),
-    //         _jobs_groups[i]->orphan_jobs.size());
-    //     }
+void machines_t::_setupContainersForMachines()
+{
+    _tool_machines.clear();
+    _wire_machines.clear();
+    iter(_v_machines, i)
+    {
+        string part_no(_v_machines[i]->current_job.part_no.data.text);
+        string part_id(_v_machines[i]->current_job.part_id.data.text);
+        string key = part_no + "_" + part_id;
+        _tool_machines[part_no].push_back(_v_machines[i]);
+        _wire_machines[part_id].push_back(_v_machines[i]);
+        _tool_wire_machines[key].push_back(_v_machines[i]);
+    }
+}
+
+void machines_t::_setupResources(
+    map<string, int> &number_of_resource,
+    map<string, vector<ares_t *>> &resources_instance_container,
+    map<string, vector<machine_t *>> &resource_machines)
+{
+    if (number_of_resource.size() == 0)
+        throw logic_error("You haven't set the number of tool");
+
+    // create tool
+    for (map<string, int>::iterator it = number_of_resource.begin();
+         it != number_of_resource.end(); ++it) {
+        int number_of_tools = it->second;
+        vector<ares_t *> rs;
+        for (int i = 0; i < number_of_tools; ++i) {
+            ares_t *ares = new ares_t();
+            ares->name = stringToInfo(it->first);
+            ares->used = false;
+            ares->time = 0;
+            rs.push_back(ares);
+        }
+        resources_instance_container[it->first] = rs;
+    }
+
+    // sort the machines by available time
+    for (map<string, vector<machine_t *>>::iterator it =
+             resource_machines.begin();
+         it != resource_machines.end(); ++it) {
+        sort(it->second.begin(), it->second.end(), machinePtrComparison);
+    }
+
+    // determine the tool's time
+    for (map<string, vector<ares_t *>>::iterator it =
+             resources_instance_container.begin();
+         it != resources_instance_container.end(); ++it) {
+        unsigned int i = 0, j = 0;
+        vector<machine_t *> res_machines = resource_machines[it->first];
+        for (; i < it->second.size() && j < res_machines.size(); ++i, ++j) {
+            it->second[i]->time = res_machines[j]->base.available_time;
+        }
+
+        while (i < it->second.size()) {
+            it->second[i]->time = 0;
+            ++i;
+        }
+
+        sort(it->second.begin(), it->second.end(), aresPtrComp);
+    }
+}
+
+
+void machines_t::setupToolAndWire()
+{
+    _setupContainersForMachines();
+    _setupResources(_number_of_tools, _tools, _tool_machines);
+    _setupResources(_number_of_wires, _wires, _wire_machines);
+}
+
+resources_t machines_t::_loadResource(
+    std::vector<std::string> list,
+    std::map<std::string, std::vector<ares_t *>> &resource_instances,
+    std::map<std::string, std::vector<ares_t *>> &used_resources)
+{
+    int number_of_resources = list.size();
+    resources_t resources;
+    resources.areses =
+        (ares_t **) malloc(sizeof(ares_t *) * number_of_resources);
+    resources.number = number_of_resources;
+    iter(list, i)
+    {
+        std::string res_name = list[i];
+        ares_t *res = resource_instances[res_name].back();
+        resources.areses[i] = res;
+        resource_instances[res_name].pop_back();
+        used_resources[res_name].push_back(res);
+    }
+
+    return resources;
+}
+
+
+void machines_t::_loadResourcesOnTheMachine(machine_t *machine)
+{
+    string name(machine->base.machine_no.data.text);
+    vector<string> tool_list = _machines_tools[name];
+    vector<string> wire_list = _machines_wires[name];
+
+    // load resource
+    machine->tools = _loadResource(tool_list, _tools, _loaded_tools);
+    machine->wires = _loadResource(wire_list, _wires, _loaded_wires);
+}
+
+
+void machines_t::prepareMachines(int *number, machine_t ***machine_array)
+{
+    machine_t **machines;
+    vector<string> machine_lists;
+    for (map<string, vector<string>>::iterator it = _machines_tools.begin();
+         it != _machines_tools.end(); ++it) {
+        machine_lists.push_back(it->first);
+    }
+
+    int num_of_machines = machine_lists.size();
+
+    machines = (machine_t **) malloc(sizeof(machine_t *) * num_of_machines);
+
+    iter(machine_lists, i)
+    {
+        machine_t *machine = _machines[machine_lists[i]];
+        _loadResourcesOnTheMachine(machine);
+        machines[i] = machine;
+    }
+
+
+    // check
+    // assert(machine_lists_tool.size() == machine_lists_wire.size());
+    // for(int i = 0; i < machine_lists_tool.size(); ++i){
+    //     assert(machine_lists_tool[i].compare(machine_lists_wire[i]) == 0);
     // }
 
+    // cout<<"machines number : " << machine_lists_wire.size() << endl;
+
+    *number = num_of_machines;
+    *machine_array = machines;
+}
+
+void machines_t::_linkMachineToAJob(job_t *job)
+{
+    string lot_number(job->base.job_info.data.text);
+    vector<string> can_run_machines = _job_can_run_machines.at(lot_number);
+    process_time_t *process_times = nullptr;
+    process_times = (process_time_t *) malloc(sizeof(process_time_t) *
+                                              can_run_machines.size());
+    iter(can_run_machines, i)
+    {
+        string machine_name = can_run_machines[i];
+        machine_t *machine = _machines[machine_name];
+        string model_name(machine->model_name.data.text);
+        double ptime = _job_process_times[lot_number][model_name];
+        process_time_t pt =
+            (process_time_t){.machine_no = machine->base.machine_no,
+                             .machine = machine,
+                             .process_time = ptime};
+        process_times[i] = pt;
+    }
+}
+
+void machines_t::prepareJobs(int *number, job_t ***job_array)
+{
+    vector<job_t *> jobs;
     iter(_jobs_groups, i)
     {
-        cout << "[" << _jobs_groups[i]->part_no << "]-["
-             << _jobs_groups[i]->part_no
-             << "] : " << _jobs_groups[i]->number_of_machines << endl;
         iter(_jobs_groups[i]->jobs, j)
         {
-            string lot_number =
-                string(_jobs_groups[i]->jobs[j]->base.job_info.data.text);
-            vector<string> can_rn_machines = _job_can_run_machines[lot_number];
-            cout << "\t" << lot_number << " : " << endl;
-            iter(can_rn_machines, k)
-            {
-                cout << "\t\t" << can_rn_machines[k] << endl;
-            }
+            jobs.push_back(_jobs_groups[i]->jobs[j]);
         }
-        cout << endl;
     }
+    job_t **arr = (job_t **) malloc(sizeof(job_t *) * jobs.size());
+    iter(jobs, i)
+    {
+        _linkMachineToAJob(jobs[i]);
+        arr[i] = jobs[i];
+    }
+
+    *number = jobs.size();
+    *job_array = arr;
 }

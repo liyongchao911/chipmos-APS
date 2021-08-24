@@ -138,8 +138,8 @@ TEST_F(test_entity_t, test_entity_machine_basic_content)
     EXPECT_EQ(strcmp(machine.model_name.data.text, ent->_model_name.c_str()),
               0);
     EXPECT_EQ(strcmp(machine.location.data.text, ent->_location.c_str()), 0);
-    EXPECT_EQ(machine.tool, nullptr);
-    EXPECT_EQ(machine.wire, nullptr);
+    // EXPECT_EQ(machine.tool, nullptr);
+    // EXPECT_EQ(machine.wire, nullptr);
     EXPECT_EQ(machine.makespan, 0);
     EXPECT_EQ(machine.total_completion_time, 0);
     EXPECT_EQ(machine.quality, 0);
