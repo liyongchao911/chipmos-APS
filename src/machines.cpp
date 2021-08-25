@@ -106,6 +106,13 @@ void machines_t::addMachine(machine_t machine)
     machine_ptr->current_job.list.ptr_derived_object =
         &machine_ptr->current_job;
 
+    machine_ptr->tools.areses = nullptr;
+    machine_ptr->tools.number = 0;
+
+    machine_ptr->wires.areses = nullptr;
+    machine_ptr->wires.number = 0;
+
+
     // add into container
     _machines[machine_name] = machine_ptr;
 
@@ -184,6 +191,12 @@ void machines_t::addGroupJobs(string recipe, vector<job_t *> jobs)
     if (_dispatch_groups.count(recipe) != 0)
         cerr << "Warning : you add group of jobs twice, recipe is [" << recipe
              << "]" << endl;
+
+    iter(jobs, i)
+    {
+        jobs[i]->base.ptr_derived_object = jobs[i];
+        jobs[i]->list.ptr_derived_object = jobs[i];
+    }
 
     vector<machine_t *> machines;
     for (auto it = _machines.begin(); it != _machines.end(); it++) {
@@ -367,6 +380,7 @@ map<string, int> machines_t::_distributeAResource(
         if (_n_res == 0) {
             _n_res = 1;
         }
+        result[data[i].name] = _n_res;
         number_of_resources -= _n_res;
         ++i;
     }
@@ -522,6 +536,7 @@ void machines_t::_chooseMachinesForAGroup(struct __job_group_t *group)
             // update tool
             if (_addNewResource(_v_machines[i], part_no, _machines_tools)) {
                 number_of_tools -= 1;
+                // printf("%s\n", _v_machines[i]->base.machine_no.data.text);
             }
 
             if (_addNewResource(_v_machines[i], part_id, _machines_wires)) {
@@ -602,7 +617,7 @@ void machines_t::_setupResources(
             ares_t *ares = new ares_t();
             ares->name = stringToInfo(it->first);
             ares->used = false;
-            ares->time = 0;
+            ares->available_time = 0;
             rs.push_back(ares);
         }
         resources_instance_container[it->first] = rs;
@@ -622,15 +637,21 @@ void machines_t::_setupResources(
         unsigned int i = 0, j = 0;
         vector<machine_t *> res_machines = resource_machines[it->first];
         for (; i < it->second.size() && j < res_machines.size(); ++i, ++j) {
-            it->second[i]->time = res_machines[j]->base.available_time;
+            it->second[i]->available_time =
+                res_machines[j]->base.available_time > 0
+                    ? res_machines[j]->base.available_time
+                    : 0;
         }
 
         while (i < it->second.size()) {
-            it->second[i]->time = 0;
+            it->second[i]->available_time = 0;
             ++i;
         }
-
+        // cout<< it->first <<endl;
         sort(it->second.begin(), it->second.end(), aresPtrComp);
+        // for(unsigned int i  = 0; i < it->second.size(); ++i){
+        //     cout<<"\t"<<it->second[i]->available_time << endl;
+        // }
     }
 }
 
@@ -672,6 +693,7 @@ void machines_t::_loadResourcesOnTheMachine(machine_t *machine)
     vector<string> wire_list = _machines_wires[name];
 
     // load resource
+    // cout<<"Machine : " << name << endl;
     machine->tools = _loadResource(tool_list, _tools, _loaded_tools);
     machine->wires = _loadResource(wire_list, _wires, _loaded_wires);
 }
@@ -693,8 +715,10 @@ void machines_t::prepareMachines(int *number, machine_t ***machine_array)
     iter(machine_lists, i)
     {
         machine_t *machine = _machines[machine_lists[i]];
+        string machine_no(machine->base.machine_no.data.text);
         _loadResourcesOnTheMachine(machine);
         machines[i] = machine;
+        machines[i]->base.ptr_derived_object = machines[i];
     }
 
 
@@ -729,6 +753,8 @@ void machines_t::_linkMachineToAJob(job_t *job)
                              .process_time = ptime};
         process_times[i] = pt;
     }
+    job_ops->set_process_time(&job->base, process_times,
+                              can_run_machines.size());
 }
 
 void machines_t::prepareJobs(int *number, job_t ***job_array)
@@ -746,6 +772,8 @@ void machines_t::prepareJobs(int *number, job_t ***job_array)
     {
         _linkMachineToAJob(jobs[i]);
         arr[i] = jobs[i];
+        arr[i]->base.ptr_derived_object = arr[i];
+        arr[i]->list.ptr_derived_object = arr[i];
     }
 
     *number = jobs.size();

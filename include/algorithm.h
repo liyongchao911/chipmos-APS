@@ -5,13 +5,22 @@
 #ifndef __ALGORITHM_H__
 #define __ALGORITHM_H__
 
+#include "include/chromosome.h"
+#include "include/chromosome_base.h"
 #include "include/lots.h"
 #include "include/machines.h"
+#include "include/population.h"
 
 void prescheduling(machines_t *machines, lots_t *lots);
 
 void stage2Scheduling(machines_t *machines, lots_t *lots);
 
-void stage3Scheduling(machines_t *machines, lots_t *lots);
+void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop);
+
+void prepareChromosomes(chromosome_base_t **_chromosomes,
+                        int NUMBER_OF_JOBS,
+                        int NUMBER_OF_R_CHROMOSOMES);
+
+void geneticAlgorithm(population_t *pop);
 
 #endif

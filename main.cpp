@@ -16,8 +16,6 @@
 
 using namespace std;
 
-void output(population_t *pop, csv_t *csv);
-
 map<string, string> outputJob(job_t job);
 map<string, string> outputJobInMachine(machine_t *machine);
 
@@ -41,7 +39,7 @@ int main(int argc, const char *argv[])
     entities_t entities = createEntities(argc, argv);
 
 
-    // srand(time(NULL));
+    srand(time(NULL));
     population_t pop = population_t{
         .parameters =
             {.AMOUNT_OF_CHROMOSOMES = 100,
@@ -77,33 +75,25 @@ int main(int argc, const char *argv[])
 
     prescheduling(machines, &lots);
     stage2Scheduling(machines, &lots);
-    stage3Scheduling(machines, &lots);
+
+    stage3Scheduling(machines, &lots, &pop);
 
     const vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
     csv_t result("output/result.csv", "w");
     iter(scheduled_jobs, i) { result.addData(outputJob(*scheduled_jobs[i])); }
+
+    // csv_t result2("output/result2.csv", "w");
+    for (int i = 0; i < pop.objects.NUMBER_OF_JOBS; ++i) {
+        result.addData(outputJob(*(pop.objects.jobs[i])));
+    }
+
+    for (int i = 0; i < pop.objects.NUMBER_OF_MACHINES; ++i) {
+        if (pop.objects.machines[i]->base.size_of_jobs > 0)
+            printf("Machine %s : %d\n",
+                   pop.objects.machines[i]->base.machine_no.data.text,
+                   pop.objects.machines[i]->base.size_of_jobs);
+    }
     result.write();
-
-    // outputJobInMachine(machines.getMachines(), &result);
-    // initializeOperations(&pop);
-
-    // int i = 0;
-    // while (lots.toolWireLotsHasLots()) {
-    //     printf("i = %d\n", i++);
-    //     pop.groups = lots.round(entities);
-    //     // if(pop.groups.size() == 0){
-    //     //     continue;
-    //     // }
-    //     initializePopulation(&pop, machines, tools, wires);
-    //     geneticAlgorithm(&pop);
-    //     // optimization(&pop);
-    //     output(&pop, &result);
-    //     machineWriteBackToEntity(&pop);
-    //     freeJobs(&pop.round);
-    //     freeResources(&pop.round);
-    //     freeChromosomes(&pop);
-    // }
-    // result.write();
 
     return 0;
 }
@@ -194,14 +184,5 @@ void outputJobInMachine(map<string, machine_t *> machines, csv_t *csv)
          it != machines.end(); it++) {
         if (it->second->current_job.prod_id.text_size != 0)
             csv->addData(outputJob(it->second->current_job));
-    }
-}
-
-void output(population_t *pop, csv_t *csv)
-{
-    int AMOUNT_OF_JOBS = pop->round.AMOUNT_OF_JOBS;
-    job_t *jobs = pop->round.jobs;
-    for (int i = 0; i < AMOUNT_OF_JOBS; ++i) {
-        csv->addData(outputJob(jobs[i]));
     }
 }

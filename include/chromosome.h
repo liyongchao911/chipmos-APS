@@ -62,17 +62,18 @@ void copyChromosome(chromosome_base_t dest, chromosome_base_t src);
  * @param machine_ops : machine operations
  * @param list_ops : linked list operations
  * @param job_ops : job operation
- * @param AMOUNT_OF_JOBS : amount of jobs
+ * @param NUMBER_OF_JOBS : amount of jobs
  * @param MAX_SETUP_TIMES : maximum of setup times
  * @return the fitness value of chromosome
  */
 double decoding(chromosome_base_t chromosome,
-                job_t *jobs,
-                std::map<unsigned int, machine_t *> machines,
+                job_t **jobs,
+                machine_t **machines,
                 machine_base_operations_t *machine_ops,
                 list_operations_t *list_ops,
                 job_base_operations_t *job_ops,
-                int AMOUNT_OF_JOBS,
+                int NUMBER_OF_JOBS,
+                int NUMBER_OF_MACHINES,
                 int MAX_SETUP_TIMES,
                 weights_t weights,
                 scheduling_parameters_t scheduling_parameters);

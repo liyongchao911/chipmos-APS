@@ -18,6 +18,7 @@ typedef struct auxiliary_resource_t {
     struct __info_t name;
     struct __info_t machine_no;
     double time;
+    double available_time;
     bool used;
 } ares_t;
 

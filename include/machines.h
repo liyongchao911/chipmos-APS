@@ -179,8 +179,29 @@ public:
 
     void prepareJobs(int *number, job_t ***job_array);
 
+
+    list_operations_t *getInitializedListOperations();
+    job_base_operations_t *getInitializedJobBaseOperations();
+    machine_base_operations_t *getInitilizedMachineBaseOperations();
+
     ~machines_t();
 };
+
+inline list_operations_t *machines_t::getInitializedListOperations()
+{
+    return list_ops;
+}
+
+inline job_base_operations_t *machines_t::getInitializedJobBaseOperations()
+{
+    return job_ops;
+}
+
+inline machine_base_operations_t *
+machines_t::getInitilizedMachineBaseOperations()
+{
+    return machine_ops;
+}
 
 inline const std::vector<job_t *> machines_t::getScheduledJobs()
 {
