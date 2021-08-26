@@ -435,12 +435,14 @@ job_t lot_t::job()
         try {
             j.base.ptime = _model_process_times.at(_prescheduled_model);
         } catch (std::out_of_range &e) {
-#ifdef LOG_ERROR
-            std::cerr << "Warning : Attempt to create job without setting "
-                         "prescheduled model. The ptime will be set as -1"
-                      << std::endl;
-#endif
-            j.base.ptime = -1;
+            // #ifdef LOG_ERROR
+            //             std::cerr << "Warning : Attempt to create job without
+            //             setting "
+            //                          "prescheduled model. The ptime will be
+            //                          set as -1"
+            //                       << std::endl;
+            // #endif
+            j.base.ptime = _model_process_times.begin()->second;
         }
     } else {
         j.list.get_value = jobGetValue;

@@ -92,6 +92,9 @@ void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop)
     pop->operations.job_ops = machines->getInitializedJobBaseOperations();
     pop->operations.list_ops = machines->getInitializedListOperations();
 
+    cout << "Number of machines : " << pop->objects.NUMBER_OF_MACHINES << endl;
+    cout << "Number of jobs : " << pop->objects.NUMBER_OF_JOBS << endl;
+
     geneticAlgorithm(pop);
 }
 

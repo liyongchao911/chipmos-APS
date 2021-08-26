@@ -487,12 +487,15 @@ bool machines_t::_addNewResource(
 
 void machines_t::_chooseMachinesForAGroup(struct __job_group_t *group)
 {
-    // FIXME : need to be well tested but I have no time FUCK
+    // FIXME : need to be well test
     vector<job_t *> good_jobs;  // which means that the job has more than one
                                 // can_run machines
     vector<job_t *> bad_jobs;   // the job has no any can-run machines
 
     bad_jobs = group->jobs;
+
+    // FIXME : need to delete the testing variable
+    map<string, vector<string>> suitable_machines;
 
     int number_of_tools = group->number_of_tools;
     int number_of_wires = group->number_of_wires;
@@ -515,11 +518,18 @@ void machines_t::_chooseMachinesForAGroup(struct __job_group_t *group)
             if (_canJobRunOnTheMachine(bad_jobs[j], _v_machines[i])) {
                 _job_can_run_machines[lot_number].push_back(
                     string(_v_machines[i]->base.machine_no.data.text));
+
+                suitable_machines[lot_number].push_back(
+                    string(_v_machines[i]->base.machine_no.data.text));
+
                 ngood_jobs.push_back(bad_jobs[j]);
             } else {
                 nbad_jobs.push_back(bad_jobs[j]);
             }
         }
+
+        string model_name(_v_machines[i]->base.machine_no.data.text);
+        bool used = false;  // a flag to describe if the machine is choose below
         // if ngood_jobs has jobs means that the machine is a good machine
         if (ngood_jobs.size() || bad_jobs.size() == 0) {
             iter(good_jobs, j)
@@ -528,19 +538,27 @@ void machines_t::_chooseMachinesForAGroup(struct __job_group_t *group)
                 if (_canJobRunOnTheMachine(good_jobs[j], _v_machines[i])) {
                     _job_can_run_machines[lot_number].push_back(
                         string(_v_machines[i]->base.machine_no.data.text));
+
+                    suitable_machines[lot_number].push_back(
+                        string(_v_machines[i]->base.machine_no.data.text));
+                    used = true;
                 }
             }
             good_jobs += ngood_jobs;  // update the good_jobs container
 
             // update the tool and wire carried by the machines
             // update tool
-            if (_addNewResource(_v_machines[i], part_no, _machines_tools)) {
-                number_of_tools -= 1;
-                // printf("%s\n", _v_machines[i]->base.machine_no.data.text);
-            }
+            if (used || ngood_jobs.size()) {  // if the machine is chosen in
+                                              // first round or second round
+                if (_addNewResource(_v_machines[i], part_no, _machines_tools)) {
+                    number_of_tools -= 1;
+                    // printf("%s\n",
+                    // _v_machines[i]->base.machine_no.data.text);
+                }
 
-            if (_addNewResource(_v_machines[i], part_id, _machines_wires)) {
-                number_of_wires -= 1;
+                if (_addNewResource(_v_machines[i], part_id, _machines_wires)) {
+                    number_of_wires -= 1;
+                }
             }
         }
         bad_jobs = nbad_jobs;
@@ -737,10 +755,21 @@ void machines_t::prepareMachines(int *number, machine_t ***machine_array)
 void machines_t::_linkMachineToAJob(job_t *job)
 {
     string lot_number(job->base.job_info.data.text);
+
+    // FIXME : delete the variables
+    // string part_no(job->part_no.data.text);
     vector<string> can_run_machines = _job_can_run_machines.at(lot_number);
     process_time_t *process_times = nullptr;
     process_times = (process_time_t *) malloc(sizeof(process_time_t) *
                                               can_run_machines.size());
+
+    // if(part_no.compare("A0803CB1156") == 0){
+    //     for(int i = 0; i < can_run_machines.size(); ++i){
+    //         cout<<"A0803CB1156 : " << can_run_machines[i]<<endl;
+    //     }
+    // }
+
+
     iter(can_run_machines, i)
     {
         string machine_name = can_run_machines[i];
