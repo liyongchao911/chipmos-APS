@@ -22,7 +22,7 @@ struct population_t {
         int GENERATIONS;
         int MAX_SETUP_TIMES;
         weights_t weights;
-        scheduling_parameters_t scheduling_parameters;
+        setup_time_parameters_t scheduling_parameters;
     } parameters;
 
     struct {

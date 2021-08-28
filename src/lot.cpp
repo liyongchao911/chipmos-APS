@@ -274,9 +274,10 @@ std::map<std::string, std::string> lot_t::data()
     return d;
 }
 
-bool lot_t::setUph(csv_t _uph_csv)
+bool lot_t::setUph(csv_t &original_uph_csv)
 {
-    _uph_csv = _uph_csv.filter("recipe", _recipe);
+    csv_t _uph_csv;
+    _uph_csv = original_uph_csv.filter("recipe", _recipe);
     _uph_csv = _uph_csv.filter("oper", std::to_string(this->tmp_oper));
     _uph_csv = _uph_csv.filter("cust", _customer);
     if (_uph_csv.nrows() == 0) {

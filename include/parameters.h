@@ -1,7 +1,7 @@
 #ifndef __PARAMETERS_H__
 #define __PARAMETERS_H__
 
-typedef struct __scheduling_parameters_t {
+typedef struct __setup_time_parameters_t {
     double TIME_CWN;
     double TIME_CK;
     double TIME_EU;
@@ -10,7 +10,7 @@ typedef struct __scheduling_parameters_t {
     double TIME_CSC;
     double TIME_USC;
     double TIME_ICSI;
-} scheduling_parameters_t;
+} setup_time_parameters_t;
 
 
 typedef struct weights_t {

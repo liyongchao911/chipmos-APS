@@ -60,7 +60,7 @@ protected:
     job_base_operations_t *job_ops;
 
     // parameters and weights
-    scheduling_parameters_t _param;
+    setup_time_parameters_t _param;
     weights_t _weights;
 
     // other job information such as can_run_location and process_times
@@ -96,7 +96,7 @@ protected:
 
 
     bool _canJobRunOnTheMachine(job_t *job, machine_t *machine);
-    void _init(scheduling_parameters_t param);
+    void _init(setup_time_parameters_t param);
     void _scheduleAGroup(struct __machine_group_t *group);
     std::vector<machine_t *> _sortedMachines(std::vector<machine_t *> &ms);
     std::vector<job_t *> _sortedJobs(std::vector<job_t *> &jobs);
@@ -134,7 +134,7 @@ protected:
 public:
     machines_t();
 
-    machines_t(scheduling_parameters_t param, weights_t weight);
+    machines_t(setup_time_parameters_t param, weights_t weight);
 
     machines_t(machines_t &other);
 

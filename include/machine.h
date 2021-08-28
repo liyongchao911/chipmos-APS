@@ -62,7 +62,7 @@ double setupTimeUSC(job_base_t *_prev, job_base_t *_next, double time);
 void scheduling(machine_t *mahcine,
                 machine_base_operations_t *ops,
                 weights_t weights,
-                scheduling_parameters_t scheduling_parameters);
+                setup_time_parameters_t scheduling_parameters);
 
 void staticAddJob(machine_t *machine,
                   job_t *job,
@@ -71,7 +71,7 @@ void staticAddJob(machine_t *machine,
 void insertAlgorithm(machine_t *machine,
                      machine_base_operations_t *ops,
                      weights_t weights,
-                     scheduling_parameters_t scheduling_parameters);
+                     setup_time_parameters_t scheduling_parameters);
 
 void setLastJobInMachine(machine_t *machine);
 

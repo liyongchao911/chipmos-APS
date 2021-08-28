@@ -149,7 +149,7 @@ ares_t *searchResource(resources_t res, info_t name)
 void scheduling(machine_t *machine,
                 machine_base_operations_t *ops,
                 weights_t weights,
-                scheduling_parameters_t scheduling_parameters)
+                setup_time_parameters_t scheduling_parameters)
 {
     // initialize tool and wire
     for (int i = 0; i < machine->tools.number; ++i) {
@@ -263,7 +263,7 @@ void setLastJobInMachine(machine_t *machine)
 void _insertHeadAlgorithm(machine_t *machine,
                           machine_base_operations_t *mbops,
                           weights_t weights,
-                          scheduling_parameters_t scheduling_parameters)
+                          setup_time_parameters_t scheduling_parameters)
 {
     list_ele_t *it = machine->base.root;
     list_ele_t *prev;
@@ -308,7 +308,7 @@ void _insertHeadAlgorithm(machine_t *machine,
 void insertAlgorithm(machine_t *machine,
                      machine_base_operations_t *mbops,
                      weights_t weights,
-                     scheduling_parameters_t scheduling_parameters)
+                     setup_time_parameters_t scheduling_parameters)
 {
     _insertHeadAlgorithm(machine, mbops, weights, scheduling_parameters);
 

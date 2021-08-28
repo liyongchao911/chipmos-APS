@@ -80,11 +80,20 @@ int main(int argc, const char *argv[])
 
     const vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
     csv_t result("output/result.csv", "w");
-    iter(scheduled_jobs, i) { result.addData(outputJob(*scheduled_jobs[i])); }
+    iter(scheduled_jobs, i)
+    {
+        map<string, string> data = outputJob(*scheduled_jobs[i]);
+        if (data["lot_number"].length()) {
+            result.addData(data);
+        }
+    }
 
     // csv_t result2("output/result2.csv", "w");
     for (int i = 0; i < pop.objects.NUMBER_OF_JOBS; ++i) {
-        result.addData(outputJob(*(pop.objects.jobs[i])));
+        map<string, string> data = outputJob(*(pop.objects.jobs[i]));
+        if (data["lot_number"].length()) {
+            result.addData(data);
+        }
     }
 
     for (int i = 0; i < pop.objects.NUMBER_OF_MACHINES; ++i) {

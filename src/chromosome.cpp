@@ -53,7 +53,7 @@ double decoding(chromosome_base_t chromosome,
                 int NUMBER_OF_MACHINES,
                 int MAX_SETUP_TIMES,
                 weights_t weights,
-                scheduling_parameters_t scheduling_parameters)
+                setup_time_parameters_t scheduling_parameters)
 {
     unsigned int machine_idx;
     machine_t *machine;

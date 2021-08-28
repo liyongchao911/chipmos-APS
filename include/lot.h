@@ -449,7 +449,7 @@ public:
      * @return true if setup uph successfully, return false if there is no
      * model's uph is set.
      */
-    bool setUph(csv_t uph);
+    bool setUph(csv_t &uph);
 
     /**
      * setCanRunLocation () - set the can run location

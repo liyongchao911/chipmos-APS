@@ -18,7 +18,7 @@ using namespace std;
 
 machines_t::machines_t()
 {
-    scheduling_parameters_t param;
+    setup_time_parameters_t param;
     weights_t weights;
     memset(&param, 0, sizeof(param));
     _param = param;
@@ -29,7 +29,7 @@ machines_t::machines_t()
     _init(_param);
 }
 
-machines_t::machines_t(scheduling_parameters_t param, weights_t weights)
+machines_t::machines_t(setup_time_parameters_t param, weights_t weights)
 {
     _init(param);
     _weights = weights;
@@ -52,7 +52,7 @@ machines_t::machines_t(machines_t &other)
     throw invalid_argument("copy constructor hasn't been implemented");
 }
 
-void machines_t::_init(scheduling_parameters_t parameters)
+void machines_t::_init(setup_time_parameters_t parameters)
 {
     list_ops = (list_operations_t *) malloc(sizeof(list_operations_t));
     *list_ops = LINKED_LIST_OPS;
@@ -61,7 +61,7 @@ void machines_t::_init(scheduling_parameters_t parameters)
     *job_ops = JOB_BASE_OPS;
 
     size_t num_of_setup_time_units =
-        sizeof(scheduling_parameters_t) / sizeof(double);
+        sizeof(setup_time_parameters_t) / sizeof(double);
 
     machine_ops = (machine_base_operations_t *) malloc(
         sizeof(machine_base_operations_t) +
@@ -253,8 +253,7 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
                         locations.end() &&
                     (unscheduled_jobs[j]->base.arriv_t -
                          machines[i]->base.available_time <=
-                     60) &&
-                    machines[i]->base.available_time <= 4320) {
+                     60)) {
                     unscheduled_jobs[j]->base.ptime =
                         _job_process_times[lot_number][model];
                     staticAddJob(machines[i], unscheduled_jobs[j], machine_ops);
@@ -309,6 +308,7 @@ void machines_t::scheduleGroups()
 
 void machines_t::groupJobsByToolAndWire()
 {
+    // collected unmatched jobs
     for (map<string, struct __machine_group_t>::iterator it =
              _dispatch_groups.begin();
          it != _dispatch_groups.end(); it++) {
@@ -333,6 +333,8 @@ void machines_t::groupJobsByToolAndWire()
                 it->second.unscheduled_jobs[i]);
         }
     }
+
+    //
 
     for (map<string, struct __job_group_t *>::iterator it =
              _tool_wire_jobs_groups.begin();
@@ -601,6 +603,15 @@ void machines_t::chooseMachinesForGroups()
     _v_machines = _sortedMachines(_v_machines);
 
     iter(_jobs_groups, i) { _chooseMachinesForAGroup(_jobs_groups[i]); }
+
+    iter(_jobs_groups, i)
+    {
+        if (_jobs_groups[i]->orphan_jobs.size()) {
+            printf("[%s]-[%s] loss : %lu\n", _jobs_groups[i]->part_no.c_str(),
+                   _jobs_groups[i]->part_id.c_str(),
+                   _jobs_groups[i]->orphan_jobs.size());
+        }
+    }
 }
 
 void machines_t::_setupContainersForMachines()
