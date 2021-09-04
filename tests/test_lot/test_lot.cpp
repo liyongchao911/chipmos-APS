@@ -418,7 +418,7 @@ TEST_F(test_lot_t, test_lot_job1)
 
     info_t machine_no = job.base.machine_no;
     info_t empty_info = emptyInfo();
-    EXPECT_EQ(bcmp(&machine_no, &empty_info, sizeof(info_t)), 0);
+    EXPECT_EQ(memcmp(&machine_no, &empty_info, sizeof(info_t)), 0);
 }
 
 TEST_F(test_lot_t, test_lot_job2)
