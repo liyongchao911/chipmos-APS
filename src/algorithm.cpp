@@ -41,6 +41,7 @@ void stage2Scheduling(machines_t *machines, lots_t *lots)
         vector<job_t *> jobs;
         iter(it->second, i)
         {
+            string lot_number = it->second[i]->lotNumber();
             it->second[i]->setCanRunLocation(machines->getModelLocations());
             machines->addJobLocation(it->second[i]->lotNumber(),
                                      it->second[i]->getCanRunLocations());
@@ -63,12 +64,21 @@ void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop)
 {
     machines->setNumberOfTools(lots->amountOfTools());
     machines->setNumberOfWires(lots->amountOfWires());
+    // create the instances and also update the available time
+    machines->setupToolAndWire();
+
+    // if there is any unused resource, take off the jobs whose scheduled time
+    // is bigger then the threshold
+    // after that, update the resources' available time
+    // the job which is taken off will be added into the unscheduled jobs
+    machines->reconsiderJobs();
+
 
     machines->groupJobsByToolAndWire();
     machines->distributeTools();
     machines->distributeWires();
     machines->chooseMachinesForGroups();
-    machines->setupToolAndWire();
+
 
     machine_t **machine_array;
     int NUMBER_OF_MACHINES;

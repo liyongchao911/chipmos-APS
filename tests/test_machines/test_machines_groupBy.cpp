@@ -99,8 +99,9 @@ TEST_F(test_machines_groupBy, test_groupBy)
                 string key = part_no + "_" + part_id;
 
                 EXPECT_EQ(machines->_tool_wire_jobs_groups.count(key), 1);
-                EXPECT_EQ(machines->_tool_wire_jobs_groups[key]->jobs.size(),
-                          1);
+                EXPECT_EQ(
+                    machines->_tool_wire_jobs_groups[key]->orphan_jobs.size(),
+                    1);
                 EXPECT_EQ(machines->_tool_jobs_groups.count(part_no), 1);
                 EXPECT_EQ(machines->_tool_jobs_groups[part_no].size(), 4);
             }

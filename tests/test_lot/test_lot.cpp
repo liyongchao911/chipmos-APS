@@ -431,7 +431,7 @@ TEST_F(test_lot_t, test_lot_job2)
     EXPECT_EQ(isSameInfo(job.base.machine_no, mc_info), true);
     EXPECT_EQ(job.weight, 1);
     EXPECT_EQ(job.list.get_value, prescheduledJobGetValue);
-    EXPECT_EQ(job.base.ptime, -1);
+    EXPECT_NEAR(job.base.ptime, 123.45, 0.00001);
 }
 
 TEST_F(test_lot_t, test_lot_job3)

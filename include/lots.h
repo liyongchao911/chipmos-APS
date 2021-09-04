@@ -58,20 +58,20 @@ protected:
      * @param uph_filename : uph
      * @return
      */
-    std::vector<lot_t *> createLots(
-        std::string wip_file_name,            // wip file
-        std::string prod_pid_bomid_filename,  // production -> process_id
-        std::string eim_lot_size_filename,
-        std::string fcst_filename,
-        std::string routelist_filename,
-        std::string queue_time_filename,
-        std::string bomlist_filename,
-        std::string pid_heatblock_filename,
-        std::string ems_heatblock_filename,
-        std::string gw_filename,
-        std::string wire_stock_filename,
-        std::string bdid_mapping_models_filename,
-        std::string uph_filename);
+    std::vector<lot_t *> createLots(std::string wip_file_name,
+                                    std::string prod_pid_bomid_filename,
+                                    std::string eim_lot_size_filename,
+                                    std::string fcst_filename,
+                                    std::string routelist_filename,
+                                    std::string queue_time_filename,
+                                    std::string bomlist_filename,
+                                    std::string pid_heatblock_filename,
+                                    std::string ems_heatblock_filename,
+                                    std::string gw_filename,
+                                    std::string wire_stock_filename,
+                                    std::string bdid_mapping_models_filename,
+                                    std::string uph_filename,
+                                    std::string cure_time_filename);
 
     /**
      * readWip () - read wip filename
@@ -116,12 +116,14 @@ protected:
      * setupRoute () - read the route list file and the queue time file to setup
      * the route station and queue time in each station
      *
-     * @param routelist_filename
-     * @param queuetime_filename
+     * @param routelist
+     * @param queuetime
      * @param routes
      */
-    void setupRoute(std::string routelist_filename,
-                    std::string queuetime_filename,
+    void setupRoute(std::string routelist,
+                    std::string queuetime,
+                    std::string eim_lot_size,
+                    std::string cure_time,
                     route_t &routes);
 
     /**

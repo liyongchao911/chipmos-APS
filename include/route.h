@@ -3,40 +3,22 @@
 
 #include <map>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 
-#include <include/csv.h>
-#include <include/lot.h>
+#include "include/csv.h"
+#include "include/lot.h"
 
-#define WB1 2200
-#define WB2 3200
-#define WB3 3400
-#define WB4 3600
-#define WB5 4200
-#define WB6 4400
-#define WB7 4600
-#define WB8 4800
+extern const int WB_STATIONS[];
+extern const int NUMBER_OF_WB_STATIONS;
 
-#define DA1 2070
-#define DA2 2130
-#define DA3 3130
-#define DA4 3330
-#define DA5 4130
-#define DA6 4330
-#define DA7 4530
-#define DA8 4730
-#define DA9 5130
-#define DA10 5330
-#define DA11 5530
-#define DA12 5730
-#define DA13 6130
-#define DA14 6330
-#define DA15 6530
+extern const int DA_STATIONS[];
+extern const int NUMBER_OF_DA_STATIONS;
 
-
-#define CURE 2080
+extern const int CURE_STATIONS[];
+extern const int NUMBER_OF_CURE_STATIONS;
 
 
 typedef struct station_t station_t;
@@ -56,13 +38,16 @@ private:
     std::map<std::string, std::set<int> > _beforeWB;
 
     /// route_name map to station map to the queue_time
-    std::map<int, std::map<int, int> > _queue_time;
+    std::map<int, std::map<int, double> > _queue_time;
 
     // std::set use R-B tree, which provides optimal time complexity on
     // searching data.
     std::set<int> _wb_stations;  // store the opers of W/B stations.
     std::set<int> _da_stations;  // store the opers of D/A stations.
+    std::set<int> _cure_stations;
 
+    // process_id_oper : time
+    std::map<std::string, int> cure_time;
 
 private:
     /**
@@ -135,6 +120,10 @@ public:
      */
     void setQueueTime(csv_t queue_time_df);
 
+    void setCureTime(csv_t remark, csv_t cure_time);
+
+    int getCureTime(std::string process_id, int oper);
+
     /**
      * isLotInStations () - check if lot is in the stations range[WB - 7, WB]
      */
@@ -176,6 +165,19 @@ public:
      */
     int calculateQueueTime(lot_t &lot);
 };
+
+inline int route_t::getCureTime(std::string process_id, int oper)
+{
+    std::string key = process_id + "_" + std::to_string(oper);
+    try {
+        return cure_time.at(key);
+    } catch (std::out_of_range &e) {
+#ifdef LOG_ERROR
+        printf("Warning : unable time to find cure time, return 0");
+#endif
+        return 0;
+    }
+}
 
 
 #endif

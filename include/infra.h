@@ -14,6 +14,8 @@
 #define iter_range(vec, id, start, end) \
     for (unsigned int id = start; id < end; ++id)
 
+#define ARRAY_SIZE(arr, type) sizeof((arr)) / sizeof(type)
+
 /**
  * stringify
  */

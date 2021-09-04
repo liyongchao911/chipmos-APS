@@ -46,6 +46,7 @@ void lots_t::pushBackNotPrescheduledLot(lot_t *lot)
 
 void lots_t::addLots(std::vector<lot_t *> lots)
 {
+    std::string part_id, part_no;
     iter(lots, i)
     {
         if (lots[i]->isPrescheduled()) {
@@ -53,9 +54,12 @@ void lots_t::addLots(std::vector<lot_t *> lots)
         } else {
             this->lots.push_back(lots[i]);
         }
+        part_id = lots[i]->part_id();
+        part_no = lots[i]->part_no();
+        amount_of_tools[part_no] = lots[i]->getAmountOfTools();
+        amount_of_wires[part_id] = lots[i]->getAmountOfWires();
     }
 
-    std::string part_id, part_no;
     iter(this->lots, i)
     {
         part_id = this->lots[i]->part_id();
@@ -63,9 +67,6 @@ void lots_t::addLots(std::vector<lot_t *> lots)
         this->tool_lots[part_no].push_back(this->lots[i]);
         this->wire_lots[part_id].push_back(this->lots[i]);
         this->tool_wire_lots[part_no + "_" + part_id].push_back(this->lots[i]);
-
-        amount_of_tools[part_no] = this->lots[i]->getAmountOfTools();
-        amount_of_wires[part_id] = this->lots[i]->getAmountOfWires();
     }
 }
 
@@ -328,11 +329,18 @@ void lots_t::setLotSize(string filename,
     lots = result;
 }
 
-void lots_t::setupRoute(string routelist, string queuetime, route_t &routes)
+void lots_t::setupRoute(std::string routelist,
+                        std::string queuetime,
+                        std::string eim_lot_size,
+                        std::string cure_time,
+                        route_t &routes)
 {
     // setup routes
     csv_t routelist_df(routelist, "r", true, true);
     csv_t queue_time(queuetime, "r", true, true);
+    csv_t eim_ptn(eim_lot_size, "r", true, true);
+    csv_t cure_time_df(cure_time, "r", true, true);
+
     routelist_df.trim(" ");
     routelist_df.setHeaders(
         map<string, string>({{"route", "wrto_route"},
@@ -340,7 +348,7 @@ void lots_t::setupRoute(string routelist, string queuetime, route_t &routes)
                              {"seq", "wrto_seq_num"},
                              {"desc", "wrto_opr_shrt_desc"}}));
     routes.setQueueTime(queue_time);
-
+    routes.setCureTime(eim_ptn, cure_time_df);
 
     vector<vector<string> > data = routelist_df.getData();
     vector<string> routenames = routelist_df.getColumn("route");
@@ -482,7 +490,10 @@ void lots_t::setPartId(string filename,
     for (unsigned int i = 0; i < bomlist.nrows(); ++i) {
         map<string, string> tmp = bomlist.getElements(i);
         // if "oper" is WB, then get its part_id.
-        std::set<int> opers = {WB1, WB2, WB3, WB4, WB5, WB6, WB7, WB8};
+        std::set<int> opers;
+        for (int i = 0, size = NUMBER_OF_WB_STATIONS; i < size; ++i) {
+            opers.insert(WB_STATIONS[i]);
+        }
         int oper_int = stoi(tmp["oper"]);
         if (opers.count(oper_int) != 0) {
             bom_oper_part[oper_int][tmp["bom_id"]] = tmp["part_id"];
@@ -728,29 +739,32 @@ void lots_t::setUph(string uph_file_name,
 
 void lots_t::createLots(map<string, string> files)
 {
-    this->lots = createLots(
-        files["wip"], files["pid_bomid"], files["lot_size"], files["fcst"],
-        files["routelist"], files["queue_time"], files["bom_list"],
-        files["pid_heatblock"], files["ems_heatblock"], files["gw_inventory"],
-        files["wire_stock"], files["bdid_model_mapping"], files["uph"]);
+    vector<lot_t *> lts;
+    lts = createLots(files["wip"], files["pid_bomid"], files["lot_size"],
+                     files["fcst"], files["routelist"], files["queue_time"],
+                     files["bom_list"], files["pid_heatblock"],
+                     files["ems_heatblock"], files["gw_inventory"],
+                     files["wire_stock"], files["bdid_model_mapping"],
+                     files["uph"], files["cure_time"]);
 
-    addLots(lots);
+    addLots(lts);
 }
 
-vector<lot_t *> lots_t::createLots(
-    string wip_file_name,            // wip
-    string prod_pid_bomid_filename,  // pid_bomid
-    string eim_lot_size_filename,    // lot_size
-    string fcst_filename,            // fcst
-    string routelist_filename,       // route list
-    string queue_time_filename,      // queue time
-    string bomlist_filename,         // bom list
-    string pid_heatblock_filename,   // pid_heatblock mapping file
-    string ems_heatblock_filename,   // ems heatblock for the number of tools
-    string gw_filename,              // gw_inventory for the number of wires
-    string wire_stock_filename,
-    string bdid_mapping_models_filename,
-    string uph_filename)
+std::vector<lot_t *> lots_t::createLots(
+    std::string wip_file_name,
+    std::string prod_pid_bomid_filename,
+    std::string eim_lot_size_filename,
+    std::string fcst_filename,
+    std::string routelist_filename,
+    std::string queue_time_filename,
+    std::string bomlist_filename,
+    std::string pid_heatblock_filename,
+    std::string ems_heatblock_filename,
+    std::string gw_filename,
+    std::string wire_stock_filename,
+    std::string bdid_mapping_models_filename,
+    std::string uph_filename,
+    std::string cure_time_filename)
 {
     string err_msg;
 
@@ -765,7 +779,9 @@ vector<lot_t *> lots_t::createLots(
     da_stations_t das(fcst);
 
     route_t routes;
-    setupRoute(routelist_filename, queue_time_filename, routes);
+    setupRoute(routelist_filename, queue_time_filename, eim_lot_size_filename,
+               cure_time_filename, routes);
+
 
     // start creating lots
     readWip(wip_file_name, alllots, faulty_lots);
@@ -830,13 +846,22 @@ map<string, vector<lot_t *> > lots_t::getLotsRecipeGroups()
 {
     map<string, vector<lot_t *> > groups;
 
+    // set<string> lot_numbers_set;
+
     iter(this->lots, i)
     {
         string recipe = this->lots[i]->recipe();
+        string lot_number = this->lots[i]->lotNumber();
         if (groups.count(recipe) == 0)
             groups[recipe] = vector<lot_t *>();
 
         groups[recipe].push_back(this->lots[i]);
+
+        // if(lot_numbers_set.count(lot_number) == 0){
+        //     lot_numbers_set.insert(lot_number);
+        // }else{
+        //     printf("lot number[%s] is duplicated\n", lot_number.c_str());
+        // }
     }
 
     return groups;

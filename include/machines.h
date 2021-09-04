@@ -24,6 +24,7 @@ struct __job_group_t {
     int number_of_wires;
 
     int number_of_machines;
+    int number_of_jobs;
 
     std::vector<job_t *> jobs;
     std::vector<job_t *> orphan_jobs;
@@ -62,6 +63,7 @@ protected:
     // parameters and weights
     setup_time_parameters_t _param;
     weights_t _weights;
+    int threshold;
 
     // other job information such as can_run_location and process_times
     std::map<std::string, std::vector<std::string>> _job_can_run_locations;
@@ -110,7 +112,8 @@ protected:
         int number_of_resources,
         std::map<std::string, int> groups_statistic);
 
-    void _chooseMachinesForAGroup(struct __job_group_t *group);
+    void _chooseMachinesForAGroup(struct __job_group_t *group,
+                                  std::vector<machine_t *> candidate_machines);
 
     void _initializeNumberOfExpectedMachines();
 
@@ -130,6 +133,29 @@ protected:
     void _loadResourcesOnTheMachine(machine_t *machine);
 
     void _linkMachineToAJob(job_t *job);
+
+    bool _isThereAnyUnusedResource(
+        std::map<std::string, std::vector<ares_t *>> _resources,
+        std::string resource_name,
+        int threshold = 1);
+
+    std::vector<job_t *> _reconsiderJobsOnAMachine(machine_t *machine,
+                                                   int threshold);
+
+    void _createResources(std::map<std::string, int> &number_of_resource,
+                          std::map<std::string, std::vector<ares_t *>>
+                              &resource_instance_container);
+
+    void _updateAKindOfResourceAvailableTime(
+        std::vector<ares_t *> &resource_instances,
+        std::vector<machine_t *> &resource_machines);
+    void _updateAllKindOfResourcesAvailableTime(
+        std::map<std::string, std::vector<ares_t *>>
+            &resource_instance_container,
+        std::map<std::string, std::vector<machine_t *>> &resource_machines);
+
+    void _collectScheduledJobs(machine_t *machine,
+                               std::vector<job_t *> &scheduled_jobs);
 
 public:
     machines_t();
@@ -174,6 +200,8 @@ public:
     void chooseMachinesForGroups();
 
     void setupToolAndWire();
+
+    void reconsiderJobs();
 
     void prepareMachines(int *number, machine_t ***machine_array);
 
@@ -249,6 +277,7 @@ inline void machines_t::addJobProcessTimes(
     if (_job_process_times.count(lot_number) != 0)
         std::cerr << "Warning : add job process_times twice, lot_number is ["
                   << lot_number << "]" << std::endl;
+
 
     _job_process_times[lot_number] = process_times;
 }
