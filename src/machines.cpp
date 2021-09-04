@@ -207,6 +207,8 @@ void machines_t::addGroupJobs(string recipe, vector<job_t *> jobs)
         cerr << "Warning : you add group of jobs twice, recipe is [" << recipe
              << "]" << endl;
 
+    string part_no = string(jobs.at(0)->part_no.data.text);
+    string part_id = string(jobs.at(0)->part_id.data.text);
     iter(jobs, i)
     {
         jobs[i]->base.ptr_derived_object = jobs[i];
@@ -224,8 +226,59 @@ void machines_t::addGroupJobs(string recipe, vector<job_t *> jobs)
     _dispatch_groups[recipe] =
         (struct __machine_group_t){.machines = machines,
                                    .unscheduled_jobs = jobs,
-                                   .scheduled_jobs = vector<job_t *>()};
+                                   .scheduled_jobs = vector<job_t *>(),
+                                   .part_no = part_no,
+                                   .part_id = part_id,
+                                   .recipe = recipe,
+                                   .tools = vector<ares_t *>(),
+                                   .wires = vector<ares_t *>()};
+
+    _loadResource(&_dispatch_groups[recipe]);
 }
+
+void machines_t::_loadResource(struct __machine_group_t *group)
+{
+    string part_no = group->part_no;
+    string part_id = group->part_id;
+
+    int number_of_machines = group->machines.size();
+    vector<machine_t *> machines = group->machines;
+
+
+    int i = 0, j = 0;
+    vector<ares_t *> tools;
+    for (; i < _tools[part_no].size() && j < number_of_machines; ++i) {
+        if (!_tools[part_no][i]->used) {
+            _tools[part_no][i]->used = true;
+            tools.push_back(_tools[part_no][i]);
+            ++j;
+        }
+    }
+
+    // check
+    if (j != number_of_machines) {
+        cout << group->recipe << " : ";
+        perror("Tools is not enough");
+    }
+
+    i = 0;
+    j = 0;
+    vector<ares_t *> wires;
+    for (; i < _wires[part_id].size() && j < number_of_machines; ++i) {
+        if (!_wires[part_id][i]->used) {
+            _wires[part_id][i]->used = true;
+            wires.push_back(_wires[part_id][i]);
+            ++j;
+        }
+    }
+    if (j != number_of_machines) {
+        perror("Wires is not enough");
+    }
+
+    group->wires = wires;
+    group->tools = tools;
+}
+
 
 vector<machine_t *> machines_t::_sortedMachines(vector<machine_t *> &ms)
 {
@@ -819,10 +872,12 @@ void machines_t::_createResources(
         vector<ares_t *> areses;
         for (int i = 0; i < number_of_resource; ++i) {
             ares_t *ares = new ares_t();
-            *ares = ares_t{.name = stringToInfo(it->first),
-                           .available_time = 0,
-                           .used = false,
-                           .time = 0};
+            *ares = ares_t{
+                .name = stringToInfo(it->first),
+                .time = 0,
+                .available_time = 0,
+                .used = false,
+            };
             areses.push_back(ares);
         }
         resource_instance_container[it->first] = areses;
@@ -885,8 +940,10 @@ void machines_t::_setupResources(
 void machines_t::setupToolAndWire()
 {
     _setupContainersForMachines();
-    _setupResources(_number_of_tools, _tools, _tool_machines);
-    _setupResources(_number_of_wires, _wires, _wire_machines);
+    _createResources(_number_of_tools, _tools);
+    _createResources(_number_of_wires, _wires);
+    // _setupResources(_number_of_tools, _tools, _tool_machines);
+    // _setupResources(_number_of_wires, _wires, _wire_machines);
 }
 
 resources_t machines_t::_loadResource(
@@ -948,8 +1005,6 @@ void machines_t::prepareMachines(int *number, machine_t ***machine_array)
         machines[i] = machine;
         machines[i]->base.ptr_derived_object = machines[i];
     }
-
-
 
     *number = num_of_machines;
     *machine_array = machines;

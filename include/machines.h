@@ -15,6 +15,13 @@ struct __machine_group_t {
     std::vector<machine_t *> machines;
     std::vector<job_t *> unscheduled_jobs;
     std::vector<job_t *> scheduled_jobs;
+    std::string part_no;
+    std::string part_id;
+    std::string recipe;
+
+    std::vector<ares_t *> tools;
+    std::vector<ares_t *> wires;
+    double index;
 };
 
 struct __job_group_t {
@@ -156,6 +163,8 @@ protected:
 
     void _collectScheduledJobs(machine_t *machine,
                                std::vector<job_t *> &scheduled_jobs);
+
+    void _loadResource(struct __machine_group_t *group);
 
 public:
     machines_t();

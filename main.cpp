@@ -74,39 +74,7 @@ int main(int argc, const char *argv[])
     iter(all_entities, i) { machines->addMachine(all_entities[i]->machine()); }
 
     prescheduling(machines, &lots);
-    stage2Scheduling(machines, &lots);
-
-    // stage3Scheduling(machines, &lots, &pop);
-
-    const vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
-    csv_t result("output/result12.csv", "w");
-    // csv_t result2("output/result123.csv", "w");
-    iter(scheduled_jobs, i)
-    {
-        map<string, string> data = outputJob(*scheduled_jobs[i]);
-        if (data["lot_number"].length()) {
-            result.addData(data);
-            // result2.addData(data);
-        }
-    }
-
-    // csv_t result2("output/result2.csv", "w");
-    // for (int i = 0; i < pop.objects.NUMBER_OF_JOBS; ++i) {
-    //     map<string, string> data = outputJob(*(pop.objects.jobs[i]));
-    //     if (data["lot_number"].length()) {
-    //         // result.addData(data);
-    //         result2.addData(data);
-    //     }
-    // }
-
-    for (int i = 0; i < pop.objects.NUMBER_OF_MACHINES; ++i) {
-        if (pop.objects.machines[i]->base.size_of_jobs > 0)
-            printf("Machine %s : %d\n",
-                   pop.objects.machines[i]->base.machine_no.data.text,
-                   pop.objects.machines[i]->base.size_of_jobs);
-    }
-    result.write();
-    // result2.write();
+    // stage2Scheduling(machines, &lots);
     return 0;
 }
 

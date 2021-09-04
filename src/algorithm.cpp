@@ -35,6 +35,12 @@ void prescheduling(machines_t *machines, lots_t *lots)
 void stage2Scheduling(machines_t *machines, lots_t *lots)
 {
     map<string, vector<lot_t *> > groups;
+    machines->setNumberOfTools(lots->amountOfTools());
+    machines->setNumberOfWires(lots->amountOfWires());
+
+    machines->setupToolAndWire();
+
+
     groups = lots->getLotsRecipeGroups();
 
     for (auto it = groups.begin(); it != groups.end(); it++) {
@@ -56,7 +62,7 @@ void stage2Scheduling(machines_t *machines, lots_t *lots)
         machines->addGroupJobs(it->first, jobs);
     }
 
-    machines->scheduleGroups();
+    // machines->scheduleGroups();
 }
 
 
