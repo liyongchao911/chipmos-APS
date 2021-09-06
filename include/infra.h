@@ -59,5 +59,18 @@ int randomRange(int start, int end, int different_num);
 
 double randomDouble();
 
+/**
+ * @bug
+ */
+#define average(array, size)            \
+    ({                                  \
+        double sum = 0;                 \
+        __typeof__(size) SIZE = (size); \
+        __typeof__(SIZE) i = 0;         \
+        for (i; i < size; ++i) {        \
+            sum += array[i];            \
+        }                               \
+        sum / size;                     \
+    })
 
 #endif

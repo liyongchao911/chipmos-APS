@@ -11,6 +11,11 @@
 #include "include/machine_base.h"
 #include "include/parameters.h"
 
+/**
+ * @struct __machine_group_t : A structure used to store the machines and jobs
+ * whose recipes are the same. The jobs in the structure are dispatched to each
+ * machine.
+ */
 struct __machine_group_t {
     std::vector<machine_t *> machines;
     std::vector<job_t *> unscheduled_jobs;
@@ -21,6 +26,8 @@ struct __machine_group_t {
 
     std::vector<ares_t *> tools;
     std::vector<ares_t *> wires;
+
+    /// index : used to determine which group had better get the new machine
     double index;
 };
 
@@ -50,6 +57,8 @@ protected:
 
     // vector machines
     std::vector<machine_t *> _v_machines;
+
+    std::vector<machine_t *> _grouped_machines;
 
     // tool_wire_name -> machine_t *
     std::map<std::string, std::vector<machine_t *>> _tool_wire_machines;
@@ -84,7 +93,8 @@ protected:
     std::map<std::string, std::vector<std::string>> _machines_wires;
 
     // groups
-    std::map<std::string, struct __machine_group_t> _dispatch_groups;
+    std::map<std::string, struct __machine_group_t *> _dispatch_groups;
+
 
     std::map<std::string, std::vector<struct __job_group_t *>>
         _wire_jobs_groups;
@@ -166,6 +176,28 @@ protected:
 
     void _loadResource(struct __machine_group_t *group);
 
+    bool _distributeOrphanMachines(struct __machine_group_t *group,
+                                   machine_t *orphan_machine);
+
+    /**
+     * _calculateMachineGroupIndex - calculate the index of a machine group
+     * @param group
+     * @return
+     */
+    double _calculateMachineGroupIndex(struct __machine_group_t *group);
+
+    /**
+     * _averageProcessTime - calculate the average process time for a job
+     * @param process_times : the process time of a job
+     * @return double type number
+     */
+    double _averageProcessTime(std::map<std::string, double> process_times);
+
+
+    ares_t *_availableResource(
+        std::map<std::string, std::vector<ares_t *>> resource,
+        std::string name);
+
 public:
     machines_t();
 
@@ -220,6 +252,8 @@ public:
     list_operations_t *getInitializedListOperations();
     job_base_operations_t *getInitializedJobBaseOperations();
     machine_base_operations_t *getInitilizedMachineBaseOperations();
+
+    void distributeOrphanMachines();
 
     ~machines_t();
 };

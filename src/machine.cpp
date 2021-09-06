@@ -123,12 +123,13 @@ double calculateSetupTime(job_t *prev,
     if (isSameInfo(prev->bdid, next->bdid))
         return 0.0;
     for (unsigned int i = 0; i < ops->sizeof_setup_time_function_array; ++i) {
-        if (prev)
+        if (prev) {
             time += ops->setup_time_functions[i].function(
                 &prev->base, &next->base, ops->setup_time_functions[i].minute);
-        else
+        } else {
             time += ops->setup_time_functions[i].function(
                 NULL, &next->base, ops->setup_time_functions[i].minute);
+        }
     }
     return time;
 }
@@ -364,11 +365,20 @@ void staticAddJob(machine_t *machine,
                   job_t *job,
                   machine_base_operations_t *machine_ops)
 {
+    job_t *last_job_of_machine;
+    if (machine->base.tail != nullptr) {
+        last_job_of_machine = (job_t *) machine->base.tail->ptr_derived_object;
+    } else {
+        last_job_of_machine = &machine->current_job;
+    };
     machine_ops->add_job(&machine->base, &job->list);
+    double setup_time =
+        calculateSetupTime(last_job_of_machine, job, machine_ops);
     double start_time = (job->base.arriv_t > machine->base.available_time)
                             ? job->base.arriv_t
                             : machine->base.available_time;
+    start_time = (start_time > setup_time ? start_time : setup_time);
     set_start_time(&job->base, start_time);
     machine->base.available_time = get_end_time(&job->base);
-    machine->current_job = *job;
+    job->base.machine_no = machine->base.machine_no;
 }

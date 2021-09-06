@@ -74,7 +74,11 @@ int main(int argc, const char *argv[])
     iter(all_entities, i) { machines->addMachine(all_entities[i]->machine()); }
 
     prescheduling(machines, &lots);
-    // stage2Scheduling(machines, &lots);
+    stage2Scheduling(machines, &lots);
+    vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
+    csv_t result("./output/result.csv", "w");
+    iter(scheduled_jobs, i) { result.addData(outputJob(*scheduled_jobs[i])); }
+    result.write();
     return 0;
 }
 

@@ -79,6 +79,9 @@ struct machine_base_t {
 
     /// the time the machine can start being used.
     double available_time;
+
+    /// scheduled time
+    double time;
 };
 
 typedef double (*setup_time_t)(job_base_t *, job_base_t *, double time);
