@@ -1,8 +1,8 @@
-name: test
+name: build-test
 
 on: [ push, pull_request ]
 jobs:
-  build:
+  on_ubuntu:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,12 +18,7 @@ jobs:
         cd build
         ./test --gtest_repeat=1000
 
-name: build-test
-
-on: [push, pull_request]
-
-jobs:
-  build:
+  on_windows:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
