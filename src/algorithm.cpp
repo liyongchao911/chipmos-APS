@@ -24,6 +24,7 @@ void prescheduling(machines_t *machines, lots_t *lots)
             machines->addPrescheduledJob(job);
             prescheduled_jobs.push_back(job);
         } catch (out_of_range &e) {
+            cout << prescheduled_lots[i]->preScheduledEntity() << endl;
             delete job;
             lots->pushBackNotPrescheduledLot(prescheduled_lots[i]);
         }
@@ -68,18 +69,6 @@ void stage2Scheduling(machines_t *machines, lots_t *lots)
 
 void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop)
 {
-    machines->setNumberOfTools(lots->amountOfTools());
-    machines->setNumberOfWires(lots->amountOfWires());
-    // create the instances and also update the available time
-    machines->setupToolAndWire();
-
-    // if there is any unused resource, take off the jobs whose scheduled time
-    // is bigger then the threshold
-    // after that, update the resources' available time
-    // the job which is taken off will be added into the unscheduled jobs
-    machines->reconsiderJobs();
-
-
     machines->groupJobsByToolAndWire();
     machines->distributeTools();
     machines->distributeWires();

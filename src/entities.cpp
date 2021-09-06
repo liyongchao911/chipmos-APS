@@ -35,7 +35,7 @@ void entities_t::_readPartNoFile(std::string filename)
             if (remark.find("(") != std::string::npos) {
                 remark = remark.substr(0, remark.find("("));
             }
-            pid_remark[row["process_id"]] = remark;
+            pid_remark[row["process_id"]] = remark.substr(0, remark.find(" "));
         }
     }
     pid_map_to_part_no = pid_remark;

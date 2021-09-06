@@ -625,7 +625,7 @@ void lots_t::setPartNo(string filename,
             if (str.find("(") != std::string::npos) {
                 str = str.substr(0, str.find("("));
             }
-            pid_remark[tmp["process_id"]] = str;
+            pid_remark[tmp["process_id"]] = str.substr(0, str.find(" "));
         }
     }
 

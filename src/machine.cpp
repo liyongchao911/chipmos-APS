@@ -374,10 +374,13 @@ void staticAddJob(machine_t *machine,
     machine_ops->add_job(&machine->base, &job->list);
     double setup_time =
         calculateSetupTime(last_job_of_machine, job, machine_ops);
-    double start_time = (job->base.arriv_t > machine->base.available_time)
-                            ? job->base.arriv_t
-                            : machine->base.available_time;
-    start_time = (start_time > setup_time ? start_time : setup_time);
+    // double start_time = (job->base.arriv_t > machine->base.available_time)
+    //                         ? job->base.arriv_t
+    //                         : machine->base.available_time;
+    double start_time =
+        (job->base.arriv_t - machine->base.available_time > setup_time
+             ? job->base.arriv_t
+             : machine->base.available_time + setup_time);
     set_start_time(&job->base, start_time);
     machine->base.available_time = get_end_time(&job->base);
     job->base.machine_no = machine->base.machine_no;

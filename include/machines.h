@@ -156,8 +156,18 @@ protected:
         std::string resource_name,
         int threshold = 1);
 
-    std::vector<job_t *> _reconsiderJobsOnAMachine(machine_t *machine,
-                                                   int threshold);
+    /**
+     * _jobsExceedDispatchingThreshold - take out the job dispatched on the
+     * machine, exceeding the threshold The function will go through the linked
+     * list of machine and check if the job exceeds the threshold given by
+     * function parameter. The function will also take out the job and close the
+     * job linked list.
+     * @param machine
+     * @param threshold
+     * @return
+     */
+    std::vector<job_t *> _jobsExceedDispatchingThreshold(machine_t *machine,
+                                                         int threshold);
 
     void _createResources(std::map<std::string, int> &number_of_resource,
                           std::map<std::string, std::vector<ares_t *>>

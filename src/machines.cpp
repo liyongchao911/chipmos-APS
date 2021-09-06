@@ -170,16 +170,21 @@ void machines_t::prescheduleJobs()
             it->second);  // if the machine is scheduled, it will be set
     }
 
-    // collect scheduled jobs
+    // collect scheduled jobs and reset
+    printf("========================================\n");
     list_ele_t *list;
     for (map<string, machine_t *>::iterator it = _machines.begin();
          it != _machines.end(); ++it) {
         list = it->second->base.root;
         while (list) {
+            job_t *job = (job_t *) list->ptr_derived_object;
+            printf("prescheduled_jobs : %s\n", job->base.job_info.data.text);
             _scheduled_jobs.push_back((job_t *) list->ptr_derived_object);
             list = list->next;
         }
+        machine_ops->reset(&it->second->base);
     }
+    printf("========================================\n");
 }
 
 void machines_t::_collectScheduledJobs(machine_t *machine,
@@ -354,6 +359,8 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
     }
 }
 
+
+
 void machines_t::scheduleGroups()
 {
     std::map<std::string, struct __machine_group_t *> ngroups;
@@ -361,24 +368,35 @@ void machines_t::scheduleGroups()
              _dispatch_groups.begin();
          it != _dispatch_groups.end(); it++) {
         _scheduleAGroup(it->second);
-        iter(it->second->machines, j)
-        {
-            _collectScheduledJobs(it->second->machines[j], _scheduled_jobs);
-        }
-        // if (it->second->unscheduled_jobs.size() != 0) {
-        //     ngroups[it->first] = it->second;
-        //     ngroups[it->first]->scheduled_jobs.clear();
-        //     ngroups[it->first]->machines.clear();
+
+        // iter(it->second->machines, j)
+        // {
+        //     _collectScheduledJobs(it->second->machines[j], _scheduled_jobs);
         // }
     }
 
-    // _dispatch_groups = ngroups;
-    // for (map<string, struct __machine_group_t *>::iterator it =
-    //          _dispatch_groups.begin();
-    //      it != _dispatch_groups.end(); it++) {
-    //     printf("[%s] : %lu jobs\n", it->first.c_str(),
-    //            it->second->unscheduled_jobs.size());
+    // if the job exceeds the threshold, job will be rescheduled
+    //
+    reconsiderJobs();
+    vector<job_t *> stage2_scheduled_jobs;
+    iter(_v_machines, i)
+    {
+        setLastJobInMachine(_v_machines[i]);
+        _collectScheduledJobs(_v_machines[i], _scheduled_jobs);
+        _collectScheduledJobs(_v_machines[i], stage2_scheduled_jobs);
+    }
+
+    // iter(stage2_scheduled_jobs, i){
+    //     if(strcmp(stage2_scheduled_jobs[i]->base.job_info.data.text,
+    //     "P22NVCB24") == 0){
+    //         printf("Found P22NVCB24 ! in line 390\n");
+    //     }
     // }
+
+    // update the tools and the wires
+    _setupContainersForMachines();
+    _updateAllKindOfResourcesAvailableTime(_tools, _tool_machines);
+    _updateAllKindOfResourcesAvailableTime(_wires, _wire_machines);
 }
 
 bool machines_t::_isThereAnyUnusedResource(
@@ -386,7 +404,12 @@ bool machines_t::_isThereAnyUnusedResource(
     std::string resource_name,
     int threshold)
 {
-    vector<ares_t *> resources = _resources.at(resource_name);
+    vector<ares_t *> resources;
+    try {
+        resources = _resources.at(resource_name);
+    } catch (out_of_range &e) {
+        cout << "Resource name : " << resource_name << endl;
+    }
     vector<ares_t *> result;
     iter(resources, i)
     {
@@ -398,61 +421,81 @@ bool machines_t::_isThereAnyUnusedResource(
     return result.size() >= threshold;
 }
 
-vector<job_t *> machines_t::_reconsiderJobsOnAMachine(machine_t *machine,
-                                                      int threshold)
+vector<job_t *> machines_t::_jobsExceedDispatchingThreshold(machine_t *machine,
+                                                            int threshold)
 {
     vector<job_t *> jobs;
     list_ele_t *iterator = machine->base.root;
+    int i = 0;
     while (iterator) {
         job_t *job = (job_t *) iterator->ptr_derived_object;
         if (job->base.end_time >= threshold) {
             if (iterator->prev) {
                 iterator->prev->next = NULL;
                 iterator->prev = NULL;
+            } else {
+                machine->base.root = nullptr;
             }
             jobs.push_back(job);
+        } else {
+            ++i;
         }
         iterator = iterator->next;
     }
 
-    // make the information in machine correct
+    // update the tail
     iterator = machine->base.root;
-    while (iterator->next) {
+    while (iterator && iterator->next) {
         iterator = iterator->next;
     }
     machine->base.tail = iterator;
-
-    setLastJobInMachine(machine);
+    machine->base.size_of_jobs = i;
 
     return jobs;
 }
 
 void machines_t::reconsiderJobs()
 {
+    for (auto it = _dispatch_groups.begin(); it != _dispatch_groups.end();
+         ++it) {
+        _updateAKindOfResourceAvailableTime(it->second->tools,
+                                            it->second->machines);
+        _updateAKindOfResourceAvailableTime(it->second->wires,
+                                            it->second->machines);
+    }
+
     iter(_v_machines, i)
     {
         // bigger then threshold -> check the tool and wire
-        if (_v_machines[i]->base.available_time > threshold) {
-            string part_no(_v_machines[i]->current_job.part_no.data.text);
-            string part_id(_v_machines[i]->current_job.part_id.data.text);
-            string bd_id(_v_machines[i]->current_job.bdid.data.text);
+        if (_v_machines[i]->base.available_time > threshold &&
+            _v_machines[i]->base.tail) {
+            job_t *last_job =
+                (job_t *) _v_machines[i]->base.tail->ptr_derived_object;
+            string part_no(last_job->part_no.data.text);
+            string part_id(last_job->part_id.data.text);
+            string bd_id(last_job->bdid.data.text);
             if (_isThereAnyUnusedResource(_tools, part_no) &&
                 _isThereAnyUnusedResource(_wires, part_id)) {
                 // take out the jobs
                 vector<job_t *> jobs =
-                    _reconsiderJobsOnAMachine(_v_machines[i], threshold);
-                _dispatch_groups[bd_id]->unscheduled_jobs = jobs;
+                    _jobsExceedDispatchingThreshold(_v_machines[i], threshold);
+                _dispatch_groups.at(bd_id)->unscheduled_jobs += jobs;
             }
         }
-
-        // collect the scheduled job
-        _collectScheduledJobs(_v_machines[i], _scheduled_jobs);
     }
 
-
-    // update the tools and the wires
-    _updateAllKindOfResourcesAvailableTime(_tools, _tool_machines);
-    _updateAllKindOfResourcesAvailableTime(_wires, _wire_machines);
+    for (auto it = _dispatch_groups.begin(); it != _dispatch_groups.end();
+         ++it) {
+        iter(it->second->unscheduled_jobs, i)
+        {
+            printf("Lot number : %s\n",
+                   it->second->unscheduled_jobs[i]->base.job_info.data.text);
+        }
+        // if(it->second->unscheduled_jobs.size() != 0){
+        //     printf("[%s] : %lu\n", it->first.c_str(),
+        //     it->second->unscheduled_jobs.size());
+        // }
+    }
 }
 
 void machines_t::groupJobsByToolAndWire()
@@ -606,7 +649,7 @@ void machines_t::distributeWires()
          it != _tool_wire_jobs_groups.end(); ++it) {
         printf("[%s]-[%s] : (%d)#(%d) -> %lu\n", it->second->part_no.c_str(),
                it->second->part_id.c_str(), it->second->number_of_tools,
-               it->second->number_of_wires, it->second->jobs.size());
+               it->second->number_of_wires, it->second->orphan_jobs.size());
     }
 }
 
@@ -658,6 +701,7 @@ void machines_t::_chooseMachinesForAGroup(
     int number_of_wires = group->number_of_wires;
     string part_id = group->part_id;
     string part_no = group->part_no;
+
 
     vector<string> can_run_machines;
 
@@ -769,11 +813,10 @@ void machines_t::chooseMachinesForGroups()
 
     // Two stages machine selection
     // In the first stage choose the machine whose available time is less then
-    // threshold. If the all the jobs in stage 1 are able to choose their
-    // favorite machines, they won't be allowed to choose the machine in stage3.
-    // If the jobs
-    // In the second stage choose the machine whose available time is bigger
-    // then threshold
+    // threshold. If all jobs in stage 1 are able to choose their
+    // favorite machines, they won't be allowed to choose the machine in
+    // stage 2. In the second stage choose the machine whose available time is
+    // bigger then threshold
     iter(_jobs_groups, i)
     {
         _jobs_groups[i]->jobs.clear();
