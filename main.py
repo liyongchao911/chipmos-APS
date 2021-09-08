@@ -34,7 +34,12 @@ def filePreprocessing(path, files:dict, csv_config):
             df = df[file["columns"]]
             for col in file["columns"]:
                 df[col] = df[col].str.strip()
-
+        
+        df.dropna(
+                    axis=0,
+                    how='all',
+                    inplace=True
+                )
         df.to_csv(file_path + ".csv", index=False)
         csv_config[file_function].append(file_path + ".csv")
     return csv_config
@@ -50,7 +55,7 @@ def preprocessing(conf:dict):
     time = re.split(r"_|\.csv", wip_filename)[1]
     dt = datetime.strptime(time, "%Y%m%d%H%M%S")
 
-    csv_config["std_time"] = [ dt.strftime("%Y/%m/%d %H:%M")]
+    csv_config["std_time"] = [ dt.strftime("%y-%m-%d %H:%M")]
     for item in conf["parameters"]:
         csv_config[item] = conf["parameters"][item]
     df = pd.DataFrame(csv_config)
