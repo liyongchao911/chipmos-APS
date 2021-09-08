@@ -1,4 +1,5 @@
 #include <include/job_base.h>
+#include "include/info.h"
 #include "include/linked_list.h"
 
 // constructor and initialization
@@ -41,9 +42,7 @@ __qualifier__ void set_arrival_time(job_base_t *self, double arriv_time)
 __qualifier__ void set_start_time(job_base_t *self, double start_time)
 {
     self->start_time = start_time;
-    if (self->process_time) {
-        self->end_time = self->start_time + self->ptime;
-    }
+    self->end_time = self->start_time + self->ptime;
 }
 
 // getter
@@ -57,7 +56,7 @@ __qualifier__ double get_os_gene(job_base_t *self)
     return *(self->os_seq_gene);
 }
 
-__qualifier__ unsigned int get_machine_no(job_base_t *self)
+__qualifier__ info_t get_machine_no(job_base_t *self)
 {
     return self->machine_no;
 }
@@ -87,6 +86,7 @@ __qualifier__ unsigned int machine_selection(job_base_t *self)
     unsigned int val = ms_gene / self->partition;  // 0.0001 is bias
     if (self->process_time) {
         self->machine_no = self->process_time[val].machine_no;
+        self->current_machine = self->process_time[val].machine;
         self->ptime = self->process_time[val].process_time;
     }
     return val;
@@ -98,6 +98,12 @@ __qualifier__ void job_base_init(void *_self)
     self->ms_gene = self->os_seq_gene = NULL;
     self->ptr_derived_object = NULL;
     self->process_time = NULL;
+    self->ptime = 0;
+    self->partition = 0;
+    self->size_of_process_time = 0;
+    self->current_machine = NULL;
+    self->start_time = self->end_time = 0;
+    self->machine_no = emptyInfo();
 }
 
 

@@ -11,20 +11,6 @@
 #include "include/machine_base.h"
 #include "include/parameters.h"
 
-typedef struct round_t {
-    int round_no;
-    int AMOUNT_OF_JOBS;
-    int AMOUNT_OF_MACHINES;
-    job_t *jobs;  // sample;
-    // machine_t ** machines;
-    std::map<unsigned int, machine_t *> machines;
-    tool_t **tools;
-    wire_t **wires;
-    process_time_t **process_times;
-    int *size_of_process_times;
-
-} round_t;
-
 
 struct population_t {
     unsigned int no;
@@ -36,7 +22,7 @@ struct population_t {
         int GENERATIONS;
         int MAX_SETUP_TIMES;
         weights_t weights;
-        scheduling_parameters_t scheduling_parameters;
+        setup_time_parameters_t scheduling_parameters;
     } parameters;
 
     struct {
@@ -45,17 +31,14 @@ struct population_t {
         machine_base_operations_t *machine_ops;
     } operations;
 
-    std::vector<lot_group_t> groups;
+    struct {
+        job_t **jobs;
+        machine_t **machines;
+        int NUMBER_OF_JOBS;
+        int NUMBER_OF_MACHINES;
+    } objects;
 
-    round_t round;
     chromosome_base_t *chromosomes;
-    chromosome_base_t *tmp_chromosomes;
 };
-
-void initializePopulation(population_t *pop);
-
-void clearARound(population_t *pop, int round);
-
-void algorithm(population_t *pop);
 
 #endif

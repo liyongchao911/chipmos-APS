@@ -58,7 +58,18 @@ void stringToUpper(char *text)
 
 time_t timeConverter(std::string text)
 {
-    // TODO : convert text to time;
+    struct tm _tm;
+    sscanf(text.c_str(), "%d-%d-%d %d:%d", &_tm.tm_year, &_tm.tm_mon,
+           &_tm.tm_mday, &_tm.tm_hour, &_tm.tm_min);
+    _tm.tm_sec = 0;
+    _tm.tm_isdst = false;
+    _tm.tm_year += 2000;
+
+    return mktime(&_tm);
+}
+
+time_t timeConverterWithoutDash(std::string text)
+{
     struct tm _tm;
     sscanf(text.c_str(), "%d/%d/%d %d:%d", &_tm.tm_year, &_tm.tm_mon,
            &_tm.tm_mday, &_tm.tm_hour, &_tm.tm_min);

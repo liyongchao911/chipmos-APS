@@ -1,17 +1,24 @@
 cmake_minimum_required(VERSION 3.8)
 project(ChipmosWb LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 11)
 include_directories(${CMAKE_SOURCE_DIR})
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_CXX_STANDARD 11)
 
-add_executable(main main.cpp src/algorithm.cpp src/chromosome.cpp src/condition_card.cpp src/csv.cpp src/da.cpp src/entity.cpp src/infra.cpp src/job.cpp src/lot.cpp src/lots.cpp src/machine.cpp src/route.cpp src/info.c)
+add_executable(
+    main 
+    main.cpp
+)
+
 add_subdirectory(lib)
+add_subdirectory(src)
+add_subdirectory(tests)
 
 if(WIN32)
-    target_link_libraries(main lib -static-libstdc++ m)
+    target_link_libraries(main src pgalib -static-libstdc++ m)
 else()
-    target_link_libraries(main lib stdc++ m)
+    target_link_libraries(main src pgalib stdc++ m)
 endif()

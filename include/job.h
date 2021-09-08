@@ -19,12 +19,15 @@ typedef struct job_t {
     job_info_t prod_id;
     int oper;
     float weight;
+    bool is_scheduled;
 } job_t;
 
 
 void job_initialize(job_t *job);
 
 double jobGetValue(void *_self);
+
+double prescheduledJobGetValue(void *_self);
 
 
 #endif

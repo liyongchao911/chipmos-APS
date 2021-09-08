@@ -51,7 +51,7 @@ __qualifier__ void machine_base_init(machine_base_t *self)
     machine_base_reset(self);
 }
 
-machine_base_t *machine_base_new(unsigned int machine_no)
+machine_base_t *machine_base_new(info_t machine_no)
 {
     machine_base_t *mb = (machine_base_t *) malloc(sizeof(machine_base_t));
     mb->machine_no = machine_no;

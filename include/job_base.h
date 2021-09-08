@@ -56,11 +56,11 @@ typedef struct job_base_operations_t job_base_operations_t;
  * structure object.
  */
 struct process_time_t {
-    unsigned int machine_no;
+    info_t machine_no;
+    void *machine;
     double process_time;
     void *ptr_derived_object;
 };
-
 
 /**
  * @struct job_base_t
@@ -89,11 +89,12 @@ struct job_base_t {
     process_time_t *process_time;
     unsigned int size_of_process_time;
 
+    unsigned int qty;
     // job information
     // unsigned int job_no;
-    struct __info_t job_info;
-    unsigned int qty;
-    unsigned int machine_no;
+    info_t job_info;
+    info_t machine_no;
+    void *current_machine;
     double arriv_t;
     double start_time;
     double end_time;
@@ -120,7 +121,7 @@ struct job_base_operations_t {
     double (*get_arrival_time)(job_base_t *self);
     double (*get_start_time)(job_base_t *self);
     double (*get_end_time)(job_base_t *self);
-    unsigned int (*get_machine_no)(job_base_t *self);
+    info_t (*get_machine_no)(job_base_t *self);
 
     // operation
     unsigned int (*machine_selection)(job_base_t *self);
@@ -141,8 +142,8 @@ __qualifier__ double get_os_gene(job_base_t *self);
 __qualifier__ double get_arrival_time(job_base_t *self);
 __qualifier__ double get_start_time(job_base_t *self);
 __qualifier__ double get_end_time(job_base_t *self);
-__qualifier__ unsigned int get_machine_no(job_base_t *self);
 __qualifier__ unsigned int machine_selection(job_base_t *self);
+__qualifier__ info_t get_machine_no(job_base_t *self);
 
 #ifndef JOB_BASE_OPS
 #define JOB_BASE_OPS                                                      \

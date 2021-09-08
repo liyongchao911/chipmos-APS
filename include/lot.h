@@ -1,15 +1,45 @@
 #ifndef __LOT_H__
 #define __LOT_H__
 
-#include <include/csv.h>
-#include <include/entity.h>
-#include <include/infra.h>
-#include <include/job.h>
 #include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "include/csv.h"
+#include "include/infra.h"
+#include "include/job.h"
+
+#define ERROR_TABLE                                                       \
+    X(SUCCESS, = 0x00, "SUCCESS")                                         \
+    X(ERROR_WIP_INFORMATION_LOSS, = 0x01, "ERROR_WIP_INFORMATION_LOSS")   \
+    X(ERROR_PROCESS_ID, = 0x02, "ERROR_PROCESS_ID")                       \
+    X(ERROR_BOM_ID, = 0x03, "ERROR_BOM_ID")                               \
+    X(ERROR_LOT_SIZE, = 0x04, "ERROR_LOT_SIZE")                           \
+    X(ERROR_INVALID_LOT_SIZE, = 0x05, "ERROR_INVALID_LOT_SIZE")           \
+    X(ERROR_DA_FCST_VALUE, = 0x06, "ERROR_DA_FCST_VALUE")                 \
+    X(ERROR_INVALID_OPER_IN_ROUTE, = 0x07, "ERROR_INVALID_OPER_IN_ROUTE") \
+    X(ERROR_INVALID_QUEUE_TIME_COMBINATION, = 0x08,                       \
+      "ERROR_INVALID_QUEUE_TIME_COMBINATION")                             \
+    X(ERROR_HOLD, = 0x09, "ERROR_HOLD")                                   \
+    X(ERROR_WB7, = 0x0A, "ERROR_WB7")                                     \
+    X(ERROR_CONDITION_CARD, = 0x0B, "ERROR_CONDITION_CARD")               \
+    X(ERROR_PART_ID, = 0x0C, "ERROR_PART_ID")                             \
+    X(ERROR_NO_WIRE, = 0x0D, "ERROR_NO_WIRE")                             \
+    X(ERROR_WIRE_MAPPING_ERROR, = 0x0E, "ERROR_WIRE_MAPPING_ERROR")       \
+    X(ERROR_PART_NO, = 0x0F, "ERROR_PART_NO")                             \
+    X(ERROR_NO_TOOL, = 0x10, "ERROR_NO_TOOL")                             \
+    X(ERROR_TOOL_MAPPING_ERROR, = 0x11, "ERROR_TOOL_MAPPING_ERROR")       \
+    X(ERROR_UPH_FILE_ERROR, = 0x12, "ERROR_UPH_FILE")                     \
+    X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")
+
+
+#define X(item, value, name) item value,
+enum ERROR_T { ERROR_TABLE };
+#undef X
+
+extern const char *ERROR_NAMES[];
 
 class lot_t
 {
@@ -25,6 +55,9 @@ protected:
     std::string _part_no;
     std::string _urgent;
     std::string _customer;
+    std::string _wb_location;
+    std::string _prescheduled_machine;
+    std::string _prescheduled_model;
 
     int _qty;
     int _oper;
@@ -32,6 +65,7 @@ protected:
     int _sub_lots;
     int _amount_of_wires;
     int _amount_of_tools;
+    int _prescheduled_order;
 
     bool _hold;
     bool _mvin;
@@ -53,11 +87,13 @@ protected:
     std::map<std::string, double> _model_process_times;
     std::map<std::string, double> _entity_process_times;
 
+    enum ERROR_T _status;
+
 public:
     int tmp_oper;
     bool tmp_mvin;
 
-    lot_t() {}
+    lot_t();
 
     /**
      * constructor for lot_t
@@ -103,7 +139,7 @@ public:
     /**
      * addLog () - add log for this lot
      */
-    void addLog(std::string _text);
+    void addLog(std::string _text, enum ERROR_T code);
 
     /**
      * addQueueTime () - add queue time
@@ -413,7 +449,7 @@ public:
      * @return true if setup uph successfully, return false if there is no
      * model's uph is set.
      */
-    bool setUph(csv_t uph);
+    bool setUph(csv_t &uph);
 
     /**
      * setCanRunLocation () - set the can run location
@@ -432,19 +468,11 @@ public:
     std::vector<std::string> getCanRunLocations();
 
     /**
-     * isEntityCanRun () - check if the lot can run on this model and location
-     * @param model : model's name of this entity.
+     * isEntitySuitable () - check if the lot can run on this model and location
      * @param location : location of this entity.
      * @return
      */
-    bool isEntityCanRun(std::string model, std::string location);
-
-    /**
-     * addCanRunEntity () - add can run entity's name to can run entity vector
-     * @param ent
-     * @return
-     */
-    bool addCanRunEntity(entity_t *ent);
+    bool isEntitySuitable(std::string location);
 
     /**
      * getCanRunEntities () - get can run entities vector
@@ -480,7 +508,35 @@ public:
     std::map<std::string, double> getUphs();
 
     bool isModelValid(std::string model);
+
+    std::string preScheduledEntity();
+
+    bool isPrescheduled();
+
+    int prescheduledOrder();
+
+    void setPrescheduledModel(std::string model);
+
+    void setNotPrescheduled();
+
+    std::map<std::string, double> getModelProcessTimes();
 };
+
+inline std::map<std::string, double> lot_t::getModelProcessTimes()
+{
+    return _model_process_times;
+}
+
+inline void lot_t::setNotPrescheduled()
+{
+    _prescheduled_order = -1;
+}
+
+inline void lot_t::setPrescheduledModel(std::string model)
+{
+    // FIXME : Is it necessary to check whether the lot is preshceduled or not?
+    _prescheduled_model = model;
+}
 
 inline void lot_t::clearCanRunLocation()
 {
@@ -552,9 +608,14 @@ inline bool lot_t::mvin()
     return _mvin;
 }
 
-inline void lot_t::addLog(std::string _text)
+inline void lot_t::addLog(std::string _text, enum ERROR_T code)
 {
     _log.push_back(_text);
+    if (_status != SUCCESS) {
+        fprintf(stderr, "Warning: You set the unscess code to another code!\n");
+        _status = code;
+    } else
+        _status = code;
 }
 
 inline std::string lot_t::log()
@@ -683,14 +744,16 @@ inline bool lot_t::isModelValid(std::string model)
 {
     if (_part_no.find("A0801") !=
         std::string::npos) {  // if part_no contains A0801
-        if (model.compare("UTC1000") == 0 || model.compare("UTC2000") == 0 ||
+        if (model.compare("UTC1000") == 0 || model.compare("UTC1000S") == 0 ||
+            model.compare("UTC2000") == 0 || model.compare("UTC2000S") == 0 ||
             model.compare("UTC3000") == 0) {
             return true;
         } else
             return false;
     } else if (_part_no.find("A0803") !=
                std::string::npos) {  // if part_no contains A0803
-        if (model.compare("UTC1000") != 0 || model.compare("UTC2000") != 0 ||
+        if (model.compare("UTC1000") != 0 || model.compare("UTC1000S") != 0 ||
+            model.compare("UTC2000") != 0 || model.compare("UTC2000S") != 0 ||
             model.compare("UTC3000") != 0) {
             return true;
         } else
@@ -746,6 +809,22 @@ inline std::string lot_t::pin_package()
     return _pin_package;
 }
 
+inline std::string lot_t::preScheduledEntity()
+{
+    return _prescheduled_machine;
+}
+
+inline bool lot_t::isPrescheduled()
+{
+    return _prescheduled_order >= 0;
+}
+
+inline int lot_t::prescheduledOrder()
+{
+    return _prescheduled_order;
+}
+
+
 typedef struct {
     std::string wire_tools_name;
     std::string wire_name;
@@ -756,7 +835,7 @@ typedef struct {
     int machine_amount;
     std::map<std::string, int> models_statistic;
     std::map<std::string, int> bdid_statistic;
-    std::vector<entity_t *> entities;
+    // std::vector<entity_t *> entities;
     std::vector<std::string> entity_names;
     std::vector<lot_t *> lots;
 } lot_group_t;

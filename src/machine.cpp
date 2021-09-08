@@ -1,11 +1,17 @@
-#include "include/machine.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include "include/job_base.h"
+#include "include/linked_list.h"
+#include "include/machine.h"
 #include "include/machine_base.h"
 #include "include/parameters.h"
 
+
 bool aresPtrComp(ares_t *a1, ares_t *a2)
 {
-    return a1->time < a2->time;
+    return a1->available_time > a2->available_time;
 }
 
 bool aresComp(ares_t a1, ares_t a2)
@@ -19,8 +25,6 @@ void machineReset(machine_base_t *base)
     machine_base_reset(base);
     m->makespan = 0;
     m->total_completion_time = 0;
-    m->tool->time = 0;
-    m->wire->time = 0;
 }
 
 double setupTimeCWN(job_base_t *_prev, job_base_t *_next, double time)
@@ -119,21 +123,46 @@ double calculateSetupTime(job_t *prev,
     if (isSameInfo(prev->bdid, next->bdid))
         return 0.0;
     for (unsigned int i = 0; i < ops->sizeof_setup_time_function_array; ++i) {
-        if (prev)
+        if (prev) {
             time += ops->setup_time_functions[i].function(
                 &prev->base, &next->base, ops->setup_time_functions[i].minute);
-        else
+        } else {
             time += ops->setup_time_functions[i].function(
                 NULL, &next->base, ops->setup_time_functions[i].minute);
+        }
     }
     return time;
+}
+
+ares_t *searchResource(resources_t res, info_t name)
+{
+    // FIXME : should perform binary search to optimize
+    if (res.areses) {
+        for (int i = 0; i < res.number; ++i) {
+            if (isSameInfo(res.areses[i]->name, name)) {
+                return res.areses[i];
+            }
+        }
+    }
+    return nullptr;
 }
 
 void scheduling(machine_t *machine,
                 machine_base_operations_t *ops,
                 weights_t weights,
-                scheduling_parameters_t scheduling_parameters)
+                setup_time_parameters_t scheduling_parameters)
 {
+    // initialize tool and wire
+    for (int i = 0; i < machine->tools.number; ++i) {
+        machine->tools.areses[i]->time =
+            machine->tools.areses[i]->available_time;
+    }
+
+    for (int i = 0; i < machine->wires.number; ++i) {
+        machine->wires.areses[i]->time =
+            machine->wires.areses[i]->available_time;
+    }
+
     list_ele_t *it;
     job_t *job;
     job_t *prev_job = &machine->current_job;
@@ -146,7 +175,10 @@ void scheduling(machine_t *machine,
     int setup_times = 0;
     int setup_times_in1440 = 0;
     machine->setup_times = 0;
+    ares_t *tool, *wire;
     while (it) {
+        tool = NULL;
+        wire = NULL;
         job = (job_t *) it->ptr_derived_object;
         arrival_time = job->base.arriv_t;
         setup_time = calculateSetupTime(prev_job, job, ops);
@@ -165,15 +197,42 @@ void scheduling(machine_t *machine,
         start_time = (start_time + setup_time) > arrival_time
                          ? start_time + setup_time
                          : arrival_time;
-        set_start_time(&job->base, start_time);
-        start_time = get_end_time(&job->base);
+
+        tool = searchResource(machine->tools, job->part_no);
+        wire = searchResource(machine->wires, job->part_id);
+
+        // if the tools and wires are loaded on the machine
+        if (machine->tools.number && machine->wires.number) {
+            if (machine->tools.areses != nullptr &&
+                machine->wires.areses != nullptr) {
+                double max_resource_time =
+                    (tool->time > wire->time ? tool->time : wire->time);
+                start_time =
+                    (start_time > max_resource_time ? start_time
+                                                    : max_resource_time);
+                set_start_time(&job->base, start_time);
+                start_time = get_end_time(&job->base);
+                tool->time = start_time;
+                wire->time = start_time;
+            } else {
+                perror(
+                    "Tools and wires have number of resources, however, they "
+                    "can't find the part_id or part_no");
+                exit(EXIT_FAILURE);
+            }
+        } else {
+            set_start_time(&job->base, start_time);
+            start_time = get_end_time(&job->base);
+        }
+
+
         total_completion_time += start_time;
         prev_job = job;
         it = it->next;
     }
     machine->makespan = start_time;
-    machine->tool->time = start_time;
-    machine->wire->time = start_time;
+
+
     machine->total_completion_time = total_completion_time;
     machine->quality =
         weights.WEIGHT_SETUP_TIMES * setup_times +
@@ -185,23 +244,27 @@ void scheduling(machine_t *machine,
 void setLastJobInMachine(machine_t *machine)
 {
     list_ele_t *it = machine->base.root;
+    // Protect the job declared below not to be nullptr in loop;
     if (!it)
         return;
-    job_t *job;
+    job_t *job = nullptr;
     while (it) {
         job = (job_t *) it->ptr_derived_object;
         it = it->next;
     }
-    machine->current_job = *job;
-    machine->current_job.base.ptr_derived_object = &machine->current_job;
-    machine->current_job.list.ptr_derived_object = &machine->current_job;
+    if (job != nullptr) {
+        machine->current_job = *job;
+        machine->current_job.base.ptr_derived_object = &machine->current_job;
+        machine->current_job.list.ptr_derived_object = &machine->current_job;
+        machine->base.available_time = job->base.end_time;
+    }
 }
 
 
 void _insertHeadAlgorithm(machine_t *machine,
                           machine_base_operations_t *mbops,
                           weights_t weights,
-                          scheduling_parameters_t scheduling_parameters)
+                          setup_time_parameters_t scheduling_parameters)
 {
     list_ele_t *it = machine->base.root;
     list_ele_t *prev;
@@ -246,7 +309,7 @@ void _insertHeadAlgorithm(machine_t *machine,
 void insertAlgorithm(machine_t *machine,
                      machine_base_operations_t *mbops,
                      weights_t weights,
-                     scheduling_parameters_t scheduling_parameters)
+                     setup_time_parameters_t scheduling_parameters)
 {
     _insertHeadAlgorithm(machine, mbops, weights, scheduling_parameters);
 
@@ -285,4 +348,40 @@ void insertAlgorithm(machine_t *machine,
         }
         it = it->next;
     }
+}
+
+void setJob2Scheduled(machine_t *machine)
+{
+    list_ele_t *it = machine->base.root;
+    job_t *job;
+    while (it) {
+        job = (job_t *) it->ptr_derived_object;
+        job->is_scheduled = true;
+        it = it->next;
+    }
+}
+
+void staticAddJob(machine_t *machine,
+                  job_t *job,
+                  machine_base_operations_t *machine_ops)
+{
+    job_t *last_job_of_machine;
+    if (machine->base.tail != nullptr) {
+        last_job_of_machine = (job_t *) machine->base.tail->ptr_derived_object;
+    } else {
+        last_job_of_machine = &machine->current_job;
+    };
+    machine_ops->add_job(&machine->base, &job->list);
+    double setup_time =
+        calculateSetupTime(last_job_of_machine, job, machine_ops);
+    // double start_time = (job->base.arriv_t > machine->base.available_time)
+    //                         ? job->base.arriv_t
+    //                         : machine->base.available_time;
+    double start_time =
+        (job->base.arriv_t - machine->base.available_time > setup_time
+             ? job->base.arriv_t
+             : machine->base.available_time + setup_time);
+    set_start_time(&job->base, start_time);
+    machine->base.available_time = get_end_time(&job->base);
+    job->base.machine_no = machine->base.machine_no;
 }

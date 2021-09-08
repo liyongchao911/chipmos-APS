@@ -11,9 +11,16 @@
 
 #define iter(vec, id) for (unsigned int id = 0; id < vec.size(); ++id)
 
-
 #define iter_range(vec, id, start, end) \
     for (unsigned int id = start; id < end; ++id)
+
+#define ARRAY_SIZE(arr, type) sizeof((arr)) / sizeof(type)
+
+/**
+ * stringify
+ */
+#define _str(x) #x
+#define xstr(x) _str(x)
 
 std::vector<std::string> split(char *text, char delimiter);
 
@@ -52,5 +59,18 @@ int randomRange(int start, int end, int different_num);
 
 double randomDouble();
 
+/**
+ * @bug
+ */
+#define average(array, size)            \
+    ({                                  \
+        double sum = 0;                 \
+        __typeof__(size) SIZE = (size); \
+        __typeof__(SIZE) i = 0;         \
+        for (i; i < size; ++i) {        \
+            sum += array[i];            \
+        }                               \
+        sum / size;                     \
+    })
 
 #endif

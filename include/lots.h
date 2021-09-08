@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "include/da.h"
+#include "include/entities.h"
+#include "include/entity.h"
 #include "include/lot.h"
 #include "include/route.h"
 
@@ -20,7 +22,10 @@
 class lots_t
 {
 protected:
-    std::vector<lot_t> lots;
+    std::vector<lot_t *> lots;
+    std::vector<lot_t *> prescheduled_lots;
+    // std::vector<lot_t> lots;
+    // std::vector<lot_t> prescheduled_lots;
     std::map<std::string, std::vector<lot_t *> > wire_lots;
     std::map<std::string, std::vector<lot_t *> > tool_lots;
     std::map<std::string, std::vector<lot_t *> > tool_wire_lots;
@@ -53,19 +58,20 @@ protected:
      * @param uph_filename : uph
      * @return
      */
-    std::vector<lot_t> createLots(
-        std::string wip_file_name,            // wip file
-        std::string prod_pid_bomid_filename,  // production -> process_id
-        std::string eim_lot_size_filename,
-        std::string fcst_filename,
-        std::string routelist_filename,
-        std::string queue_time_filename,
-        std::string bomlist_filename,
-        std::string pid_heatblock_filename,
-        std::string ems_heatblock_filename,
-        std::string gw_filename,
-        std::string bdid_mapping_models_filename,
-        std::string uph_filename);
+    std::vector<lot_t *> createLots(std::string wip_file_name,
+                                    std::string prod_pid_bomid_filename,
+                                    std::string eim_lot_size_filename,
+                                    std::string fcst_filename,
+                                    std::string routelist_filename,
+                                    std::string queue_time_filename,
+                                    std::string bomlist_filename,
+                                    std::string pid_heatblock_filename,
+                                    std::string ems_heatblock_filename,
+                                    std::string gw_filename,
+                                    std::string wire_stock_filename,
+                                    std::string bdid_mapping_models_filename,
+                                    std::string uph_filename,
+                                    std::string cure_time_filename);
 
     /**
      * readWip () - read wip filename
@@ -110,12 +116,14 @@ protected:
      * setupRoute () - read the route list file and the queue time file to setup
      * the route station and queue time in each station
      *
-     * @param routelist_filename
-     * @param queuetime_filename
+     * @param routelist
+     * @param queuetime
      * @param routes
      */
-    void setupRoute(std::string routelist_filename,
-                    std::string queuetime_filename,
+    void setupRoute(std::string routelist,
+                    std::string queuetime,
+                    std::string eim_lot_size,
+                    std::string cure_time,
                     route_t &routes);
 
     /**
@@ -180,10 +188,12 @@ protected:
     /**
      * setAmountOfWire () - read the file and set the number of rolls of wire
      * @param filename
+     * @param wire_stock_filename
      * @param lots
      * @param faulty_lots
      */
-    void setAmountOfWire(std::string filename,
+    void setAmountOfWire(std::string gw_filename,
+                         std::string wire_stock_filename,
                          std::vector<lot_t> &lots,
                          std::vector<lot_t> &faulty_lots);
 
@@ -236,7 +246,9 @@ public:
      * vector of lots having complete information from external function.
      * @param lots
      */
-    void addLots(std::vector<lot_t> lots);
+    void addLots(std::vector<lot_t *> lots);
+
+    void pushBackNotPrescheduledLot(lot_t *lot);
 
     /**
      * round () - determine which lot is in a round of scheduling.
@@ -255,7 +267,7 @@ public:
      * @param machines
      * @return a vector of lot_group_t instance in a round of scheduling plan
      */
-    std::vector<lot_group_t> round(entities_t machines);
+    // std::vector<lot_group_t> round(entities_t machines);
 
     /**
      * rounds () - create multiple rounds until all lots are in scheduling plan
@@ -264,7 +276,7 @@ public:
      * each round.
      *
      */
-    std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
+    // std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
 
     /**
      * createLots () - create all lots by read multiple files
@@ -322,7 +334,16 @@ public:
     std::map<std::string, int> modelStatistic(
         std::vector<lot_t *> lots,
         std::map<std::string, std::vector<entity_t *> > loc_ents);
+
+    std::vector<lot_t *> prescheduledLots();
+
+    std::map<std::string, std::vector<lot_t *> > getLotsRecipeGroups();
 };
+
+inline std::vector<lot_t *> lots_t::prescheduledLots()
+{
+    return prescheduled_lots;
+}
 
 inline std::map<std::string, int> lots_t::amountOfWires()
 {
