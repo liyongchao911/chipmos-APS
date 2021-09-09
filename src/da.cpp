@@ -141,10 +141,15 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
                 unarrived_lots[i].setFcstTime(tmp);
                 da.time += tmp;
             }
-            result.push_back(unarrived_lots[i]);
-            if (da.time >
-                1440) {  // FIXME : should be 1440 or a variable number?
+            if (da.time > 1440) {  // 1440 minutes are 24 hours
                 da.finished = true;
+                unarrived_lots[i].addLog(
+                    "Lot is pushed into remaining due to the fcst production "
+                    "capacity",
+                    SUCCESS);
+                da.remaining.push_back(unarrived_lots[i]);
+            } else {
+                result.push_back(unarrived_lots[i]);
             }
         } else {
             unarrived_lots[i].addLog("Lot is pushed into remaining.", SUCCESS);

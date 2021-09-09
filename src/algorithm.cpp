@@ -24,7 +24,8 @@ void prescheduling(machines_t *machines, lots_t *lots)
             machines->addPrescheduledJob(job);
             prescheduled_jobs.push_back(job);
         } catch (out_of_range &e) {
-            cout << prescheduled_lots[i]->preScheduledEntity() << endl;
+            cout << "Error " << prescheduled_lots[i]->preScheduledEntity()
+                 << endl;
             delete job;
             lots->pushBackNotPrescheduledLot(prescheduled_lots[i]);
         }
