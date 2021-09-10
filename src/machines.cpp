@@ -171,20 +171,20 @@ void machines_t::prescheduleJobs()
     }
 
     // collect scheduled jobs and reset
-    printf("========================================\n");
+    // printf("========================================\n");
     list_ele_t *list;
     for (map<string, machine_t *>::iterator it = _machines.begin();
          it != _machines.end(); ++it) {
         list = it->second->base.root;
         while (list) {
             job_t *job = (job_t *) list->ptr_derived_object;
-            printf("prescheduled_jobs : %s\n", job->base.job_info.data.text);
+            // printf("prescheduled_jobs : %s\n", job->base.job_info.data.text);
             _scheduled_jobs.push_back((job_t *) list->ptr_derived_object);
             list = list->next;
         }
         machine_ops->reset(&it->second->base);
     }
-    printf("========================================\n");
+    // printf("========================================\n");
 }
 
 void machines_t::_collectScheduledJobs(machine_t *machine,
@@ -484,18 +484,18 @@ void machines_t::reconsiderJobs()
         }
     }
 
-    for (auto it = _dispatch_groups.begin(); it != _dispatch_groups.end();
-         ++it) {
-        iter(it->second->unscheduled_jobs, i)
-        {
-            printf("Lot number : %s\n",
-                   it->second->unscheduled_jobs[i]->base.job_info.data.text);
-        }
-        // if(it->second->unscheduled_jobs.size() != 0){
-        //     printf("[%s] : %lu\n", it->first.c_str(),
-        //     it->second->unscheduled_jobs.size());
-        // }
-    }
+    // for (auto it = _dispatch_groups.begin(); it != _dispatch_groups.end();
+    //      ++it) {
+    //     iter(it->second->unscheduled_jobs, i)
+    //     {
+    //         printf("Lot number : %s\n",
+    //                it->second->unscheduled_jobs[i]->base.job_info.data.text);
+    //     }
+    //     // if(it->second->unscheduled_jobs.size() != 0){
+    //     //     printf("[%s] : %lu\n", it->first.c_str(),
+    //     //     it->second->unscheduled_jobs.size());
+    //     // }
+    // }
 }
 
 void machines_t::groupJobsByToolAndWire()
