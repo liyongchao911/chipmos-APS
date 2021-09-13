@@ -150,8 +150,7 @@ card_t condition_cards_h::readConditionCard(string filename,
     csv_t card(filename, "r", true, false);
     vector<vector<string> > data = card.getData();
     int idx = -1;
-    iter(data, i)
-    {
+    foreach (data, i) {
         if (data[i][0].compare("Capillary life time") == 0) {
             idx = i;
             break;
@@ -183,8 +182,7 @@ card_t condition_cards_h::readConditionCard(string filename,
                 }
             }
         } else {
-            iter(result, i)
-            {
+            foreach (result, i) {
                 temp = models.at(i);
                 temp_model = strdup(temp.c_str());
                 stringToLower(temp_model);

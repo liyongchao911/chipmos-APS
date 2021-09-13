@@ -110,8 +110,7 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
 
     // distribution
     double tmp;
-    iter(arrived_lots, i)
-    {
+    foreach (arrived_lots, i) {
         if (!da.finished) {
             tmp = (double) arrived_lots[i].qty() / da.upm;
             da.time += tmp;
@@ -127,8 +126,7 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
         }
     }
 
-    iter(unarrived_lots, i)
-    {
+    foreach (unarrived_lots, i) {
         if (!da.finished) {
             tmp = (double) unarrived_lots[i].qty() / da.upm;
             if (da.time > unarrived_lots[i].queueTime()) {
@@ -164,8 +162,7 @@ std::vector<lot_t> da_stations_t::splitSubLots(std::vector<lot_t> lots)
 {
     std::vector<lot_t> result;
     std::vector<lot_t> temp_lots;
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         if (!lots[i].isSubLot()) {
             temp_lots = lots[i].createSublots();
             result += temp_lots;

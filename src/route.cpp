@@ -57,8 +57,7 @@ void route_t::setRoute(csv_t all_routes)
 
     // second, call route_t::setRoute for each route respectively
     csv_t df;
-    iter(route_names, i)
-    {
+    foreach (route_names, i) {
         df = all_routes.filter("route", route_names[i]);
         setRoute(route_names[i], df);
     }
@@ -171,7 +170,9 @@ std::vector<station_t> route_t::setupBeforeStation(std::string routename,
 
     if (remove) {
         std::vector<int> vec(indexes.begin(), indexes.end());
-        iter(vec, i) { stations.push_back(_routes[routename][vec[i]]); }
+        foreach (vec, i) {
+            stations.push_back(_routes[routename][vec[i]]);
+        }
         _routes[routename] = stations;
     }
 
@@ -199,8 +200,7 @@ bool route_t::isLotInStations(lot_t lot)
 int route_t::findStationIdx(std::string routename, int oper)
 {
     int idx = -1;
-    iter(_routes[routename], i)
-    {
+    foreach (_routes[routename], i) {
         if (_routes[routename][i].oper == oper) {
             idx = i;
         }
