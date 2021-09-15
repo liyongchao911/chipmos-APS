@@ -1,4 +1,4 @@
-#include <include/csv.h>
+#include "include/csv.h"
 #include <sys/types.h>
 #include <clocale>
 #include <cstdint>
@@ -114,10 +114,8 @@ std::string csv_t::formCsvElement(std::string text)
 void csv_t::trim(std::string text)
 {
     size_t found;
-    iter(_data, i)
-    {
-        iter(_data[i], j)
-        {
+    foreach (_data, i) {
+        foreach (_data[i], j) {
             found = _data[i][j].find_last_not_of(text);
             if (found != std::string::npos)
                 _data[i][j].erase(found + 1);
@@ -143,10 +141,10 @@ bool csv_t::_hasBOM(char *_text, unsigned int bom, short bits)
     return !(result << bits);
 }
 
-bool csv_t::read(bool head, int r1, int r2)
-{
-    return read(_filename, _mode, head, r1, r2);
-}
+// bool csv_t::read(bool head, int r1, int r2)
+// {
+//     return read(_filename, _mode, head, r1, r2);
+// }
 
 bool csv_t::read(std::string filename,
                  std::string mode,
@@ -193,7 +191,7 @@ bool csv_t::read(std::string filename,
             memmove(line_ptr, line_ptr + 3, size - 3);  // remove byte order
         } else if (_hasBOM(line_ptr, 0x0000FFFE,
                            16)) {  // FE FF, 0x0000FFFE for little endian
-            memmove(line_ptr, line_ptr + 2, size - 2);  // remvoe byte order
+            memmove(line_ptr, line_ptr + 2, size - 2);  // remove byte order
         }
     } else {
         return false;
@@ -206,7 +204,10 @@ bool csv_t::read(std::string filename,
             if (text[i].compare("") != 0) {
                 _head[text[i]] = i;
             } else {
-                return false;  // col head has empty head fail to set head
+                throw std::invalid_argument(
+                    "Column head contains empty head, failed to set the "
+                    "header");
+                // return false;  // col head has empty head fail to set head
             }
         }
     } else {
@@ -224,13 +225,6 @@ bool csv_t::read(std::string filename,
         _data.erase(_data.begin() + r2, _data.end());
         _data.erase(_data.begin(), _data.begin() + r1);
     }
-
-    // for(unsigned int i = 0; i < _data.size(); ++i){
-    //     for(unsigned int j = 0; j < _data[i].size(); ++j){
-    //         printf("%s ", _data[i][j].c_str());
-    //     }
-    //     printf("\n");
-    // }
 
     return true;
 }
@@ -334,8 +328,7 @@ bool csv_t::write(std::string filename, std::string mode, bool head)
             return false;
         }
     }
-    iter(_data, i)
-    {
+    foreach (_data, i) {
         strings_temp.clear();
         for (std::map<std::string, std::uint16_t>::iterator it = _head.begin();
              it != _head.end(); ++it) {
@@ -415,8 +408,7 @@ csv_t csv_t::filter(std::string head, std::string value)
 
     std::vector<std::vector<std::string> > data;
     int idx = _head[head];
-    iter(_data, i)
-    {
+    foreach (_data, i) {
         if (_data[i][idx].compare(value) == 0) {
             data.push_back(_data[i]);
         }
@@ -435,7 +427,9 @@ std::vector<std::string> csv_t::getColumn(std::string head)
     int idx = _head[head];
     std::vector<std::string> cols;
 
-    iter(_data, i) { cols.push_back(_data[i][idx]); }
+    foreach (_data, i) {
+        cols.push_back(_data[i][idx]);
+    }
 
     return cols;
 }
@@ -444,8 +438,7 @@ void csv_t::dropNullRow()
 {
     std::vector<std::vector<std::string> > data = _data;
     _data.clear();
-    iter(data, i)
-    {
+    foreach (data, i) {
         if (data[i].size() == 1) {
             if (data[i][0].length() != 0) {
                 _data.push_back(data[i]);

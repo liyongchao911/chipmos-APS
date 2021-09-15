@@ -106,8 +106,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
             throw std::invalid_argument(
                 "vector size is not the same, lot_number : " + _lot_number);
         } else {
-            iter(models, i)
-            {
+            foreach (models, i) {
                 _model_process_times[models[i]] = std::stod(ptimes[i]);
                 _uphs[models[i]] = std::stod(uphs[i]);
             }
@@ -316,8 +315,7 @@ bool lot_t::setUph(csv_t &original_uph_csv)
         }
     }
 
-    iter(invalid_models, i)
-    {
+    foreach (invalid_models, i) {
         _uphs.erase(invalid_models[i]);
         _model_process_times.erase(invalid_models[i]);
     }
@@ -335,12 +333,10 @@ bool lot_t::setUph(csv_t &original_uph_csv)
 void lot_t::setCanRunLocation(
     std::map<std::string, std::vector<std::string> > model_locations)
 {
-    iter(_can_run_models, i)
-    {
+    foreach (_can_run_models, i) {
         std::vector<std::string> locations =
             model_locations[_can_run_models[i]];
-        iter(locations, j)
-        {
+        foreach (locations, j) {
             if (locations[j].compare("TA-P") == 0 ||
                 locations[j].compare("TA-U") == 0) {
                 if (_pin_package.find("DFN") != std::string::npos ||
