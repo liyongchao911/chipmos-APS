@@ -141,10 +141,10 @@ bool csv_t::_hasBOM(char *_text, unsigned int bom, short bits)
     return !(result << bits);
 }
 
-bool csv_t::read(bool head, int r1, int r2)
-{
-    return read(_filename, _mode, head, r1, r2);
-}
+// bool csv_t::read(bool head, int r1, int r2)
+// {
+//     return read(_filename, _mode, head, r1, r2);
+// }
 
 bool csv_t::read(std::string filename,
                  std::string mode,
@@ -191,7 +191,7 @@ bool csv_t::read(std::string filename,
             memmove(line_ptr, line_ptr + 3, size - 3);  // remove byte order
         } else if (_hasBOM(line_ptr, 0x0000FFFE,
                            16)) {  // FE FF, 0x0000FFFE for little endian
-            memmove(line_ptr, line_ptr + 2, size - 2);  // remvoe byte order
+            memmove(line_ptr, line_ptr + 2, size - 2);  // remove byte order
         }
     } else {
         return false;
@@ -204,7 +204,10 @@ bool csv_t::read(std::string filename,
             if (text[i].compare("") != 0) {
                 _head[text[i]] = i;
             } else {
-                return false;  // col head has empty head fail to set head
+                throw std::invalid_argument(
+                    "Column head contains empty head, failed to set the "
+                    "header");
+                // return false;  // col head has empty head fail to set head
             }
         }
     } else {
@@ -222,13 +225,6 @@ bool csv_t::read(std::string filename,
         _data.erase(_data.begin() + r2, _data.end());
         _data.erase(_data.begin(), _data.begin() + r1);
     }
-
-    // for(unsigned int i = 0; i < _data.size(); ++i){
-    //     for(unsigned int j = 0; j < _data[i].size(); ++j){
-    //         printf("%s ", _data[i][j].c_str());
-    //     }
-    //     printf("\n");
-    // }
 
     return true;
 }

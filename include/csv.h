@@ -226,7 +226,7 @@ public:
      * @var r1 : lower bound
      * @var r2 : upper bound
      */
-    bool read(bool head = true, int r1 = -1, int r2 = -1);
+    // bool read(bool head = true, int r1 = -1, int r2 = -1);
 
     /**
      * close() - reset file pointer
