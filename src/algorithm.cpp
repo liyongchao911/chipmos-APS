@@ -61,7 +61,7 @@ void stage2Scheduling(machines_t *machines, lots_t *lots)
         }
         machines->addGroupJobs(it->first, jobs);
     }
-    machines->distributeOrphanMachines();
+    // machines->distributeOrphanMachines();
     machines->scheduleGroups();
 }
 

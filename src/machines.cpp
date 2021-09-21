@@ -1123,7 +1123,7 @@ bool groupComparisonByIndex(struct __machine_group_t *g1,
 
 void machines_t::distributeOrphanMachines()
 {
-    // first determined the orphan machines
+    // Step 1 : collect the orphan machines
     vector<machine_t *> orphan_machines;
     foreach (_v_machines, i) {
         if (find(_grouped_machines.begin(), _grouped_machines.end(),
@@ -1138,14 +1138,19 @@ void machines_t::distributeOrphanMachines()
         groups.push_back(it->second);
     }
 
+    foreach (groups, j) {
+        groups[j]->index = _calculateMachineGroupIndex(groups[j]);
+    }
+
     foreach (orphan_machines, i) {
         string machine_name(orphan_machines[i]->base.machine_no.data.text);
-        foreach (groups, j) {
-            groups[j]->index = _calculateMachineGroupIndex(groups[j]);
-        }
+        // foreach (groups, j) {
+        //     groups[j]->index = _calculateMachineGroupIndex(groups[j]);
+        // }
         sort(groups.begin(), groups.end(), groupComparisonByIndex);
         foreach (groups, j) {
             if (_distributeOrphanMachines(groups[j], orphan_machines[i])) {
+                groups[j]->index = _calculateMachineGroupIndex(groups[j]);
                 break;
             }
         }
