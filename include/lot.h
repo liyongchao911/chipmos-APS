@@ -795,7 +795,7 @@ inline bool lot_t::setUph(std::string model, double uph)
         return false;
     } else {
         _uphs.at(model) = uph;
-        _model_process_times[model] = (_qty / uph) * 60;
+        _model_process_times[model] = _qty * 60 / uph;
     }
     return true;
 }

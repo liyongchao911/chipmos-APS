@@ -387,8 +387,6 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
     std::vector<lot_t> unfinished = lots;
     std::vector<lot_t> finished;
 
-    std::string trace_lot_number("P16AWCMA");
-
     while (unfinished.size()) {
         foreach (unfinished, i) {
             try {
