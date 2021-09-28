@@ -110,8 +110,7 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
 
     // distribution
     double tmp;
-    iter(arrived_lots, i)
-    {
+    foreach (arrived_lots, i) {
         if (!da.finished) {
             tmp = (double) arrived_lots[i].qty() / da.upm;
             da.time += tmp;
@@ -127,8 +126,7 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
         }
     }
 
-    iter(unarrived_lots, i)
-    {
+    foreach (unarrived_lots, i) {
         if (!da.finished) {
             tmp = (double) unarrived_lots[i].qty() / da.upm;
             if (da.time > unarrived_lots[i].queueTime()) {
@@ -141,10 +139,15 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
                 unarrived_lots[i].setFcstTime(tmp);
                 da.time += tmp;
             }
-            result.push_back(unarrived_lots[i]);
-            if (da.time >
-                1440) {  // FIXME : should be 1440 or a variable number?
+            if (da.time > 1440) {  // 1440 minutes are 24 hours
                 da.finished = true;
+                unarrived_lots[i].addLog(
+                    "Lot is pushed into remaining due to the fcst production "
+                    "capacity",
+                    SUCCESS);
+                da.remaining.push_back(unarrived_lots[i]);
+            } else {
+                result.push_back(unarrived_lots[i]);
             }
         } else {
             unarrived_lots[i].addLog("Lot is pushed into remaining.", SUCCESS);
@@ -159,8 +162,7 @@ std::vector<lot_t> da_stations_t::splitSubLots(std::vector<lot_t> lots)
 {
     std::vector<lot_t> result;
     std::vector<lot_t> temp_lots;
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         if (!lots[i].isSubLot()) {
             temp_lots = lots[i].createSublots();
             result += temp_lots;

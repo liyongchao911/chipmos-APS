@@ -28,6 +28,7 @@ set(TEST_SRC
         test_machines/test_machines_distributeAResource.cpp
         test_machines/test_machines_canJobRunOnTheMachine.cpp
         test_machines/test_machines_addNewResource.cpp
+        test_csv/test_csv_read.cpp
         )
 
 add_executable(

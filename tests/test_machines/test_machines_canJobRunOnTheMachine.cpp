@@ -56,8 +56,7 @@ void test_machines_t_canJobRunOnTheMachine::createTestingObjects(
     free(text);
 
     map<string, double> process_times;
-    iter(process_time_str, i)
-    {
+    foreach (process_time_str, i) {
         process_times[can_run_models[i]] = stod(process_time_str[i]);
     }
 

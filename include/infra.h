@@ -9,19 +9,44 @@
 
 #include "include/info.h"
 
-#define iter(vec, id) for (unsigned int id = 0; id < vec.size(); ++id)
 
+#define _str(x) #x
+/**
+ * \def xstr stringify
+ */
+#define xstr(x) _str(x)
+
+
+#define ___PASTA(a, b) a##b
+/**
+ * \def __PASTA - join two parameters
+ */
+#define __PASTA(a, b) ___PASTA(a, b)
+
+#ifdef __GNUC__
+#define __UNIQUE_ID(prefix) __PASTA(__PASTA(__UNIQUE_ID, prefix), __COUNTER__)
+#else
+#define __UNIQUE_ID(prefix) __PASTA(__PASTA(__UNIQUE_ID, _), prefix)
+#endif
+
+#define _foreach(vec, id, _size) \
+    for (unsigned int id = 0, _size = (vec).size(); id < _size; ++id)
+#define foreach(vec, id) _foreach(vec, id, __UNIQUE_ID(size))
+
+
+#define _iter_range(vec, id, _start, _end, _end_id) \
+    for (unsigned int id = (_start), _end_id = (_end); id < _end_id; ++id)
 #define iter_range(vec, id, start, end) \
-    for (unsigned int id = start; id < end; ++id)
+    _iter_range(vec, id, start, end, __UNIQUE_ID(_end))
 
 #define ARRAY_SIZE(arr, type) sizeof((arr)) / sizeof(type)
 
 /**
- * stringify
+ * split - split the @b text by using @b delimiter
+ * @param text
+ * @param delimiter
+ * @return
  */
-#define _str(x) #x
-#define xstr(x) _str(x)
-
 std::vector<std::string> split(char *text, char delimiter);
 
 std::string join(std::vector<std::string> strings, std::string delimiter);
@@ -30,14 +55,18 @@ template <class T>
 std::vector<T> operator+(std::vector<T> &op1, std::vector<T> op2)
 {
     std::vector<T> result(op1.begin(), op1.end());
-    iter(op2, i) { result.push_back(op2[i]); }
+    foreach (op2, i) {
+        result.push_back(op2[i]);
+    }
     return result;
 }
 
 template <class T>
 std::vector<T> operator+=(std::vector<T> &op1, std::vector<T> op2)
 {
-    iter(op2, i) { op1.push_back(op2[i]); }
+    foreach (op2, i) {
+        op1.push_back(op2[i]);
+    }
     return op1;
 }
 
@@ -59,18 +88,14 @@ int randomRange(int start, int end, int different_num);
 
 double randomDouble();
 
-/**
- * @bug
- */
 #define average(array, size)            \
     ({                                  \
         double sum = 0;                 \
         __typeof__(size) SIZE = (size); \
         __typeof__(SIZE) i = 0;         \
-        for (i; i < size; ++i) {        \
+        for (i; i < SIZE; ++i) {        \
             sum += array[i];            \
         }                               \
-        sum / size;                     \
+        sum / SIZE;                     \
     })
-
 #endif

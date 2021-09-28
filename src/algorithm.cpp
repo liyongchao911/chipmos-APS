@@ -13,8 +13,7 @@ void prescheduling(machines_t *machines, lots_t *lots)
 {
     vector<lot_t *> prescheduled_lots = lots->prescheduledLots();
     vector<job_t *> prescheduled_jobs;
-    iter(prescheduled_lots, i)
-    {
+    foreach (prescheduled_lots, i) {
         job_t *job = new job_t();
         try {
             string prescheduled_model = machines->getModelByEntityName(
@@ -24,7 +23,8 @@ void prescheduling(machines_t *machines, lots_t *lots)
             machines->addPrescheduledJob(job);
             prescheduled_jobs.push_back(job);
         } catch (out_of_range &e) {
-            cout << prescheduled_lots[i]->preScheduledEntity() << endl;
+            cout << "Error " << prescheduled_lots[i]->preScheduledEntity()
+                 << endl;
             delete job;
             lots->pushBackNotPrescheduledLot(prescheduled_lots[i]);
         }
@@ -33,7 +33,7 @@ void prescheduling(machines_t *machines, lots_t *lots)
     machines->prescheduleJobs();
 }
 
-void stage2Scheduling(machines_t *machines, lots_t *lots)
+void stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
 {
     map<string, vector<lot_t *> > groups;
     machines->setNumberOfTools(lots->amountOfTools());
@@ -46,8 +46,7 @@ void stage2Scheduling(machines_t *machines, lots_t *lots)
 
     for (auto it = groups.begin(); it != groups.end(); it++) {
         vector<job_t *> jobs;
-        iter(it->second, i)
-        {
+        foreach (it->second, i) {
             string lot_number = it->second[i]->lotNumber();
             it->second[i]->setCanRunLocation(machines->getModelLocations());
             machines->addJobLocation(it->second[i]->lotNumber(),
@@ -62,7 +61,9 @@ void stage2Scheduling(machines_t *machines, lots_t *lots)
         }
         machines->addGroupJobs(it->first, jobs);
     }
-    machines->distributeOrphanMachines();
+    if (peak_period) {
+        machines->distributeOrphanMachines();
+    }
     machines->scheduleGroups();
 }
 
@@ -125,8 +126,7 @@ void prepareChromosomes(chromosome_base_t **_chromosomes,
 chromosome_base_t searchChromosome(double rnd,
                                    vector<chromosome_linker_t> linkers)
 {
-    iter(linkers, i)
-    {
+    foreach (linkers, i) {
         if (linkers[i].value > rnd)
             return linkers[i].chromosome;
     }

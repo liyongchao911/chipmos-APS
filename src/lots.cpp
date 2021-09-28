@@ -47,8 +47,7 @@ void lots_t::pushBackNotPrescheduledLot(lot_t *lot)
 void lots_t::addLots(std::vector<lot_t *> lots)
 {
     std::string part_id, part_no;
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         if (lots[i]->isPrescheduled()) {
             this->prescheduled_lots.push_back(lots[i]);
         } else {
@@ -60,8 +59,7 @@ void lots_t::addLots(std::vector<lot_t *> lots)
         amount_of_wires[part_id] = lots[i]->getAmountOfWires();
     }
 
-    iter(this->lots, i)
-    {
+    foreach (this->lots, i) {
         part_id = this->lots[i]->part_id();
         part_no = this->lots[i]->part_no();
         this->tool_lots[part_no].push_back(this->lots[i]);
@@ -106,8 +104,7 @@ void lots_t::setupToolWireAmount(vector<lot_group_t> &selected_groups)
     std::map<std::string, int> sta_tools;
     std::map<std::string, int> sta_wires;
     std::string t, w, t_w;
-    iter(selected_groups, i)
-    {
+    foreach (selected_groups, i) {
         t_w = selected_groups[i].wire_tools_name;
         separateToolWireName(t_w, t, w);
         selected_groups[i].wire_name = w;
@@ -124,8 +121,7 @@ void lots_t::setupToolWireAmount(vector<lot_group_t> &selected_groups)
     }
 
     double ratio;
-    iter(selected_groups, i)
-    {
+    foreach (selected_groups, i) {
         ratio = selected_groups[i].lot_amount /
                 (double) sta_tools.at(selected_groups[i].tool_name);
         selected_groups[i].tool_amount =
@@ -146,8 +142,7 @@ void lots_t::setupToolWireAmount(vector<lot_group_t> &selected_groups)
 map<string, int> lots_t::bdidStatistic(vector<lot_t *> lots)
 {
     map<string, int> ret;
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         if (ret.count(lots[i]->recipe()) == 0) {
             ret[lots[i]->recipe()] = 1;
         } else
@@ -162,11 +157,12 @@ map<string, int> lots_t::modelStatistic(
 {
     map<string, int> ret;
     ret = initializeModelDistribution(loc_ents);
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         std::vector<std::string> can_run_locations =
             lots[i]->getCanRunLocations();
-        iter(can_run_locations, j) { ret[can_run_locations[j]] += 1; }
+        foreach (can_run_locations, j) {
+            ret[can_run_locations[j]] += 1;
+        }
     }
     return ret;
 }
@@ -246,8 +242,7 @@ void lots_t::setPidBomId(string filename,
 
     string err_msg;
 
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         try {
             string process_id = prod_pid.at(lots[i].prodId());
             lots[i].setProcessId(process_id);
@@ -302,8 +297,7 @@ void lots_t::setLotSize(string filename,
     vector<lot_t> result;
     int lot_size;
     string err_msg;
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         try {
             lot_size = pid_lotsize.at(lots[i].processId());
             lots[i].setLotSize(lot_size);
@@ -357,8 +351,7 @@ void lots_t::setupRoute(std::string routelist,
 
     // setRoute -> get wb - 7
     csv_t df;
-    iter(routenames, i)
-    {
+    foreach (routenames, i) {
         df = routelist_df.filter("route", routenames[i]);
         routes.setRoute(routenames[i], df);
     }
@@ -369,8 +362,7 @@ vector<lot_t> lots_t::wb7Filter(vector<lot_t> alllots,
                                 route_t routes)
 {
     vector<lot_t> lots;
-    iter(alllots, i)
-    {
+    foreach (alllots, i) {
         if (alllots[i].hold()) {
             alllots[i].addLog("Lot is hold", ERROR_HOLD);
             dontcare.push_back(alllots[i]);
@@ -395,11 +387,8 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
     std::vector<lot_t> unfinished = lots;
     std::vector<lot_t> finished;
 
-    std::string trace_lot_number("P16AWCMA");
-
     while (unfinished.size()) {
-        iter(unfinished, i)
-        {
+        foreach (unfinished, i) {
             try {
                 retval = routes.calculateQueueTime(unfinished[i]);
                 switch (retval) {
@@ -462,8 +451,7 @@ void lots_t::setCanRunModels(string bdid_model_mapping_models_filename,
     cards.addMapping("Maxum (Ultra)", 2, "Maxum", "Maxum-Ultra");
     cards.readBdIdModelsMappingFile(bdid_model_mapping_models_filename);
     vector<lot_t> result;
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         try {
             lots[i].setCanRunModels(
                 cards.getModels(lots[i].recipe(), lots[i].tmp_oper).models);
@@ -505,8 +493,7 @@ void lots_t::setPartId(string filename,
 
     string err_msg;
 
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         try {
             string part_id =
                 bom_oper_part.at(lots[i].tmp_oper).at(lots[i].bomId());
@@ -581,8 +568,7 @@ void lots_t::setAmountOfWire(string gw_filename,
 
     string err_msg;
 
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         try {
             int amountOfWires = part_roll.at(lots[i].part_id());
             if (amountOfWires > 0) {
@@ -633,8 +619,7 @@ void lots_t::setPartNo(string filename,
 
     string err_msg;
 
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         try {
             string part_no = pid_remark.at(lots[i].processId());
             lots[i].setPartNo(part_no);
@@ -680,8 +665,7 @@ void lots_t::setAmountOfTools(string filename,
     string err_msg;
 
     int amountOfTool;
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         try {
             amountOfTool = pno_qty.at(lots[i].part_no());
 
@@ -724,8 +708,7 @@ void lots_t::setUph(string uph_file_name,
     vector<lot_t> temp;
     vector<lot_t> maybe_faulty;
     vector<lot_t> result;
-    iter(lots, i)
-    {
+    foreach (lots, i) {
         retval = lots[i].setUph(uph_csv);
         if (retval) {
             result.push_back(lots[i]);
@@ -817,27 +800,41 @@ std::vector<lot_t *> lots_t::createLots(
 
     // output faulty lots
     csv_t faulty_lots_csv("output/faulty_lots.csv", "w");
-    iter(faulty_lots, i) { faulty_lots_csv.addData(faulty_lots[i].data()); }
+    foreach (faulty_lots, i) {
+        faulty_lots_csv.addData(faulty_lots[i].data());
+    }
     faulty_lots_csv.write();
     // output dontcare lots
     csv_t dontcare_lots_csv("output/dontcare.csv", "w");
-    iter(dontcare, i) { dontcare_lots_csv.addData(dontcare[i].data()); }
+    foreach (dontcare, i) {
+        dontcare_lots_csv.addData(dontcare[i].data());
+    }
     dontcare_lots_csv.write();
 
     // output lots
     csv_t lots_csv("output/lots.csv", "w");
-    iter(lots, i) { lots_csv.addData(lots[i].data()); }
+    foreach (lots, i) {
+        lots_csv.addData(lots[i].data());
+    }
     lots_csv.write();
 
     // ouput wip
     csv_t wip_csv("output/out.csv", "w");
-    iter(faulty_lots, i) { wip_csv.addData(faulty_lots[i].data()); }
-    iter(dontcare, i) { wip_csv.addData(dontcare[i].data()); }
-    iter(lots, i) { wip_csv.addData(lots[i].data()); }
+    foreach (faulty_lots, i) {
+        wip_csv.addData(faulty_lots[i].data());
+    }
+    foreach (dontcare, i) {
+        wip_csv.addData(dontcare[i].data());
+    }
+    foreach (lots, i) {
+        wip_csv.addData(lots[i].data());
+    }
     wip_csv.write();
 
     vector<lot_t *> lot_ptrs;
-    iter(lots, i) { lot_ptrs.push_back(new lot_t(lots[i])); }
+    foreach (lots, i) {
+        lot_ptrs.push_back(new lot_t(lots[i]));
+    }
 
     return lot_ptrs;
 }
@@ -848,8 +845,7 @@ map<string, vector<lot_t *> > lots_t::getLotsRecipeGroups()
 
     // set<string> lot_numbers_set;
 
-    iter(this->lots, i)
-    {
+    foreach (this->lots, i) {
         string recipe = this->lots[i]->recipe();
         string lot_number = this->lots[i]->lotNumber();
         if (groups.count(recipe) == 0)

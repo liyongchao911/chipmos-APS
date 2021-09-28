@@ -621,7 +621,9 @@ inline void lot_t::addLog(std::string _text, enum ERROR_T code)
 inline std::string lot_t::log()
 {
     std::string text;
-    iter(_log, i) { text += _log[i] + " "; }
+    foreach (_log, i) {
+        text += _log[i] + " ";
+    }
     return text;
 }
 
@@ -775,8 +777,7 @@ inline void lot_t::setCanRunModel(std::string model)
 
 inline void lot_t::setCanRunModels(std::vector<std::string> models)
 {
-    iter(models, i)
-    {
+    foreach (models, i) {
         if (isModelValid(models[i])) {
             _uphs[models[i]] = 0;
             _model_process_times[models[i]] = 0;
@@ -794,7 +795,7 @@ inline bool lot_t::setUph(std::string model, double uph)
         return false;
     } else {
         _uphs.at(model) = uph;
-        _model_process_times[model] = (_qty / uph) * 60;
+        _model_process_times[model] = _qty * 60 / uph;
     }
     return true;
 }
