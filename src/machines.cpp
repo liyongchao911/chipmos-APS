@@ -27,14 +27,11 @@ machines_t::machines_t()
     memset(&weights, 0, sizeof(weights));
     _weights = weights;
 
-    threshold = 2500;
-
     _init(_param);
 }
 
 machines_t::machines_t(setup_time_parameters_t param, weights_t weights)
 {
-    threshold = 2500;
     _init(param);
     _weights = weights;
 }
@@ -83,6 +80,8 @@ void machines_t::_init(setup_time_parameters_t parameters)
     machine_ops->sizeof_setup_time_function_array =
         num_of_setup_time_units - 1;  // -1 is for ICSI
     machine_ops->reset = machineReset;
+
+    threshold = 10000000;
 }
 
 

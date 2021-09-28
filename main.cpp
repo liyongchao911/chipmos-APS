@@ -70,13 +70,15 @@ int main(int argc, const char *argv[])
     machines_t *machines = new machines_t(pop.parameters.scheduling_parameters,
                                           pop.parameters.weights);
 
+    machines->setThreshold(stoi(arguments["minute_threshold"]));
+
     vector<entity_t *> all_entities = entities.allEntities();
     foreach (all_entities, i) {
         machines->addMachine(all_entities[i]->machine());
     }
-
+    bool peak_period = stoi(arguments["peak_period"]);
     prescheduling(machines, &lots);
-    stage2Scheduling(machines, &lots);
+    stage2Scheduling(machines, &lots, peak_period);
     stage3Scheduling(machines, &lots, &pop);
     vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
     csv_t result("./output/result.csv", "w");

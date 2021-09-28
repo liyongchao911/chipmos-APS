@@ -54,7 +54,7 @@ void test_entity_t::SetUp()
     ent = nullptr;
     entity_data = map<string, string>{{"entity", "BB211"},
                                       {"model", "UTC3000"},
-                                      {"recover_time", "2021/6/19 15:24"},
+                                      {"recover_time", "21-6-19 15:24"},
                                       {"prod_id", "048TPAW086"},
                                       {"pin_package", "TSOP1-48/M2"},
                                       {"lot_number", "P23AWDV31"},

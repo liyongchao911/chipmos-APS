@@ -40,7 +40,7 @@ void test_entities_t::SetUp()
     data = map<string, string>{
         {"entity", "BB211"},
         {"model", "UTC3000"},
-        {"recover_time", "2021/6/19 15:24"},
+        {"recover_time", "21-6-19 15:24"},
         {"prod_id", "048TPAW086"},
         {"pin_package", "TSOP1-48/M2"},
         {"lot_number", "P23AWDV31"},
@@ -131,7 +131,7 @@ TEST_F(test_entities_t, test_addMachine_entities_containers)
 
 TEST_F(test_entities_t, test_setTime)
 {
-    string text1("2021/6/19 15:24");
+    string text1("21-6-19 15:24");
     string text2("");
     entities->setTime(text1);
     EXPECT_NE(entities->_time, 0);

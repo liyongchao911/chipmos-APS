@@ -266,7 +266,14 @@ public:
     void distributeOrphanMachines();
 
     ~machines_t();
+
+    void setThreshold(int day_threshold);
 };
+
+inline void machines_t::setThreshold(int day_threshold)
+{
+    threshold = day_threshold;
+}
 
 inline list_operations_t *machines_t::getInitializedListOperations()
 {
