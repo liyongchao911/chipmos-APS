@@ -1,12 +1,17 @@
 #ifndef __PROGRESS_H__
 #define __PROGRESS_H__
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef WIN32
+#include<winsock.h>
+#else
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/select.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

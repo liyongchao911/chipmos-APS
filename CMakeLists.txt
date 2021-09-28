@@ -20,7 +20,7 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 if(WIN32)
-    target_link_libraries(main src pgalib -static-libstdc++ m pthread)
+    target_link_libraries(main src pgalib -static-libstdc++ m pthread ws2_32 wsock32)
 else()
     target_link_libraries(main src pgalib stdc++ m pthread)
 endif()
