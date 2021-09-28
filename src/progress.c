@@ -1,9 +1,13 @@
 #include "include/progress.h"
+#ifdef WIN32
+#include <winsock.h>
+#else
 #include <asm-generic/socket.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#endif
 #include <pthread.h>
 #include <stdbool.h>
-#include <sys/socket.h>
 #include <unistd.h>
 
 typedef struct entry_t {
@@ -151,7 +155,7 @@ progress_bar_attr_t *create_progress_bar_attr(int number_of_connection,
 
     attr->server_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     int optval = 1;
-    setsockopt(attr->server_socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval,
+    setsockopt(attr->server_socket_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&optval,
                sizeof(optval));
 
     attr->server_info = (struct sockaddr_in){

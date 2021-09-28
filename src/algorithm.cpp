@@ -3,7 +3,11 @@
 //
 
 #include "include/algorithm.h"
+#ifdef WIN32
+#include <winsock.h>
+#else
 #include <sys/socket.h>
+#endif
 #include <unistd.h>
 #include <vector>
 
