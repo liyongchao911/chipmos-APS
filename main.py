@@ -15,7 +15,6 @@ def filePreprocessing(path, files:dict, csv_config):
         if(not file_function in csv_config):
             csv_config[file_function] = []
         try:
-
             if(re.search(r'.csv', file_path) != None):
                 df = pd.read_csv(file_path, dtype=str)
                 file_path = file_path.replace(r'.csv', '')
@@ -44,10 +43,22 @@ def filePreprocessing(path, files:dict, csv_config):
         csv_config[file_function].append(file_path + ".csv")
     return csv_config
 
-def preprocessing(conf:dict):
+def processing(conf:dict):
+    all_df = []
+    for entry in conf:
+        df= preprocess_entry(entry)
+        all_df.append(df)
+    
+    all_df = pd.concat(all_df)
+    all_df.to_csv("config.csv", index=False)
+
+
+def preprocess_entry(conf:dict):
     csv_config = {}
     path = conf["file_path"]
-    csv_config_file_path = os.path.join(path, "config.csv")
+    # no = conf["no"]
+    csv_config["no"] = conf["no"]
+    # csv_config_file_path = "config.csv"
     csv_config = filePreprocessing(path, conf["preprocess_files"], csv_config)
     csv_config = filePreprocessing(path, conf["nopreprocess_files"], csv_config)
 
@@ -59,10 +70,8 @@ def preprocessing(conf:dict):
     for item in conf["parameters"]:
         csv_config[item] = conf["parameters"][item]
     df = pd.DataFrame(csv_config)
-    df.to_csv(csv_config_file_path, index=False)
-    # print(json.dumps(csv_config, indent=4))
-
-    return csv_config_file_path
+    # print(csv_config)
+    return df
 
 
 if __name__ == '__main__':
@@ -94,4 +103,4 @@ if __name__ == '__main__':
     args = arg_parser.parse_args()
 
     config = args.config
-    csv_config_file_path = preprocessing(json.load(open(config))) 
+    csv_config_file_path = processing(json.load(open(config))) 

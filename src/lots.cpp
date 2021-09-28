@@ -728,7 +728,12 @@ void lots_t::createLots(map<string, string> files)
                      files["bom_list"], files["pid_heatblock"],
                      files["ems_heatblock"], files["gw_inventory"],
                      files["wire_stock"], files["bdid_model_mapping"],
-                     files["uph"], files["cure_time"]);
+                     files["uph"], files["cure_time"], files["no"]);
+
+    string direcory_name = "output_" + files["no"];
+    csv_t cfg(direcory_name + "/config.csv", "w");
+    cfg.addData(files);
+    cfg.write();
 
     addLots(lts);
 }
@@ -747,7 +752,8 @@ std::vector<lot_t *> lots_t::createLots(
     std::string wire_stock_filename,
     std::string bdid_mapping_models_filename,
     std::string uph_filename,
-    std::string cure_time_filename)
+    std::string cure_time_filename,
+    std::string dir_suffix)
 {
     string err_msg;
 
@@ -792,34 +798,36 @@ std::vector<lot_t *> lots_t::createLots(
     setCanRunModels(bdid_mapping_models_filename, lots, faulty_lots);
     setUph(uph_filename, lots, faulty_lots);
 
+    string directory_name = "output_" + dir_suffix;
 #if defined(_WIN32)
-    mkdir("output");
+    mkdir(directory_name.c_str());
 #else
-    mkdir("output", 0777);  // notice that 777 is different than 0777
+    mkdir(directory_name.c_str(),
+          0777);  // notice that 777 is different than 0777
 #endif
 
     // output faulty lots
-    csv_t faulty_lots_csv("output/faulty_lots.csv", "w");
+    csv_t faulty_lots_csv(directory_name + "/faulty_lots.csv", "w");
     foreach (faulty_lots, i) {
         faulty_lots_csv.addData(faulty_lots[i].data());
     }
     faulty_lots_csv.write();
     // output dontcare lots
-    csv_t dontcare_lots_csv("output/dontcare.csv", "w");
+    csv_t dontcare_lots_csv(directory_name + "/dontcare.csv", "w");
     foreach (dontcare, i) {
         dontcare_lots_csv.addData(dontcare[i].data());
     }
     dontcare_lots_csv.write();
 
     // output lots
-    csv_t lots_csv("output/lots.csv", "w");
+    csv_t lots_csv(directory_name + "/lots.csv", "w");
     foreach (lots, i) {
         lots_csv.addData(lots[i].data());
     }
     lots_csv.write();
 
     // ouput wip
-    csv_t wip_csv("output/out.csv", "w");
+    csv_t wip_csv(directory_name + "/out.csv", "w");
     foreach (faulty_lots, i) {
         wip_csv.addData(faulty_lots[i].data());
     }

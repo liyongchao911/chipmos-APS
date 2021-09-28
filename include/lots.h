@@ -71,7 +71,8 @@ protected:
                                     std::string wire_stock_filename,
                                     std::string bdid_mapping_models_filename,
                                     std::string uph_filename,
-                                    std::string cure_time_filename);
+                                    std::string cure_time_filename,
+                                    std::string dir_suffix);
 
     /**
      * readWip () - read wip filename

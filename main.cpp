@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <cstdlib>
 #include <ctime>
 #include <map>
@@ -21,11 +22,18 @@ map<string, string> outputJobInMachine(machine_t *machine);
 
 void outputJobInMachine(map<string, machine_t *>, csv_t *csv);
 
-lots_t createLots(int argc, const char *argv[]);
-entities_t createEntities(int argc, const char *argv[]);
+lots_t createLots(int argc, const char **, map<string, string>);
+entities_t createEntities(int argc, const char **argv, map<string, string>);
 
+void *run(void *);
 
-int main(int argc, const char *argv[])
+typedef struct __thread_data_t {
+    map<string, string> arguments;
+    int argc;
+    const char **argv;
+} thread_data_t;
+
+int main(int argc, const char **argv)
 {
     if (argc < 2) {
         printf("Please specify the path of configuration file\n");
@@ -33,10 +41,36 @@ int main(int argc, const char *argv[])
     }
 
     csv_t cfg(argv[1], "r", true, true);
-    map<string, string> arguments = cfg.getElements(0);
+    // get the cfg size
+    int nthreads = cfg.nrows();
+    pthread_t *threads = (pthread_t *) malloc(sizeof(pthread_t) * nthreads);
+    thread_data_t **thread_data_array =
+        (thread_data_t **) malloc(sizeof(thread_data_t *) * nthreads);
 
-    lots_t lots = createLots(argc, argv);
-    entities_t entities = createEntities(argc, argv);
+    // map<string, string> arguments = cfg.getElements(0);
+    for (unsigned int i = 0; i < cfg.nrows(); ++i) {
+        thread_data_array[i] = new thread_data_t();
+        *thread_data_array[i] = thread_data_t{
+            .arguments = cfg.getElements(i), .argc = argc, .argv = argv};
+        pthread_create(threads + i, NULL, run, thread_data_array[i]);
+    }
+
+    for (unsigned int i = 0; i < cfg.nrows(); ++i) {
+        pthread_join(threads[i], NULL);
+    }
+
+    return 0;
+}
+
+void *run(void *_data)
+{
+    thread_data_t *data = (thread_data_t *) _data;
+    int argc = data->argc;
+    const char **argv = data->argv;
+    map<string, string> arguments = data->arguments;
+
+    lots_t lots = createLots(argc, argv, arguments);
+    entities_t entities = createEntities(argc, argv, arguments);
 
 
     srand(time(NULL));
@@ -81,7 +115,8 @@ int main(int argc, const char *argv[])
     stage2Scheduling(machines, &lots, peak_period);
     stage3Scheduling(machines, &lots, &pop);
     vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
-    csv_t result("./output/result.csv", "w");
+    string directory = "output_" + arguments["no"];
+    csv_t result(directory + "/result.csv", "w");
     foreach (scheduled_jobs, i) {
         result.addData(outputJob(*scheduled_jobs[i]));
     }
@@ -90,21 +125,18 @@ int main(int argc, const char *argv[])
         result.addData(outputJob(*pop.objects.jobs[i]));
     }
     result.write();
-    return 0;
+
+    return NULL;
 }
 
 
-
-lots_t createLots(int argc, const char *argv[])
+lots_t createLots(int argc, const char **argv, map<string, string> arguments)
 {
-    csv_t cfg(argv[1], "r", true, true);
-    map<string, string> arguments = cfg.getElements(0);
-
     lots_t lots;
     lot_t *lot;
     if (argc >= 3) {
-        printf("Create lots by using pre-created lots.csv file : %s\n",
-               argv[2]);
+        // printf("Create lots by using pre-created lots.csv file : %s\n",
+        //        argv[2]);
         csv_t lots_csv(argv[2], "r", true, true);
         vector<lot_t *> all_lots;
         for (int i = 0, nrows = lots_csv.nrows(); i < nrows; ++i) {
@@ -113,18 +145,17 @@ lots_t createLots(int argc, const char *argv[])
         }
         lots.addLots(all_lots);
     } else {
-        printf("Create lots by using configure file : %s\n", argv[1]);
+        // printf("Create lots by using configure file : %s\n", argv[1]);
         lots.createLots(arguments);
     }
 
     return lots;
 }
 
-entities_t createEntities(int argc, const char *argv[])
+entities_t createEntities(int argc,
+                          const char **argv,
+                          map<string, string> arguments)
 {
-    csv_t cfg(argv[1], "r", true, true);
-    map<string, string> arguments = cfg.getElements(0);
-
     csv_t machine_csv(arguments["machines"], "r", true, true);
     machine_csv.trim(" ");
     machine_csv.setHeaders(map<string, string>({{"entity", "ENTITY"},

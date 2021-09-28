@@ -635,13 +635,13 @@ void machines_t::distributeWires()
         }
     }
 
-    for (map<string, struct __job_group_t *>::iterator it =
-             _tool_wire_jobs_groups.begin();
-         it != _tool_wire_jobs_groups.end(); ++it) {
-        printf("[%s]-[%s] : (%d)#(%d) -> %lu\n", it->second->part_no.c_str(),
-               it->second->part_id.c_str(), it->second->number_of_tools,
-               it->second->number_of_wires, it->second->orphan_jobs.size());
-    }
+    // for (map<string, struct __job_group_t *>::iterator it =
+    //          _tool_wire_jobs_groups.begin();
+    //      it != _tool_wire_jobs_groups.end(); ++it) {
+    //     printf("[%s]-[%s] : (%d)#(%d) -> %lu\n", it->second->part_no.c_str(),
+    //            it->second->part_id.c_str(), it->second->number_of_tools,
+    //            it->second->number_of_wires, it->second->orphan_jobs.size());
+    // }
 }
 
 bool machines_t::_canJobRunOnTheMachine(job_t *job, machine_t *machine)
@@ -864,17 +864,17 @@ void machines_t::chooseMachinesForGroups()
         }
         selected_model_statistic[model_name] += 1;
     }
-    cout << "Determined Machine Statistic" << endl;
-    for (map<string, int>::iterator it = selected_model_statistic.begin();
-         it != selected_model_statistic.end(); ++it) {
-        cout << "\"" << it->first << "\" : " << it->second << endl;
-    }
+    // cout << "Determined Machine Statistic" << endl;
+    // for (map<string, int>::iterator it = selected_model_statistic.begin();
+    //      it != selected_model_statistic.end(); ++it) {
+    //     cout << "\"" << it->first << "\" : " << it->second << endl;
+    // }
 
-    cout << "Available Machine Statistic" << endl;
-    for (map<string, int>::iterator it = available_model_statistic.begin();
-         it != available_model_statistic.end(); ++it) {
-        cout << "\"" << it->first << "\" : " << it->second << endl;
-    }
+    // cout << "Available Machine Statistic" << endl;
+    // for (map<string, int>::iterator it = available_model_statistic.begin();
+    //      it != available_model_statistic.end(); ++it) {
+    //     cout << "\"" << it->first << "\" : " << it->second << endl;
+    // }
 }
 
 void machines_t::_setupContainersForMachines()
