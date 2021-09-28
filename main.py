@@ -3,7 +3,9 @@ import os
 import re
 import pandas as pd
 import argparse
+import copy
 from datetime import datetime
+
 
 
 def filePreprocessing(path, files:dict, csv_config):
@@ -46,12 +48,19 @@ def filePreprocessing(path, files:dict, csv_config):
 def processing(conf:dict):
     all_df = []
     for entry in conf:
-        df= preprocess_entry(entry)
-        all_df.append(df)
+        dfs = preprocess_entry(entry)
+        all_df.append(pd.concat(dfs))
     
     all_df = pd.concat(all_df)
     all_df.to_csv("config.csv", index=False)
 
+def product(args, repeat=1):
+    pools = [tuple(pool) for pool in args] * repeat
+    result = [[]]
+    for pool in pools:
+        result = [x+[y] for x in result for y in pool]
+    for prod in result:
+        yield tuple(prod)
 
 def preprocess_entry(conf:dict):
     csv_config = {}
@@ -66,12 +75,28 @@ def preprocess_entry(conf:dict):
     time = re.split(r"_|\.csv", wip_filename)[1]
     dt = datetime.strptime(time, "%Y%m%d%H%M%S")
 
-    csv_config["std_time"] = [ dt.strftime("%y-%m-%d %H:%M")]
+    csv_config["std_time"] = [dt.strftime("%y-%m-%d %H:%M")]
+    items = []
+    params = []
     for item in conf["parameters"]:
-        csv_config[item] = conf["parameters"][item]
-    df = pd.DataFrame(csv_config)
-    # print(csv_config)
-    return df
+        items.append(item)
+        params.append(conf["parameters"][item])
+    print("params : ")
+    print(params)
+    results = list(product(params))
+    dfs = []
+    no = 0 
+    for result in results:
+        new_csv_config = copy.deepcopy(csv_config)
+        new_csv_config["no"] = no
+        no += 1
+        size = len(items)
+        print(result)
+        for i in range(size):
+            new_csv_config[items[i]] = result[i]
+        df = pd.DataFrame(new_csv_config)
+        dfs.append(df)
+    return dfs
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <semaphore.h>
 #include <unistd.h>
 #include <cstdlib>
 #include <ctime>
@@ -37,12 +38,15 @@ typedef struct __thread_data_t {
     int fd;
 } thread_data_t;
 
+sem_t SEM;
+
 int main(int argc, const char **argv)
 {
     if (argc < 2) {
         printf("Please specify the path of configuration file\n");
         exit(EXIT_FAILURE);
     }
+    sem_init(&SEM, 0, 15);
 
     csv_t cfg(argv[1], "r", true, true);
     // get the cfg size
@@ -80,15 +84,18 @@ int main(int argc, const char **argv)
     for (unsigned int i = 0; i < cfg.nrows(); ++i) {
         pthread_join(threads[i], NULL);
     }
-
+    sem_destroy(&SEM);
     send(main_fd, "close", 5, 0);
     pthread_join(progress_bar_thread, NULL);
     delete_attr(&pbattr);
+
+
     return 0;
 }
 
 void *run(void *_data)
 {
+    // sem_wait(&SEM);
     thread_data_t *data = (thread_data_t *) _data;
     int argc = data->argc;
     const char **argv = data->argv;
@@ -150,6 +157,7 @@ void *run(void *_data)
     }
     result.write();
 
+    // sem_post(&SEM);
     return NULL;
 }
 

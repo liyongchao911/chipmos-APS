@@ -63,7 +63,8 @@ void *run_progress_bar_server(void *_data)
 
     for (int i = 0; i < attr->number_of_connection - 1; ++i)
         printf("\n");
-
+    int times = 0;
+    int threshold = attr->number_of_connection * 10;
     struct timeval timeout;
     bool running = true;
     while (running) {
@@ -94,16 +95,29 @@ void *run_progress_bar_server(void *_data)
                     }
                 }
             }
-            for (int i = 0; i < attr->number_of_connection - 1; ++i) {
-                erase_last_line();
-            }
-            for (int i = 0; i < attr->number_of_connection - 1; ++i) {
-                printf("[%d]", entries[i].channel_id);
-                progress_bar(entries[i].progress);
-                printf("(%.3lf)\n", entries[i].value);
+            times += 1;
+            if (times > threshold) {
+                for (int i = 0; i < attr->number_of_connection - 1; ++i) {
+                    erase_last_line();
+                }
+                for (int i = 0; i < attr->number_of_connection - 1; ++i) {
+                    printf("[%d]", entries[i].channel_id);
+                    progress_bar(entries[i].progress);
+                    printf("(%.3lf)\n", entries[i].value);
+                }
+                times = 0;
             }
         }
     }
+    for (int i = 0; i < attr->number_of_connection - 1; ++i) {
+        erase_last_line();
+    }
+    for (int i = 0; i < attr->number_of_connection - 1; ++i) {
+        printf("[%d]", entries[i].channel_id);
+        progress_bar(entries[i].progress);
+        printf("(%.3lf)\n", entries[i].value);
+    }
+
     printf("Close the server\n");
     pthread_exit(NULL);
 }
