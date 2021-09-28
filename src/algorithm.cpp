@@ -3,7 +3,8 @@
 //
 
 #include "include/algorithm.h"
-
+#include <sys/socket.h>
+#include <unistd.h>
 #include <vector>
 
 using namespace std;
@@ -68,7 +69,10 @@ void stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
 }
 
 
-void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop)
+void stage3Scheduling(machines_t *machines,
+                      lots_t *lots,
+                      population_t *pop,
+                      int fd)
 {
     machines->groupJobsByToolAndWire();
     machines->distributeTools();
@@ -101,7 +105,7 @@ void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop)
     // cout << "Number of machines : " << pop->objects.NUMBER_OF_MACHINES <<
     // endl; cout << "Number of jobs : " << pop->objects.NUMBER_OF_JOBS << endl;
 
-    geneticAlgorithm(pop);
+    geneticAlgorithm(pop, fd);
 }
 
 void prepareChromosomes(chromosome_base_t **_chromosomes,
@@ -168,7 +172,7 @@ void chromosomeSelection(chromosome_base_t *chromosomes,
     }
 }
 
-void geneticAlgorithm(population_t *pop)
+void geneticAlgorithm(population_t *pop, int fd)
 {
     int AMOUNT_OF_JOBS = pop->objects.NUMBER_OF_JOBS;
     int NUMBER_OF_MACHINES = pop->objects.NUMBER_OF_MACHINES;
@@ -187,6 +191,9 @@ void geneticAlgorithm(population_t *pop)
     job_base_operations_t *job_ops = pop->operations.job_ops;
     // initialize machine_op
     int k;
+
+    char output_string[1024];
+    int string_length = 0;
     for (k = 0; k < pop->parameters.GENERATIONS; ++k) {
         for (int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES;
              ++i) {  // for all chromosomes
@@ -198,8 +205,10 @@ void geneticAlgorithm(population_t *pop)
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES,
               sizeof(chromosomes[0]), chromosomeCmp);
-        printf("%d,%.3f\n", k, chromosomes[0].fitnessValue);
-
+        string_length =
+            sprintf(output_string, "%d/%d-%lf\n", k,
+                    pop->parameters.GENERATIONS, chromosomes[0].fitnessValue);
+        write(fd, output_string, string_length);
         // statistic
         chromosomeSelection(chromosomes, tmp_chromosomes,
                             pop->parameters.SELECTION_RATE,
