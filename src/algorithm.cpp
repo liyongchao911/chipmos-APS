@@ -38,7 +38,7 @@ void prescheduling(machines_t *machines, lots_t *lots)
     machines->prescheduleJobs();
 }
 
-void stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
+int stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
 {
     map<string, vector<lot_t *> > groups;
     machines->setNumberOfTools(lots->amountOfTools());
@@ -69,7 +69,8 @@ void stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
     if (peak_period) {
         machines->distributeOrphanMachines();
     }
-    machines->scheduleGroups();
+    int stage2_setup_times = machines->scheduleGroups();
+    return stage2_setup_times;
 }
 
 
@@ -201,10 +202,11 @@ void geneticAlgorithm(population_t *pop, int fd)
     for (k = 0; k < pop->parameters.GENERATIONS; ++k) {
         for (int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES;
              ++i) {  // for all chromosomes
-            chromosomes[i].fitnessValue = decoding(
-                chromosomes[i], jobs, machines, machine_ops, list_ops, job_ops,
-                AMOUNT_OF_JOBS, NUMBER_OF_MACHINES, MAX_SETUP_TIMES,
-                pop->parameters.weights, pop->parameters.scheduling_parameters);
+            chromosomes[i].fitnessValue =
+                decoding(chromosomes[i], jobs, machines, machine_ops, list_ops,
+                         job_ops, AMOUNT_OF_JOBS, NUMBER_OF_MACHINES,
+                         MAX_SETUP_TIMES, pop->parameters.weights,
+                         pop->parameters.setup_times_parameters);
         }
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES,
@@ -243,7 +245,7 @@ void geneticAlgorithm(population_t *pop, int fd)
 
     decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops,
              AMOUNT_OF_JOBS, NUMBER_OF_MACHINES, MAX_SETUP_TIMES,
-             pop->parameters.weights, pop->parameters.scheduling_parameters);
+             pop->parameters.weights, pop->parameters.setup_times_parameters);
 
     // update machines' avaliable time and set the last job
     for (int i = 0; i < NUMBER_OF_MACHINES; ++i) {

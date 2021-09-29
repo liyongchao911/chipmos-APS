@@ -6,7 +6,7 @@
 #include <string.h>
 
 #ifdef WIN32
-#include<winsock.h>
+#include <winsock.h>
 #else
 #include <arpa/inet.h>
 #include <netinet/in.h>

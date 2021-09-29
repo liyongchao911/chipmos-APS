@@ -62,7 +62,7 @@ int main(int argc, const char **argv)
     pthread_t accept_thread, progress_bar_thread;
     pthread_create(&accept_thread, NULL, accept_connection, (void *) pbattr);
 
-    int fds[1024];
+    int fds[1024] = {-1};
     for (int i = 0; i < nthreads; ++i) {
         fds[i] = create_client_connection("127.0.0.1", 8081);
     }
@@ -104,6 +104,8 @@ void *run(void *_data)
     lots_t lots = createLots(argc, argv, arguments);
     entities_t entities = createEntities(argc, argv, arguments);
 
+    if (data->fd < 0)
+        data->fd = 1;
 
     population_t pop = population_t{
         .parameters =
@@ -119,7 +121,7 @@ void *run(void *_data)
                              stoi(arguments["weight_total_completion_time"]),
                          .WEIGHT_MAX_SETUP_TIMES =
                              stoi(arguments["weight_max_setup_times"])},
-             .scheduling_parameters =
+             .setup_times_parameters =
                  {
                      .TIME_CWN = stod(arguments["setup_time_cwn"]),
                      .TIME_CK = stod(arguments["setup_time_ck"]),
@@ -129,21 +131,29 @@ void *run(void *_data)
                      .TIME_CSC = stod(arguments["setup_time_csc"]),
                      .TIME_USC = stod(arguments["setup_time_usc"]),
                      .TIME_ICSI = stod(arguments["setup_time_icsi"]),
-                 }},
+                 },
+             .scheduling_parameters =
+                 {.PEAK_PERIOD = stoi(arguments["peak_period"]),
+                  .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"]),
+                  .MINUTE_THRESHOLD = stoi(arguments["minute_threshold"])}},
+
     };
 
-    machines_t *machines = new machines_t(pop.parameters.scheduling_parameters,
+    machines_t *machines = new machines_t(pop.parameters.setup_times_parameters,
                                           pop.parameters.weights);
 
-    machines->setThreshold(stoi(arguments["minute_threshold"]));
+    machines->setThreshold(
+        pop.parameters.scheduling_parameters.MINUTE_THRESHOLD);
 
     vector<entity_t *> all_entities = entities.allEntities();
     foreach (all_entities, i) {
         machines->addMachine(all_entities[i]->machine());
     }
-    bool peak_period = stoi(arguments["peak_period"]);
+
     prescheduling(machines, &lots);
-    stage2Scheduling(machines, &lots, peak_period);
+    int stage2_setup_times = stage2Scheduling(
+        machines, &lots, pop.parameters.scheduling_parameters.PEAK_PERIOD);
+    pop.parameters.scheduling_parameters.MAX_SETUP_TIMES -= stage2_setup_times;
     stage3Scheduling(machines, &lots, &pop, data->fd);
     vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
     string directory = "output_" + arguments["no"];

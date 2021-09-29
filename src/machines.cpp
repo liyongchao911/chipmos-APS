@@ -300,7 +300,7 @@ vector<job_t *> machines_t::_sortedJobs(std::vector<job_t *> &jobs)
 }
 
 
-void machines_t::_scheduleAGroup(struct __machine_group_t *group)
+int machines_t::_scheduleAGroup(struct __machine_group_t *group)
 {
     vector<machine_t *> machines;
     if (group->unscheduled_jobs.size() >= group->machines.size()) {
@@ -315,7 +315,7 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
     }
 
     if (machines.size() == 0)
-        return;
+        return 0;
 
     // group->machines;
     vector<job_t *> unscheduled_jobs = group->unscheduled_jobs;
@@ -327,7 +327,7 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
     foreach (machines, i) {
         machine_ops->reset(&machines[i]->base);
     }
-
+    int setup_times = 0;
     sort(unscheduled_jobs.begin(), unscheduled_jobs.end(), jobPtrComparison);
     foreach (unscheduled_jobs, i) {
         string lot_number(unscheduled_jobs[i]->base.job_info.data.text);
@@ -342,7 +342,8 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
                 unscheduled_jobs[i]->base.ptime =
                     _job_process_times[lot_number][model];
             }
-            staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
+            setup_times +=
+                staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
             break;
             // if(_canJobRunOnTheMachine(unscheduled_jobs[i], machines[j])){
             //     unscheduled_jobs[i]->base.ptime =
@@ -354,17 +355,20 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
         }
         group->scheduled_jobs.push_back(unscheduled_jobs[i]);
     }
+
+    return setup_times;
 }
 
 
 
-void machines_t::scheduleGroups()
+int machines_t::scheduleGroups()
 {
+    int total_setup_times = 0;
     std::map<std::string, struct __machine_group_t *> ngroups;
     for (map<string, struct __machine_group_t *>::iterator it =
              _dispatch_groups.begin();
          it != _dispatch_groups.end(); it++) {
-        _scheduleAGroup(it->second);
+        total_setup_times += _scheduleAGroup(it->second);
 
         // iter(it->second->machines, j)
         // {
@@ -393,6 +397,7 @@ void machines_t::scheduleGroups()
     _setupContainersForMachines();
     _updateAllKindOfResourcesAvailableTime(_tools, _tool_machines);
     _updateAllKindOfResourcesAvailableTime(_wires, _wire_machines);
+    return total_setup_times;
 }
 
 bool machines_t::_isThereAnyUnusedResource(

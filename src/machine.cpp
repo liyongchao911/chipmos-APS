@@ -364,9 +364,9 @@ void setJob2Scheduled(machine_t *machine)
     }
 }
 
-void staticAddJob(machine_t *machine,
-                  job_t *job,
-                  machine_base_operations_t *machine_ops)
+int staticAddJob(machine_t *machine,
+                 job_t *job,
+                 machine_base_operations_t *machine_ops)
 {
     job_t *last_job_of_machine;
     if (machine->base.tail != nullptr) {
@@ -384,7 +384,12 @@ void staticAddJob(machine_t *machine,
         (job->base.arriv_t - machine->base.available_time > setup_time
              ? job->base.arriv_t
              : machine->base.available_time + setup_time);
+
     set_start_time(&job->base, start_time);
     machine->base.available_time = get_end_time(&job->base);
     job->base.machine_no = machine->base.machine_no;
+    if (start_time < 1440 && setup_time != 0)
+        return 1;
+    else
+        return 0;
 }

@@ -116,7 +116,7 @@ protected:
 
     bool _canJobRunOnTheMachine(job_t *job, machine_t *machine);
     void _init(setup_time_parameters_t param);
-    void _scheduleAGroup(struct __machine_group_t *group);
+    int _scheduleAGroup(struct __machine_group_t *group);
     std::vector<machine_t *> _sortedMachines(std::vector<machine_t *> &ms);
     std::vector<job_t *> _sortedJobs(std::vector<job_t *> &jobs);
 
@@ -235,7 +235,7 @@ public:
 
     std::string getModelByEntityName(std::string entity_name);
 
-    void scheduleGroups();
+    int scheduleGroups();
 
     std::map<std::string, std::vector<std::string>> getModelLocations();
 
