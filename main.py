@@ -65,7 +65,7 @@ def product(args, repeat=1):
 def preprocess_entry(conf:dict):
     csv_config = {}
     path = conf["file_path"]
-    # no = conf["no"]
+    no = conf["no"]
     csv_config["no"] = conf["no"]
     # csv_config_file_path = "config.csv"
     csv_config = filePreprocessing(path, conf["preprocess_files"], csv_config)
@@ -85,11 +85,11 @@ def preprocess_entry(conf:dict):
     print(params)
     results = list(product(params))
     dfs = []
-    no = 0 
+    no_suffix = 0
     for result in results:
         new_csv_config = copy.deepcopy(csv_config)
-        new_csv_config["no"] = no
-        no += 1
+        new_csv_config["no"] = ''.join([str(no), "-", str(no_suffix)])
+        no_suffix += 1
         size = len(items)
         print(result)
         for i in range(size):
