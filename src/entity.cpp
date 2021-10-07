@@ -27,11 +27,11 @@ entity_t::entity_t(map<string, string> elements, time_t base_time)
 
     string lot_number = elements["lot_number"];
 
-    if (elements["qty"].length()) {
-        if (_outplan_time <= 0) {
-            elements["qty"] = to_string(0);
-        }
-    }
+    // if (elements["qty"].length()) {
+    //     if (_outplan_time <= 0) {
+    //         elements["qty"] = to_string(0);
+    //     }
+    // }
     _current_lot = new lot_t(elements);
 
     if (_current_lot == nullptr) {
@@ -43,7 +43,7 @@ entity_t::entity_t(map<string, string> elements, time_t base_time)
 void entity_t::setBaseTime(time_t base_time)
 {
     double tmp_time = _recover_time - base_time;
-    _recover_time = ((tmp_time > 0) ? tmp_time : 0) / 60;
+    _recover_time = tmp_time / 60;
 
     _outplan_time = _recover_time;
 }
