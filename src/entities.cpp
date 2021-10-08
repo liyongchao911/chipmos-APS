@@ -151,4 +151,5 @@ void entities_t::addMachines(csv_t _machines, csv_t _location)
             _faulty_machine.push_back(elements);
         }
     }
+    return;
 }

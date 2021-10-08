@@ -18,6 +18,7 @@ class entity_t
 private:
     double _recover_time;
     double _outplan_time;
+    double _intime;
     std::string _entity_name;
     std::string _model_name;
     std::string _location;

@@ -12,13 +12,14 @@ using namespace std;
 
 entity_t::entity_t()
 {
-    _outplan_time = _recover_time = 0;
+    _intime = _outplan_time = _recover_time = 0;
 }
 
 entity_t::entity_t(map<string, string> elements, time_t base_time)
 {
     _current_lot = nullptr;
     _outplan_time = _recover_time = timeConverter(elements["recover_time"]);
+    _intime = timeConverter(elements["in_time"]);
     _entity_name = elements["entity"];
     _model_name = elements["model"];
     _location = elements["location"];
@@ -46,6 +47,8 @@ void entity_t::setBaseTime(time_t base_time)
     _recover_time = tmp_time / 60;
 
     _outplan_time = _recover_time;
+
+    _intime = (_intime - base_time) / 60;
 }
 
 machine_t entity_t::machine()
@@ -64,6 +67,7 @@ machine_t entity_t::machine()
                   .ptr_derived_object = nullptr};
 
     machine.current_job.base.end_time = _recover_time;
+    machine.current_job.base.start_time = _intime;
     machine.current_job.base.machine_no = stringToInfo(_entity_name);
 
     return machine;
