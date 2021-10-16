@@ -25,7 +25,7 @@ lots_t createLots(int argc, const char *argv[]);
 entities_t createEntities(int argc, const char *argv[]);
 
 char MESSAGE[] =
-    "version 0.0.2\n"
+    "version 0.0.3\n"
     "Author : NCKU Smart Production Lab";
 
 int main(int argc, const char *argv[])
