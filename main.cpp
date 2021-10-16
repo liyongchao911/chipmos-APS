@@ -24,10 +24,14 @@ void outputJobInMachine(map<string, machine_t *>, csv_t *csv);
 lots_t createLots(int argc, const char *argv[]);
 entities_t createEntities(int argc, const char *argv[]);
 
+char MESSAGE[] =
+    "version 0.0.3\n"
+    "Author : NCKU Smart Production Lab";
 
 int main(int argc, const char *argv[])
 {
     if (argc < 2) {
+        printf("%s\n", MESSAGE);
         printf("Please specify the path of configuration file\n");
         exit(EXIT_FAILURE);
     }

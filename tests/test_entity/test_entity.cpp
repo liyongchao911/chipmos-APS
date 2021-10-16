@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include "include/info.h"
+#include "include/infra.h"
 
 
 #include <gtest/gtest.h>
@@ -55,6 +56,7 @@ void test_entity_t::SetUp()
     entity_data = map<string, string>{{"entity", "BB211"},
                                       {"model", "UTC3000"},
                                       {"recover_time", "21-6-19 15:24"},
+                                      {"in_time", "21-6-19 14:24"},
                                       {"prod_id", "048TPAW086"},
                                       {"pin_package", "TSOP1-48/M2"},
                                       {"lot_number", "P23AWDV31"},
@@ -66,7 +68,7 @@ void test_entity_t::SetUp()
                                       {"part_no", "PART_NO"},
                                       {"part_id", "PART_ID"}};
 
-    ent = new entity_t(entity_data);
+    ent = new entity_t(entity_data, timeConverter("21-6-19 14:34"));
     if (ent == nullptr) {
         perror("new entity_t instance");
         exit(EXIT_FAILURE);
@@ -161,7 +163,7 @@ TEST_F(test_entity_t, test_entity_machine_current_job)
     EXPECT_EQ(strcmp(job.pin_package.data.text, "TSOP1-48/M2"), 0);
     EXPECT_EQ(strcmp(job.prod_id.data.text, "048TPAW086"), 0);
 
-    EXPECT_EQ(job.base.start_time, 0);
+    EXPECT_EQ(job.base.start_time, -10);
     EXPECT_EQ(job.base.end_time, ent->_recover_time);
     EXPECT_EQ(job.base.qty, 1280);
     EXPECT_EQ(strcmp(job.base.job_info.data.text, "P23AWDV31"), 0);

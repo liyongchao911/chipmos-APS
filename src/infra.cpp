@@ -63,7 +63,7 @@ time_t timeConverter(std::string text)
            &_tm.tm_mday, &_tm.tm_hour, &_tm.tm_min);
     _tm.tm_sec = 0;
     _tm.tm_isdst = false;
-    _tm.tm_year += 2000;
+    _tm.tm_year += 100;
 
     return mktime(&_tm);
 }
