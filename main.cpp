@@ -38,11 +38,16 @@ typedef struct __thread_data_t {
     int fd;
 } thread_data_t;
 
+char MESSAGE[] =
+    "version 0.0.3\n"
+    "Author : NCKU Smart Production Lab";
+
 sem_t SEM;
 
 int main(int argc, const char **argv)
 {
     if (argc < 2) {
+        printf("%s\n", MESSAGE);
         printf("Please specify the path of configuration file\n");
         exit(EXIT_FAILURE);
     }
