@@ -33,7 +33,7 @@ void prescheduling(machines_t *machines, lots_t *lots)
     machines->prescheduleJobs();
 }
 
-void stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
+void stage2Scheduling(machines_t *machines, lots_t *lots, double peak_period)
 {
     map<string, vector<lot_t *> > groups;
     machines->setNumberOfTools(lots->amountOfTools());
@@ -61,9 +61,7 @@ void stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
         }
         machines->addGroupJobs(it->first, jobs);
     }
-    if (peak_period) {
-        machines->distributeOrphanMachines();
-    }
+    machines->distributeOrphanMachines(peak_period);
     machines->scheduleGroups();
 }
 

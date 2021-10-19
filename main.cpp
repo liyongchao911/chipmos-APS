@@ -80,7 +80,7 @@ int main(int argc, const char *argv[])
     foreach (all_entities, i) {
         machines->addMachine(all_entities[i]->machine());
     }
-    bool peak_period = stoi(arguments["peak_period"]);
+    double peak_period = stof(arguments["peak_period"]);
     prescheduling(machines, &lots);
     stage2Scheduling(machines, &lots, peak_period);
     stage3Scheduling(machines, &lots, &pop);

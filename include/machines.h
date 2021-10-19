@@ -263,7 +263,7 @@ public:
     job_base_operations_t *getInitializedJobBaseOperations();
     machine_base_operations_t *getInitilizedMachineBaseOperations();
 
-    void distributeOrphanMachines();
+    void distributeOrphanMachines(double probability = 1.0);
 
     ~machines_t();
 
