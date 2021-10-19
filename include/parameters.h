@@ -20,7 +20,7 @@ typedef struct weights_t {
 } weights_t;
 
 typedef struct scheduling_parameters_t {
-    int PEAK_PERIOD;
+    double PEAK_PERIOD;
     int MAX_SETUP_TIMES;
     int MINUTE_THRESHOLD;
 } scheduling_parameters_t;

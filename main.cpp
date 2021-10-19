@@ -138,7 +138,7 @@ void *run(void *_data)
                      .TIME_ICSI = stod(arguments["setup_time_icsi"]),
                  },
              .scheduling_parameters =
-                 {.PEAK_PERIOD = stoi(arguments["peak_period"]),
+                 {.PEAK_PERIOD = stof(arguments["peak_period"]),
                   .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"]),
                   .MINUTE_THRESHOLD = stoi(arguments["minute_threshold"])}},
 
@@ -154,7 +154,6 @@ void *run(void *_data)
     foreach (all_entities, i) {
         machines->addMachine(all_entities[i]->machine());
     }
-
     prescheduling(machines, &lots);
     int stage2_setup_times = stage2Scheduling(
         machines, &lots, pop.parameters.scheduling_parameters.PEAK_PERIOD);

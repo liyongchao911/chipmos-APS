@@ -1,5 +1,6 @@
 #include "include/machines.h"
 #include "include/info.h"
+#include "include/infra.h"
 #include "include/job_base.h"
 #include "include/linked_list.h"
 #include "include/machine.h"
@@ -1125,9 +1126,10 @@ bool groupComparisonByIndex(struct __machine_group_t *g1,
     return g1->index > g2->index;
 }
 
-void machines_t::distributeOrphanMachines()
+void machines_t::distributeOrphanMachines(double probability)
 {
     // Step 1 : collect the orphan machines
+    int number_dist_orphan_of_machines = 0;
     vector<machine_t *> orphan_machines;
     foreach (_v_machines, i) {
         if (find(_grouped_machines.begin(), _grouped_machines.end(),
@@ -1151,14 +1153,21 @@ void machines_t::distributeOrphanMachines()
         // foreach (groups, j) {
         //     groups[j]->index = _calculateMachineGroupIndex(groups[j]);
         // }
+        double rnd = randomDouble();
+        if (rnd > probability)
+            continue;
         sort(groups.begin(), groups.end(), groupComparisonByIndex);
         foreach (groups, j) {
             if (_distributeOrphanMachines(groups[j], orphan_machines[i])) {
+                ++number_dist_orphan_of_machines;
                 groups[j]->index = _calculateMachineGroupIndex(groups[j]);
                 break;
             }
         }
     }
+    // printf("Probability is %f\n", probability);
+    // printf("Number of distributed orphan machines : %d\n",
+    // number_dist_orphan_of_machines); exit(EXIT_FAILURE);
 }
 
 bool machines_t::_distributeOrphanMachines(struct __machine_group_t *group,
@@ -1175,6 +1184,7 @@ bool machines_t::_distributeOrphanMachines(struct __machine_group_t *group,
             ares_t *wire = _availableResource(_wires, part_id);
             // check if tool and wire are sufficient
             if (tool != nullptr && wire != nullptr) {
+                // printf("rnd : %.3f, probability : %.3f\n", rnd, probability);
                 tool->used = true;
                 wire->used = true;
                 group->machines.push_back(orphan_machine);

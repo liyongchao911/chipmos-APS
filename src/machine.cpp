@@ -234,12 +234,17 @@ void scheduling(machine_t *machine,
 
 
     machine->total_completion_time = total_completion_time;
+    // machine->quality =
+    //     weights.WEIGHT_SETUP_TIMES * setup_times +
+    //             weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time
+    //             + weights.WEIGHT_MAX_SETUP_TIMES * (setup_times_in1440 > 180)
+    //         ? setup_times_in1440
+    //         : -10;
+
     machine->quality =
         weights.WEIGHT_SETUP_TIMES * setup_times +
-                weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time +
-                weights.WEIGHT_MAX_SETUP_TIMES * (setup_times_in1440 > 180)
-            ? setup_times_in1440
-            : -10;
+        weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time;
+
     machine->setup_times = setup_times_in1440;
 }
 

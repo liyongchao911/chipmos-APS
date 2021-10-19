@@ -13,7 +13,7 @@
 
 void prescheduling(machines_t *machines, lots_t *lots);
 
-int stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period);
+int stage2Scheduling(machines_t *machines, lots_t *lots, double peak_period);
 
 void stage3Scheduling(machines_t *machines,
                       lots_t *lots,
