@@ -799,6 +799,17 @@ std::vector<lot_t *> lots_t::createLots(
     setUph(uph_filename, lots, faulty_lots);
 
     string directory_name = "output_" + dir_suffix;
+    vector<lot_t> in_scheduling_plan_lots;
+    foreach (lots, i) {
+        if (lots[i].isInSchedulingPlan()) {
+            in_scheduling_plan_lots.push_back(lots[i]);
+        } else {
+            lots[i].addLog("This lot is not in scheduling plan",
+                           ERROR_NOT_IN_SCHEDULING_PLAN);
+            dontcare.push_back(lots[i]);
+        }
+    }
+    lots = in_scheduling_plan_lots;
 #if defined(_WIN32)
     mkdir(directory_name.c_str());
 #else
