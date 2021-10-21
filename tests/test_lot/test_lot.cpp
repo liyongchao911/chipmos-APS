@@ -443,3 +443,13 @@ TEST_F(test_lot_t, test_lot_job3)
     EXPECT_NE(strcmp(job.bdid.data.text, empty_info.data.text), 0);
     EXPECT_NEAR(job.base.ptime, 123.45, 0.000001);
 }
+
+TEST_F(test_lot_t, test_lot_isInSchedulingPlan)
+{
+    test_lot_csv_data_4["lot_number"] = "PXXABK07";
+    lot = createALot(test_lot_csv_data_4);
+    EXPECT_FALSE(lot->isInSchedulingPlan());
+
+    lot = createALot(test_lot_csv_data_1);
+    EXPECT_TRUE(lot->isInSchedulingPlan());
+}

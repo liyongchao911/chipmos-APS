@@ -5,6 +5,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "include/csv.h"
@@ -32,7 +33,8 @@
     X(ERROR_NO_TOOL, = 0x10, "ERROR_NO_TOOL")                             \
     X(ERROR_TOOL_MAPPING_ERROR, = 0x11, "ERROR_TOOL_MAPPING_ERROR")       \
     X(ERROR_UPH_FILE_ERROR, = 0x12, "ERROR_UPH_FILE")                     \
-    X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")
+    X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")                                 \
+    X(ERROR_NOT_IN_SCHEDULING_PLAN, = 0x14, "ERROR_NOT_IN_SCHEDULING_PLAN")
 
 
 #define X(item, value, name) item value,
@@ -520,7 +522,17 @@ public:
     void setNotPrescheduled();
 
     std::map<std::string, double> getModelProcessTimes();
+
+    virtual bool isInSchedulingPlan();
 };
+
+inline bool lot_t::isInSchedulingPlan()
+{
+    if (_lot_number.find("PXX") != std::string::npos) {
+        return false;
+    }
+    return true;
+}
 
 inline std::map<std::string, double> lot_t::getModelProcessTimes()
 {
