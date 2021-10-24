@@ -19,19 +19,20 @@ typedef struct entry_t {
 
 void progress_bar(double progress)
 {
-    printf("[");
-    for (int i = 0, max = progress - 2; i < max; i += 2) {
-        printf("= ");
-    }
-    if (progress < 100.0)
-        printf("=>");
-    else
-        printf("= ");
-    for (int i = progress + 2; i <= 100; i += 2) {
-        printf("· ");
-    }
+    // printf("[");
+    // for (int i = 0, max = progress - 2; i < max; i += 2) {
+    //     printf("= ");
+    // }
+    // if (progress < 100.0)
+    //     printf("=>");
+    // else
+    //     printf("= ");
+    // for (int i = progress + 2; i <= 100; i += 2) {
+    //     printf("· ");
+    // }
 
-    printf("]%03.2f%%  ", progress);
+    // printf("]%03.2f%%  ", progress);
+    printf("%03.2f%%", progress);
 }
 
 void erase_last_line()
@@ -64,8 +65,8 @@ void *run_progress_bar_server(void *_data)
                                .value = 0};
     }
 
-    for (int i = 0; i < attr->number_of_connection - 1; ++i)
-        printf("\n");
+    // for (int i = 0; i < attr->number_of_connection - 1; ++i)
+    //     printf("\n");
     int times = 0;
     int threshold = attr->number_of_connection * 10;
     struct timeval timeout;
@@ -100,21 +101,23 @@ void *run_progress_bar_server(void *_data)
             }
             times += 1;
             if (times > threshold) {
-                for (int i = 0; i < attr->number_of_connection - 1; ++i) {
-                    erase_last_line();
-                }
+                // for (int i = 0; i < attr->number_of_connection - 1; ++i) {
+                //     erase_last_line();
+                // }
+                printf("#############################################\n");
                 for (int i = 0; i < attr->number_of_connection - 1; ++i) {
                     printf("[%d]", entries[i].channel_id);
                     progress_bar(entries[i].progress);
                     printf("(%.3lf)\n", entries[i].value);
                 }
+                printf("#############################################\n");
                 times = 0;
             }
         }
     }
-    for (int i = 0; i < attr->number_of_connection - 1; ++i) {
-        erase_last_line();
-    }
+    // for (int i = 0; i < attr->number_of_connection - 1; ++i) {
+    //     erase_last_line();
+    // }
     for (int i = 0; i < attr->number_of_connection - 1; ++i) {
         printf("[%d]", entries[i].channel_id);
         progress_bar(entries[i].progress);
