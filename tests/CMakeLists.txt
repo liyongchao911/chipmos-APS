@@ -29,6 +29,7 @@ set(TEST_SRC
         test_machines/test_machines_canJobRunOnTheMachine.cpp
         test_machines/test_machines_addNewResource.cpp
         test_csv/test_csv_read.cpp
+        test_csv/test_csv_parse.cpp
         )
 
 add_executable(

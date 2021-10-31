@@ -131,6 +131,7 @@ TEST_F(test_csv_read_t, test_has_bom)
     vector<test_has_bom_data_t> data;
     csv_t csv;
 
+    // UTF-8
     data.push_back(test_has_bom_data_t{
         .bom = 0x00BFBBEF, .text = "TEXT", .insert_bom = true, .ans = true});
 
@@ -139,6 +140,76 @@ TEST_F(test_csv_read_t, test_has_bom)
 
     data.push_back(test_has_bom_data_t{
         .bom = 0x00BFBBEF, .text = "TEXT", .insert_bom = false, .ans = false});
+
+    // UTF-16
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x0000FFFE, .text = "TEXT", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x0000FFFE, .text = "", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x0000FFFE, .text = "TEXT", .insert_bom = false, .ans = false});
+
+    // UTF-7
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x00762F2B, .text = "TEXT", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x00762F2B, .text = "", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x00762F2B, .text = "TEXT", .insert_bom = false, .ans = false});
+
+    // UTF-1
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x004C64F7, .text = "TEXT", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x004C64F7, .text = "", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x004C64F7, .text = "TEXT", .insert_bom = false, .ans = false});
+
+    // EDBIC
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x736673DD, .text = "TEXT", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x736673DD, .text = "", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x736673DD, .text = "TEXT", .insert_bom = false, .ans = false});
+
+    // SCSU
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x00FFFE0E, .text = "TEXT", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x00FFFE0E, .text = "", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x00FFFE0E, .text = "TEXT", .insert_bom = false, .ans = false});
+
+    // BOCU-1
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x0028EEFB, .text = "TEXT", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x0028EEFB, .text = "", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x0028EEFB, .text = "TEXT", .insert_bom = false, .ans = false});
+
+    // GB-18030
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x33953184, .text = "TEXT", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x33953184, .text = "", .insert_bom = true, .ans = true});
+
+    data.push_back(test_has_bom_data_t{
+        .bom = 0x33953184, .text = "TEXT", .insert_bom = false, .ans = false});
 
     // TODO : Please write down some testing data below
 
@@ -185,12 +256,6 @@ TEST_F(test_csv_read_t, test_csv_read_file_header)
         .ans = {{"h1", 0}, {"h2", 1}, {"h3", 2}, {"h4", 3}, {"h5", 4}}});
 
     data.push_back(test_csv_read_data_t{.header = ""});
-
-    // data.push_back(test_csv_read_data_t{
-    //     .header = "1,2,",
-    //     .ans = {
-    //     }
-    // });
 
     const char *filename = "testing_file.csv";
     for (unsigned int i = 0; i < data.size(); ++i) {
