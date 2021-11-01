@@ -36,10 +36,11 @@ typedef struct __thread_data_t {
     int argc;
     const char **argv;
     int fd;
+    int id;
 } thread_data_t;
 
 char MESSAGE[] =
-    "version 0.0.3\n"
+    "version 0.0.4\n"
     "Author : NCKU Smart Production Lab";
 
 sem_t SEM;
@@ -62,27 +63,28 @@ int main(int argc, const char **argv)
 
 
     srand(time(NULL));
-    progress_bar_attr_t *pbattr =
-        create_progress_bar_attr(nthreads + 1, "127.0.0.1", 8081);
-    pthread_t accept_thread, progress_bar_thread;
-    pthread_create(&accept_thread, NULL, accept_connection, (void *) pbattr);
+    // progress_bar_attr_t *pbattr =
+    //     create_progress_bar_attr(nthreads + 1, "127.0.0.1", 8081);
+    // pthread_t accept_thread, progress_bar_thread;
+    // pthread_create(&accept_thread, NULL, accept_connection, (void *) pbattr);
 
-    int fds[1024] = {-1};
-    for (int i = 0; i < nthreads; ++i) {
-        fds[i] = create_client_connection("127.0.0.1", 8081);
-    }
-    int main_fd = create_client_connection("127.0.0.1", 8081);
-    pthread_join(accept_thread, NULL);
+    // int fds[1024] = {-1};
+    // for (int i = 0; i < nthreads; ++i) {
+    //     fds[i] = create_client_connection("127.0.0.1", 8081);
+    // }
+    // int main_fd = create_client_connection("127.0.0.1", 8081);
+    // pthread_join(accept_thread, NULL);
 
-    pthread_create(&progress_bar_thread, NULL, run_progress_bar_server,
-                   (void *) pbattr);
+    // pthread_create(&progress_bar_thread, NULL, run_progress_bar_server,
+    //                (void *) pbattr);
     // map<string, string> arguments = cfg.getElements(0);
     for (unsigned int i = 0; i < cfg.nrows(); ++i) {
         thread_data_array[i] = new thread_data_t();
         *thread_data_array[i] = thread_data_t{.arguments = cfg.getElements(i),
                                               .argc = argc,
                                               .argv = argv,
-                                              .fd = fds[i]};
+                                              .fd = 1,
+                                              .id = (int) i};
         pthread_create(threads + i, NULL, run, thread_data_array[i]);
     }
 
@@ -90,9 +92,9 @@ int main(int argc, const char **argv)
         pthread_join(threads[i], NULL);
     }
     sem_destroy(&SEM);
-    send(main_fd, "close", 5, 0);
-    pthread_join(progress_bar_thread, NULL);
-    delete_attr(&pbattr);
+    // send(main_fd, "close", 5, 0);
+    // pthread_join(progress_bar_thread, NULL);
+    // delete_attr(&pbattr);
 
 
     return 0;
@@ -104,6 +106,8 @@ void *run(void *_data)
     thread_data_t *data = (thread_data_t *) _data;
     int argc = data->argc;
     const char **argv = data->argv;
+    int id = data->id;
+    printf("Thread[%d] starts...\n", id);
     map<string, string> arguments = data->arguments;
 
     lots_t lots = createLots(argc, argv, arguments);
@@ -171,6 +175,7 @@ void *run(void *_data)
     }
     result.write();
 
+    printf("Thread[%d] is finished...\n", id);
     // sem_post(&SEM);
     return NULL;
 }
