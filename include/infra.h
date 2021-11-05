@@ -88,7 +88,8 @@ int randomRange(int start, int end, int different_num);
 
 double randomDouble();
 
-#define average(array, size)            \
+
+#define _average(array, size)            \
     ({                                  \
         double sum = 0;                 \
         __typeof__(size) SIZE = (size); \
@@ -98,4 +99,21 @@ double randomDouble();
         }                               \
         sum / SIZE;                     \
     })
+
+template<class T>
+double __average(T array, int size)
+{
+    double sum = 0;
+    for (int i = 0; i < size; ++i)
+        sum += array[i];
+    return sum / size;
+}
+
+
+#ifdef WIN32
+#define average __average
+#else
+#define average _average
+#endif
+
 #endif

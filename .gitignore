@@ -46,3 +46,4 @@ venv/
 .idea/
 cmake-build-debug/
 config2.json
+out/

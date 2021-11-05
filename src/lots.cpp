@@ -19,6 +19,10 @@
 #include "include/lots.h"
 #include "include/route.h"
 
+#ifdef WIN32
+#include <direct.h>
+#endif
+
 using namespace std;
 
 
@@ -792,8 +796,8 @@ std::vector<lot_t *> lots_t::createLots(
     setCanRunModels(bdid_mapping_models_filename, lots, faulty_lots);
     setUph(uph_filename, lots, faulty_lots);
 
-#if defined(_WIN32)
-    mkdir("output");
+#if defined(WIN32)
+    _mkdir("output");
 #else
     mkdir("output", 0777);  // notice that 777 is different than 0777
 #endif
