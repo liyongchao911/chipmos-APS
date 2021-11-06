@@ -45,4 +45,6 @@ venv/
 .DS_Store
 .idea/
 cmake-build-debug/
-config2.json
+*.json
+*.tar
+*.gz

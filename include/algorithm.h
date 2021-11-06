@@ -13,14 +13,17 @@
 
 void prescheduling(machines_t *machines, lots_t *lots);
 
-void stage2Scheduling(machines_t *machines, lots_t *lots, double peak_period);
+int stage2Scheduling(machines_t *machines, lots_t *lots, double peak_period);
 
-void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop);
+void stage3Scheduling(machines_t *machines,
+                      lots_t *lots,
+                      population_t *pop,
+                      int fd);
 
 void prepareChromosomes(chromosome_base_t **_chromosomes,
                         int NUMBER_OF_JOBS,
                         int NUMBER_OF_R_CHROMOSOMES);
 
-void geneticAlgorithm(population_t *pop);
+void geneticAlgorithm(population_t *pop, int fd);
 
 #endif
