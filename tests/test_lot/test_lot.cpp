@@ -157,7 +157,7 @@ void test_lot_t::SetUp()
         {"sub_lot", "9"},
     });
 
-    test_wip_data_4 = map<string, string>({
+    test_wip_data_5 = map<string, string>({
         {"route", "QFNS288"},
         {"lot_number", "P23ASEA"},
         {"pin_package", "DFN-08YM2G"},
@@ -400,7 +400,7 @@ TEST_F(test_lot_t, test_lot_job1)
 
     EXPECT_EQ(strcmp(job.base.job_info.data.text, lot->_lot_number.c_str()), 0);
 
-    EXPECT_EQ(strcmp(job.part_no.data.text, lot->_part_no.c_str()), 0);
+    EXPECT_EQ(strcmp(job.part_no.data.text, lot->part_no().c_str()), 0);
     EXPECT_EQ(strcmp(job.part_id.data.text, lot->_part_id.c_str()), 0);
     EXPECT_EQ(strcmp(job.prod_id.data.text, lot->_prod_id.c_str()), 0);
 

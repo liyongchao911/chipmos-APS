@@ -140,7 +140,7 @@ TEST_F(test_machines_t_addMachine, test_basic_feature)
     machine_t ent_machine = ent->machine();
 
     string part_id(ent->_current_lot->_part_id);
-    string part_no(ent->_current_lot->_part_no);
+    string part_no(ent->_current_lot->part_no());
     string tool_wire = part_no + "_" + part_id;
 
     machine_t mcs_machine = *machines->_machines.at(ent->_entity_name);

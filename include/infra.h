@@ -81,6 +81,7 @@ void stringToUpper(char *text);
 
 struct __info_t stringToInfo(std::string s);
 
+bool isNumeric(std::string s);
 
 void random(double *genes, int size);
 

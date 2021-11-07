@@ -664,13 +664,11 @@ void lots_t::setAmountOfTools(string filename,
 
     string err_msg;
 
-    int amountOfTool;
+    int amount_of_tools;
     foreach (lots, i) {
         try {
-            amountOfTool = pno_qty.at(lots[i].part_no());
-
-            if (amountOfTool > 0) {
-                lots[i].setAmountOfTools(amountOfTool);
+            amount_of_tools = lots[i].setAmountOfTools(pno_qty);
+            if (amount_of_tools > 0) {
                 result.push_back(lots[i]);
             } else {
                 lots[i].addLog("There is no tool for this lot.", ERROR_NO_TOOL);

@@ -132,19 +132,20 @@ TEST_F(test_lots_t, test_lots_case1)
     EXPECT_EQ(lots->prescheduled_lots.size(), 0);
     EXPECT_EQ(lots->lots.size(), 1);
 
-    EXPECT_NO_THROW(lots->tool_lots.at(lot->_part_no));
-    EXPECT_EQ(lots->tool_lots.at(lot->_part_no)[0], lot);
+    EXPECT_NO_THROW(lots->tool_lots.at(lot->part_no()));
+    EXPECT_EQ(lots->tool_lots.at(lot->part_no())[0], lot);
 
     EXPECT_NO_THROW(lots->wire_lots.at(lot->_part_id));
     EXPECT_EQ(lots->wire_lots.at(lot->_part_id)[0], lot);
 
     EXPECT_NO_THROW(
-        lots->tool_wire_lots.at(lot->_part_no + "_" + lot->_part_id));
-    EXPECT_EQ(lots->tool_wire_lots.at(lot->_part_no + "_" + lot->_part_id)[0],
+        lots->tool_wire_lots.at(lot->part_no() + "_" + lot->_part_id));
+    EXPECT_EQ(lots->tool_wire_lots.at(lot->part_no() + "_" + lot->_part_id)[0],
               lot);
 
 
-    EXPECT_EQ(lots->amount_of_tools.at(lot->_part_no), lot->_amount_of_tools);
+    EXPECT_EQ(lots->amount_of_tools.at(lot->part_no()),
+              lot->getAmountOfTools());
     EXPECT_EQ(lots->amount_of_wires.at(lot->_part_id), lot->_amount_of_wires);
 
     delete lot;
@@ -165,10 +166,10 @@ TEST_F(test_lots_t, test_lots_case2)
     EXPECT_EQ(lots->prescheduled_lots.size(), 1);
     EXPECT_EQ(lots->lots.size(), 0);
 
-    EXPECT_ANY_THROW(lots->tool_lots.at(lot->_part_no));
+    EXPECT_ANY_THROW(lots->tool_lots.at(lot->part_no()));
     EXPECT_ANY_THROW(lots->wire_lots.at(lot->_part_id));
     EXPECT_ANY_THROW(
-        lots->tool_wire_lots.at(lot->_part_no + "_" + lot->_part_id));
+        lots->tool_wire_lots.at(lot->part_no() + "_" + lot->_part_id));
 
 
     delete lot;

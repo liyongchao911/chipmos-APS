@@ -40,7 +40,7 @@ typedef struct __thread_data_t {
 } thread_data_t;
 
 char MESSAGE[] =
-    "version 0.0.4\n"
+    "version 0.0.5\n"
     "Author : NCKU Smart Production Lab";
 
 sem_t SEM;

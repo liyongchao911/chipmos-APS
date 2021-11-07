@@ -123,7 +123,7 @@ TEST_F(test_entity_t, test_entity_current_lot_setup)
     EXPECT_EQ(ent->_current_lot->_qty, 1280);
     EXPECT_EQ(ent->_current_lot->_oper, 2200);
     EXPECT_EQ(ent->_current_lot->_part_id.compare("PART_ID"), 0);
-    EXPECT_EQ(ent->_current_lot->_part_no.compare("PART_NO"), 0);
+    EXPECT_EQ(ent->_current_lot->part_no().compare("PART_NO"), 0);
 }
 
 

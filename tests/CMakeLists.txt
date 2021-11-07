@@ -1,5 +1,5 @@
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -17,6 +17,7 @@ set(TEST_SRC
         test_entities/test_entities_ctor.cpp
         test_entity/test_entity.cpp
         test_lot/test_lot.cpp
+        test_lot/test_lot_check.cpp
         test_lots/test_lots.cpp
         test_machines/test_machines_addMachine.cpp
         test_machines/test_machines_addPrescheduledJob.cpp 

@@ -2,6 +2,7 @@
 #define __LOT_H__
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -12,29 +13,30 @@
 #include "include/infra.h"
 #include "include/job.h"
 
-#define ERROR_TABLE                                                       \
-    X(SUCCESS, = 0x00, "SUCCESS")                                         \
-    X(ERROR_WIP_INFORMATION_LOSS, = 0x01, "ERROR_WIP_INFORMATION_LOSS")   \
-    X(ERROR_PROCESS_ID, = 0x02, "ERROR_PROCESS_ID")                       \
-    X(ERROR_BOM_ID, = 0x03, "ERROR_BOM_ID")                               \
-    X(ERROR_LOT_SIZE, = 0x04, "ERROR_LOT_SIZE")                           \
-    X(ERROR_INVALID_LOT_SIZE, = 0x05, "ERROR_INVALID_LOT_SIZE")           \
-    X(ERROR_DA_FCST_VALUE, = 0x06, "ERROR_DA_FCST_VALUE")                 \
-    X(ERROR_INVALID_OPER_IN_ROUTE, = 0x07, "ERROR_INVALID_OPER_IN_ROUTE") \
-    X(ERROR_INVALID_QUEUE_TIME_COMBINATION, = 0x08,                       \
-      "ERROR_INVALID_QUEUE_TIME_COMBINATION")                             \
-    X(ERROR_HOLD, = 0x09, "ERROR_HOLD")                                   \
-    X(ERROR_WB7, = 0x0A, "ERROR_WB7")                                     \
-    X(ERROR_CONDITION_CARD, = 0x0B, "ERROR_CONDITION_CARD")               \
-    X(ERROR_PART_ID, = 0x0C, "ERROR_PART_ID")                             \
-    X(ERROR_NO_WIRE, = 0x0D, "ERROR_NO_WIRE")                             \
-    X(ERROR_WIRE_MAPPING_ERROR, = 0x0E, "ERROR_WIRE_MAPPING_ERROR")       \
-    X(ERROR_PART_NO, = 0x0F, "ERROR_PART_NO")                             \
-    X(ERROR_NO_TOOL, = 0x10, "ERROR_NO_TOOL")                             \
-    X(ERROR_TOOL_MAPPING_ERROR, = 0x11, "ERROR_TOOL_MAPPING_ERROR")       \
-    X(ERROR_UPH_FILE_ERROR, = 0x12, "ERROR_UPH_FILE")                     \
-    X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")                                 \
-    X(ERROR_NOT_IN_SCHEDULING_PLAN, = 0x14, "ERROR_NOT_IN_SCHEDULING_PLAN")
+#define ERROR_TABLE                                                         \
+    X(SUCCESS, = 0x00, "SUCCESS")                                           \
+    X(ERROR_WIP_INFORMATION_LOSS, = 0x01, "ERROR_WIP_INFORMATION_LOSS")     \
+    X(ERROR_PROCESS_ID, = 0x02, "ERROR_PROCESS_ID")                         \
+    X(ERROR_BOM_ID, = 0x03, "ERROR_BOM_ID")                                 \
+    X(ERROR_LOT_SIZE, = 0x04, "ERROR_LOT_SIZE")                             \
+    X(ERROR_INVALID_LOT_SIZE, = 0x05, "ERROR_INVALID_LOT_SIZE")             \
+    X(ERROR_DA_FCST_VALUE, = 0x06, "ERROR_DA_FCST_VALUE")                   \
+    X(ERROR_INVALID_OPER_IN_ROUTE, = 0x07, "ERROR_INVALID_OPER_IN_ROUTE")   \
+    X(ERROR_INVALID_QUEUE_TIME_COMBINATION, = 0x08,                         \
+      "ERROR_INVALID_QUEUE_TIME_COMBINATION")                               \
+    X(ERROR_HOLD, = 0x09, "ERROR_HOLD")                                     \
+    X(ERROR_WB7, = 0x0A, "ERROR_WB7")                                       \
+    X(ERROR_CONDITION_CARD, = 0x0B, "ERROR_CONDITION_CARD")                 \
+    X(ERROR_PART_ID, = 0x0C, "ERROR_PART_ID")                               \
+    X(ERROR_NO_WIRE, = 0x0D, "ERROR_NO_WIRE")                               \
+    X(ERROR_WIRE_MAPPING_ERROR, = 0x0E, "ERROR_WIRE_MAPPING_ERROR")         \
+    X(ERROR_PART_NO, = 0x0F, "ERROR_PART_NO")                               \
+    X(ERROR_NO_TOOL, = 0x10, "ERROR_NO_TOOL")                               \
+    X(ERROR_TOOL_MAPPING_ERROR, = 0x11, "ERROR_TOOL_MAPPING_ERROR")         \
+    X(ERROR_UPH_FILE_ERROR, = 0x12, "ERROR_UPH_FILE")                       \
+    X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")                                   \
+    X(ERROR_NOT_IN_SCHEDULING_PLAN, = 0x14, "ERROR_NOT_IN_SCHEDULING_PLAN") \
+    X(ERROR_BAD_DATA_FORMAT, = 0x15, "ERROR_BAD_DATA_FORMAT")
 
 
 #define X(item, value, name) item value,
@@ -54,7 +56,8 @@ protected:
     std::string _process_id;
     std::string _bom_id;
     std::string _part_id;
-    std::string _part_no;
+    // std::string _part_no;
+
     std::string _urgent;
     std::string _customer;
     std::string _wb_location;
@@ -66,7 +69,7 @@ protected:
     int _lot_size;
     int _sub_lots;
     int _amount_of_wires;
-    int _amount_of_tools;
+    int _number_of_tools;
     int _prescheduled_order;
 
     bool _hold;
@@ -89,7 +92,28 @@ protected:
     std::map<std::string, double> _model_process_times;
     std::map<std::string, double> _entity_process_times;
 
+    std::map<std::string, int> _tools;
+
     enum ERROR_T _status;
+
+    /**
+     * setAmountOfTools () - setup the number of designated tools
+     *
+     * The function takes two parameters one is @b part_number and the other
+     * is @b number_of_tools. The part_number will be set to available directly.
+     *
+     * @param part_number : the designated tool's name
+     * @param number_of_tools : the number of designated tool
+     */
+    int setAmountOfTools(std::string part_number, int number_of_tools);
+
+    std::map<std::string, std::string> rearrangeData(
+        std::map<std::string, std::string> elements);
+
+    bool checkDataFormat(std::map<std::string, std::string> &elements,
+                         std::string &log);
+
+
 
 public:
     int tmp_oper;
@@ -105,7 +129,7 @@ public:
      * relationship between key and data from dataframe. For example,
      * elements["route"] == "BGA321", elements["lot_number"] == "AASJSDKA01".
      * The mapping relationship is from WIP(work in process) sheet. The
-     * constructor will initialize lots of data members. After initalizing the
+     * constructor initializes lots of data members. After initalizing the
      * data members, the constructor will checke if data member has incorrect
      * data. If data has incorrect data, the constructor will throw exception
      * and the error message will point out which information is not provided or
@@ -223,11 +247,17 @@ public:
     void setPartNo(std::string part_no);
 
     /**
-     * setAmountOfTools () - setup amount of tools can be used for this lot
+     * setAmountOfTools () - setup the number of tools
      *
-     * @param amount : a integer type of variable
+     * The function gets a parameter which includes all tools' name
+     * and their amount. The function only takes the information of the
+     * tools owned by the lot.
+     *
+     * @param number_of_tools : a mapping relation between tools' name and
+     * their amount
+     * @return : the total number of the tools can be used
      */
-    void setAmountOfTools(int amount);
+    int setAmountOfTools(std::map<std::string, int> number_of_tools);
 
     /**
      * setAmountOfWires () - setup amount of wires which can be used for this
@@ -577,7 +607,11 @@ inline void lot_t::setBomId(std::string bom_id)
 
 inline std::string lot_t::part_no()
 {
-    return _part_no;
+    if (_tools.size() > 0) {
+        return _tools.begin()->first;
+    } else {
+        throw std::logic_error("The part_no hasn't been set");
+    }
 }
 
 inline bool lot_t::isTraversalFinish()
@@ -590,13 +624,9 @@ inline int lot_t::oper()
     return _oper;
 }
 
-// inline int lot_t::getAmountOfMachines()
-// {
-//     return std::min(_amount_of_tools, _amount_of_wires);
-// }
 inline int lot_t::getAmountOfTools()
 {
-    return _amount_of_tools;
+    return _tools[part_no()];
 }
 
 inline int lot_t::getAmountOfWires()
@@ -624,7 +654,7 @@ inline void lot_t::addLog(std::string _text, enum ERROR_T code)
 {
     _log.push_back(_text);
     if (_status != SUCCESS) {
-        fprintf(stderr, "Warning: You set the unscess code to another code!\n");
+        fprintf(stderr, "Warning: You are going to overwrite an unsuccess\n");
         _status = code;
     } else
         _status = code;
@@ -733,7 +763,12 @@ inline void lot_t::setPartId(std::string partid)
 
 inline void lot_t::setPartNo(std::string part_no)
 {
-    _part_no = part_no;
+    if (_tools.count(part_no) == 0) {
+        _tools[part_no] = 0;
+    } else {
+        std::cerr << _lot_number << "set part no(" << part_no << ")twice"
+                  << std::endl;
+    }
 }
 
 
@@ -742,10 +777,22 @@ inline std::string lot_t::part_id()
     return _part_id;
 }
 
-
-inline void lot_t::setAmountOfTools(int tool)
+inline int lot_t::setAmountOfTools(std::string part_number, int number_of_tools)
 {
-    _amount_of_tools = tool;
+    _tools[part_number] = number_of_tools;
+    return number_of_tools;
+}
+
+inline int lot_t::setAmountOfTools(std::map<std::string, int> number_of_tools)
+{
+    int sum = 0;
+    for (auto it = _tools.begin(); it != _tools.end(); ++it) {
+        if (number_of_tools.count(it->first) != 0) {
+            it->second = number_of_tools[it->first];
+            sum += it->second;
+        }
+    }
+    return sum;
 }
 
 
@@ -756,6 +803,7 @@ inline void lot_t::setAmountOfWires(int amount)
 
 inline bool lot_t::isModelValid(std::string model)
 {
+    std::string _part_no = part_no();
     if (_part_no.find("A0801") !=
         std::string::npos) {  // if part_no contains A0801
         if (model.compare("UTC1000") == 0 || model.compare("UTC1000S") == 0 ||
