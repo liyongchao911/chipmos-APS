@@ -505,8 +505,3 @@ std::map<std::string, double> lot_t::getEntityProcessTime()
 {
     return _entity_process_times;
 }
-
-bool lotGroupCmp(lot_group_t g1, lot_group_t g2)
-{
-    return (g1.lot_amount > g2.lot_amount);
-}

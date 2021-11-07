@@ -786,12 +786,16 @@ inline int lot_t::setAmountOfTools(std::string part_number, int number_of_tools)
 inline int lot_t::setAmountOfTools(std::map<std::string, int> number_of_tools)
 {
     int sum = 0;
+    std::map<std::string, int> tls;
     for (auto it = _tools.begin(); it != _tools.end(); ++it) {
         if (number_of_tools.count(it->first) != 0) {
-            it->second = number_of_tools[it->first];
+            it->second = number_of_tools.at(it->first);
             sum += it->second;
+            tls[it->first] = it->second;
         }
     }
+    _tools = tls;  // remove the tool whose amount is 0
+
     return sum;
 }
 
@@ -884,31 +888,5 @@ inline int lot_t::prescheduledOrder()
 {
     return _prescheduled_order;
 }
-
-
-typedef struct {
-    std::string wire_tools_name;
-    std::string wire_name;
-    std::string tool_name;
-    unsigned long long lot_amount;
-    int tool_amount;
-    int wire_amount;
-    int machine_amount;
-    std::map<std::string, int> models_statistic;
-    std::map<std::string, int> bdid_statistic;
-    // std::vector<entity_t *> entities;
-    std::vector<std::string> entity_names;
-    std::vector<lot_t *> lots;
-} lot_group_t;
-
-/**
- * lotGroupCmp () - compare two group by its lot amount
- * @param g1 : group 1
- * @param g2 : group 2
- * @return true if g1.lot_amount > g2.lot_amount
- */
-bool lotGroupCmp(lot_group_t g1, lot_group_t g2);
-
-
 
 #endif

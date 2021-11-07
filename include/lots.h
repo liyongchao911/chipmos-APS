@@ -232,7 +232,6 @@ protected:
                 std::vector<lot_t> &lots,
                 std::vector<lot_t> &faulty_lots);
 
-    std::vector<lot_group_t> selectGroups(int max);
 
 public:
     /**
@@ -251,41 +250,6 @@ public:
 
     void pushBackNotPrescheduledLot(lot_t *lot);
 
-    /**
-     * round () - determine which lot is in a round of scheduling.
-     * The function is used determine which group of lot can be scheduled in
-     * this round. Each lot in the function will choose its can run entities The
-     * function ensure each returned lot_group has sufficient tool and wire and
-     * entity.
-     *
-     * The function sorts the lot groups by the number of lots and chooses max
-     * of 50 lot groups. The number of tools and wires distributed to each
-     * groups is determined by the ratio of lot number in a group. The entities
-     * chosen for each group follow the statistic result of models distribution
-     * of the lots. The number of entities in the group is min{number_of_tools,
-     * numnber_of_wires, can_run_entities}.
-     *
-     * @param machines
-     * @return a vector of lot_group_t instance in a round of scheduling plan
-     */
-    // std::vector<lot_group_t> round(entities_t machines);
-
-    /**
-     * rounds () - create multiple rounds until all lots are in scheduling plan
-     *
-     * rounds function invoke round function untill all lots are scheduling in
-     * each round.
-     *
-     */
-    // std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
-
-    /**
-     * createLots () - create all lots by read multiple files
-     *
-     * The parameter passed to the function is a map<string, string> type
-     * variable which is used to store the functionality and the path of the
-     * file. createLots is a virtual function.
-     */
     virtual void createLots(std::map<std::string, std::string> files);
 
 
@@ -304,37 +268,6 @@ public:
      * kinds of tools
      */
     std::map<std::string, int> amountOfTools();
-
-    /**
-     * setupToolWireAmount () - setup the tool's and wire's number for groups
-     *
-     *The function makes statistics on the tools and wires used by groups. The
-     *number of tools and wires for each group is determined by the ratio of the
-     *number of lots in each group which means that the more lots the group has,
-     *the more tools and wires the group would be distributed.
-     */
-    void setupToolWireAmount(std::vector<lot_group_t> &selected_groups);
-
-    /**
-     * bdidStatistic () - make statistics on the bdid for a vector of lots
-     *
-     * @param lots : a vector of pointers point to the lot_t instance
-     * @return a std::map container which maps the bdid to the number of lots
-     * using this bdid
-     */
-    std::map<std::string, int> bdidStatistic(std::vector<lot_t *> lots);
-
-    /**
-     * modelStatistic () - make statistics on the models for a vector of lots
-     *
-     * @param lots : a vector of pointers to lot_t instance
-     * @param loc_ents : a map container maps the location name to a vector of
-     * pointers point to the entity_t instance
-     * @return a std::map container which maps the
-     */
-    std::map<std::string, int> modelStatistic(
-        std::vector<lot_t *> lots,
-        std::map<std::string, std::vector<entity_t *> > loc_ents);
 
     std::vector<lot_t *> prescheduledLots();
 

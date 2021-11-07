@@ -78,96 +78,6 @@ std::map<std::string, int> lots_t::initializeModelDistribution(
     return _;
 }
 
-std::vector<lot_group_t> lots_t::selectGroups(int max)
-{
-    // max : 50 sets;
-    std::vector<lot_group_t> groups;
-    std::vector<lot_group_t> selected_groups;
-    for (auto &tool_wire_lot : tool_wire_lots) {
-        groups.push_back(
-            lot_group_t{.wire_tools_name = tool_wire_lot.first,
-                        .lot_amount = tool_wire_lot.second.size()});
-    }
-    std::sort(groups.begin(), groups.end(), lotGroupCmp);
-    int selected_group_number = (groups.size() > max ? max : groups.size());
-    for (int i = 0; i < selected_group_number; ++i) {
-        if (groups[i].lot_amount > 0) {
-            selected_groups.push_back(groups[i]);
-        }
-    }
-    return selected_groups;
-}
-
-void lots_t::setupToolWireAmount(vector<lot_group_t> &selected_groups)
-{
-    // count the number of lots wanting to use its tool and wire
-    std::map<std::string, int> sta_tools;
-    std::map<std::string, int> sta_wires;
-    std::string t, w, t_w;
-    foreach (selected_groups, i) {
-        t_w = selected_groups[i].wire_tools_name;
-        separateToolWireName(t_w, t, w);
-        selected_groups[i].wire_name = w;
-        selected_groups[i].tool_name = t;
-        if (sta_tools.count(t) == 0) {
-            sta_tools[t] = 0;
-        }
-        if (sta_wires.count(w) == 0) {
-            sta_wires[w] = 0;
-        }
-
-        sta_tools[t] += selected_groups[i].lot_amount;
-        sta_wires[w] += selected_groups[i].lot_amount;
-    }
-
-    double ratio;
-    foreach (selected_groups, i) {
-        ratio = selected_groups[i].lot_amount /
-                (double) sta_tools.at(selected_groups[i].tool_name);
-        selected_groups[i].tool_amount =
-            ratio * amount_of_tools.at(selected_groups[i].tool_name);
-
-        ratio = selected_groups[i].lot_amount /
-                (double) sta_wires.at(selected_groups[i].wire_name);
-        selected_groups[i].wire_amount =
-            ratio * amount_of_wires.at(selected_groups[i].wire_name);
-
-        selected_groups[i].machine_amount =
-            selected_groups[i].tool_amount > selected_groups[i].wire_amount
-                ? selected_groups[i].wire_amount
-                : selected_groups[i].tool_amount;
-    }
-}
-
-map<string, int> lots_t::bdidStatistic(vector<lot_t *> lots)
-{
-    map<string, int> ret;
-    foreach (lots, i) {
-        if (ret.count(lots[i]->recipe()) == 0) {
-            ret[lots[i]->recipe()] = 1;
-        } else
-            ret[lots[i]->recipe()] += 1;
-    }
-    return ret;
-}
-
-map<string, int> lots_t::modelStatistic(
-    vector<lot_t *> lots,
-    map<string, vector<entity_t *> > loc_ents)
-{
-    map<string, int> ret;
-    ret = initializeModelDistribution(loc_ents);
-    foreach (lots, i) {
-        std::vector<std::string> can_run_locations =
-            lots[i]->getCanRunLocations();
-        foreach (can_run_locations, j) {
-            ret[can_run_locations[j]] += 1;
-        }
-    }
-    return ret;
-}
-
-
 
 bool lots_t::toolWireLotsHasLots()
 {
@@ -179,14 +89,6 @@ bool lots_t::toolWireLotsHasLots()
     }
     return false;
 }
-
-// std::vector<std::vector<lot_group_t> > lots_t::rounds(entities_t ents)
-// {
-//     std::vector<std::vector<lot_group_t> > round_groups;
-//     while (toolWireLotsHasLots())
-//         round_groups.push_back(round(ents));
-//     return round_groups;
-// }
 
 
 void lots_t::readWip(string filename,
