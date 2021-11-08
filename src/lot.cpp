@@ -507,11 +507,6 @@ job_t lot_t::job()
     return j;
 }
 
-std::map<std::string, double> lot_t::getEntityProcessTime()
-{
-    return _entity_process_times;
-}
-
 bool lot_t::isLotOkay()
 {
     bool ret = true;

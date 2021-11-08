@@ -199,6 +199,7 @@ lots_t createLots(int argc, const char **argv, map<string, string> arguments)
         // printf("Create lots by using configure file : %s\n", argv[1]);
         lots.createLots(arguments);
     }
+    lots.setProcessTimeRatio(stod(arguments["process_time_ratio"]));
 
     return lots;
 }

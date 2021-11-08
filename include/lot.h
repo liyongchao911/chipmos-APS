@@ -86,14 +86,13 @@ protected:
     std::vector<std::string> _log;
     std::vector<std::string> _can_run_models;
     std::vector<std::string> _can_run_locations;
-    std::vector<std::string> _can_run_entities;
 
     std::map<std::string, double> _uphs;
     std::map<std::string, double> _model_process_times;
-    std::map<std::string, double> _entity_process_times;
 
     std::map<std::string, int> _tools;
 
+    // TODO : should be removed
     enum ERROR_T _status;
 
     std::vector<ERROR_T> _statuses;
@@ -509,12 +508,6 @@ public:
     bool isEntitySuitable(std::string location);
 
     /**
-     * getCanRunEntities () - get can run entities vector
-     * @return
-     */
-    std::vector<std::string> getCanRunEntities();
-
-    /**
      * job () - generate job_t instance by lot
      * In this function, job_t fields are initialized to its variable. The field
      * includes list.getValue, part_no, pin_package, job_info, customer,
@@ -522,13 +515,6 @@ public:
      * @return job_t instance
      */
     job_t job();
-
-    /**
-     * getEntityProcessTime () - get can run entity and their process time.
-     * @return map<string, double> type data mapping entity's name to its
-     * process time
-     */
-    std::map<std::string, double> getEntityProcessTime();
 
     /**
      * clearCanRunLocation () clear all can run locations
@@ -564,7 +550,20 @@ public:
      * information in data process, the ERROR code will be recorded.
      */
     virtual bool isLotOkay();
+
+    /**
+     *
+     */
+    inline void setProcessTimeRatio(double ratio);
 };
+
+inline void lot_t::setProcessTimeRatio(double ratio)
+{
+    for (auto it = _model_process_times.begin();
+         it != _model_process_times.end(); it++) {
+        it->second *= ratio;
+    }
+}
 
 inline bool lot_t::isInSchedulingPlan()
 {
@@ -598,11 +597,6 @@ inline void lot_t::clearCanRunLocation()
 inline std::map<std::string, double> lot_t::getUphs()
 {
     return _uphs;
-}
-
-inline std::vector<std::string> lot_t::getCanRunEntities()
-{
-    return _can_run_entities;
 }
 
 inline std::vector<std::string> lot_t::getCanRunLocations()

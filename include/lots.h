@@ -272,7 +272,20 @@ public:
     std::vector<lot_t *> prescheduledLots();
 
     std::map<std::string, std::vector<lot_t *> > getLotsRecipeGroups();
+
+    inline void setProcessTimeRatio(double ratio);
 };
+
+inline void lots_t::setProcessTimeRatio(double ratio)
+{
+    foreach (lots, i) {
+        lots[i]->setProcessTimeRatio(ratio);
+    }
+
+    foreach (prescheduled_lots, i) {
+        prescheduled_lots[i]->setProcessTimeRatio(ratio);
+    }
+}
 
 inline std::vector<lot_t *> lots_t::prescheduledLots()
 {
