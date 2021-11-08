@@ -111,7 +111,6 @@ void *run(void *_data)
     map<string, string> arguments = data->arguments;
 
     lots_t lots = createLots(argc, argv, arguments);
-    pthread_exit(NULL);
     entities_t entities = createEntities(argc, argv, arguments);
 
     if (data->fd < 0)
