@@ -18,6 +18,7 @@ set(TEST_SRC
         test_entity/test_entity.cpp
         test_lot/test_lot.cpp
         test_lot/test_lot_check.cpp
+        test_lot/test_lot_addlog.cpp
         test_lots/test_lots.cpp
         test_machines/test_machines_addMachine.cpp
         test_machines/test_machines_addPrescheduledJob.cpp 

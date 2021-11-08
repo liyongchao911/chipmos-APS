@@ -295,7 +295,12 @@ std::map<std::string, std::string> lot_t::data()
     d["wb_location"] = _wb_location;
     d["prescheduled_machine"] = _prescheduled_machine;
     d["prescheduled_order"] = std::to_string(_prescheduled_order);
-    d["code"] = std::string(ERROR_NAMES[_status]);
+    // d["code"] = std::string(ERROR_NAMES[_status]);
+    std::vector<std::string> code;
+    foreach (_statuses, i) {
+        code.push_back(std::string(ERROR_NAMES[_statuses[i]]));
+    }
+
 
     std::vector<std::string> models;
     for (std::map<std::string, double>::iterator it = _uphs.begin();
@@ -319,6 +324,7 @@ std::map<std::string, std::string> lot_t::data()
     d["CAN_RUN_MODELS"] = join(models, ",");
     d["PROCESS_TIME"] = join(process_times, ",");
     d["uphs"] = join(uphs, ",");
+    d["code"] = join(code, ",");
 
     return d;
 }
@@ -504,4 +510,21 @@ job_t lot_t::job()
 std::map<std::string, double> lot_t::getEntityProcessTime()
 {
     return _entity_process_times;
+}
+
+bool lot_t::isLotOkay()
+{
+    bool ret = true;
+
+    // check data from wip
+    //  1. check lot number is sub lot
+    ret &= isSubLot();
+
+    // check hold
+    ret ^= _hold;
+
+    // check statuses
+    ret &= (_statuses.size() == 0);
+
+    return ret;
 }

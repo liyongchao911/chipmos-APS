@@ -96,6 +96,8 @@ protected:
 
     enum ERROR_T _status;
 
+    std::vector<ERROR_T> _statuses;
+
     /**
      * setAmountOfTools () - setup the number of designated tools
      *
@@ -554,6 +556,14 @@ public:
     std::map<std::string, double> getModelProcessTimes();
 
     virtual bool isInSchedulingPlan();
+
+    /**
+     * isLotOkay () - check if lot is faulty
+     * The lot is faulty means that lot lacks of some important information
+     * or the lot's state is not allowed to schedule. If the lot lacks of some
+     * information in data process, the ERROR code will be recorded.
+     */
+    virtual bool isLotOkay();
 };
 
 inline bool lot_t::isInSchedulingPlan()
@@ -610,7 +620,8 @@ inline std::string lot_t::part_no()
     if (_tools.size() > 0) {
         return _tools.begin()->first;
     } else {
-        throw std::logic_error("The part_no hasn't been set");
+        return "";
+        // throw std::logic_error("The part_no hasn't been set");
     }
 }
 
@@ -653,11 +664,9 @@ inline bool lot_t::mvin()
 inline void lot_t::addLog(std::string _text, enum ERROR_T code)
 {
     _log.push_back(_text);
-    if (_status != SUCCESS) {
-        fprintf(stderr, "Warning: You are going to overwrite an unsuccess\n");
-        _status = code;
-    } else
-        _status = code;
+    if (code != SUCCESS) {
+        _statuses.push_back(code);
+    }
 }
 
 inline std::string lot_t::log()
@@ -789,13 +798,12 @@ inline int lot_t::setAmountOfTools(std::map<std::string, int> number_of_tools)
     std::map<std::string, int> tls;
     for (auto it = _tools.begin(); it != _tools.end(); ++it) {
         if (number_of_tools.count(it->first) != 0) {
-            it->second = number_of_tools.at(it->first);
+            it->second = number_of_tools.at(it->first);  // safe, check it above
             sum += it->second;
             tls[it->first] = it->second;
         }
     }
     _tools = tls;  // remove the tool whose amount is 0
-
     return sum;
 }
 
