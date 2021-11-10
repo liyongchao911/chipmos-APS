@@ -120,8 +120,9 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _customer = elements["customer"];
     _wb_location = elements["wb_location"];
 
-    _hold = (elements["hold"].compare("Y") == 0) ? true : false;
-    _mvin = (elements["mvin"].compare("Y") == 0) ? true : false;
+    setHold(elements["hold"]);
+    setMvin(elements["mvin"]);
+    setAutomotive(elements["automotive"]);
 
     _queue_time = std::stod(elements["queue_time"]);
     _fcst_time = std::stod(elements["fcst_time"]);
@@ -287,6 +288,7 @@ std::map<std::string, std::string> lot_t::data()
     d["hold"] = _hold ? "Y" : "N";
     d["mvin"] = _mvin ? "Y" : "N";
     d["is_sub_lot"] = _is_sub_lot ? "Y" : "N";
+    d["automotive"] = _is_automotive ? "Y" : "N";
     d["queue_time"] = std::to_string(_queue_time);
     d["fcst_time"] = std::to_string(_fcst_time);
     d["log"] = join(_log, "||");

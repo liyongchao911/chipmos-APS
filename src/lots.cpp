@@ -64,29 +64,6 @@ void lots_t::addLots(std::vector<lot_t *> lots)
     }
 }
 
-std::map<std::string, int> lots_t::initializeModelDistribution(
-    std::map<std::string, std::vector<entity_t *> > loc_ents)
-{
-    std::map<std::string, int> _;
-    for (auto &loc_ent : loc_ents) {
-        _[loc_ent.first] = 0;
-    }
-    return _;
-}
-
-
-bool lots_t::toolWireLotsHasLots()
-{
-    for (std::map<std::string, std::vector<lot_t *> >::iterator it =
-             tool_wire_lots.begin();
-         it != tool_wire_lots.end(); it++) {
-        if (it->second.size())
-            return true;
-    }
-    return false;
-}
-
-
 void lots_t::readWip(string filename,
                      vector<lot_t> &lots,
                      vector<lot_t> &faulty_lots)
@@ -112,6 +89,10 @@ void lots_t::readWip(string filename,
             lots.push_back(lot_tmp);
         } else {
             faulty_lots.push_back(lot_tmp);
+        }
+
+        if (lot_tmp.isAutomotive()) {
+            _automotive_lot_numbers.insert(lot_tmp.lotNumber());
         }
     }
 }

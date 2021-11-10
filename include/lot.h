@@ -75,6 +75,7 @@ protected:
     bool _hold;
     bool _mvin;
     bool _is_sub_lot;
+    bool _is_automotive;
 
     double _queue_time;  // for all queue time;
     double _fcst_time;   // for DA fcst time
@@ -114,7 +115,14 @@ protected:
     bool checkDataFormat(std::map<std::string, std::string> &elements,
                          std::string &log);
 
+    void setAutomotive(std::string);
+    void setAutomotive(bool);
 
+    void setHold(std::string);
+    void setHold(bool);
+
+    void setMvin(std::string);
+    void setMvin(bool);
 
 public:
     int tmp_oper;
@@ -342,6 +350,8 @@ public:
      * @return true if traversal is finished.
      */
     bool isTraversalFinish();
+
+    bool isAutomotive();
 
     /**
      * route () - get the route of this lot
@@ -624,6 +634,11 @@ inline bool lot_t::isTraversalFinish()
     return _finish_traversal;
 }
 
+inline bool lot_t::isAutomotive()
+{
+    return _is_automotive;
+}
+
 inline int lot_t::oper()
 {
     return _oper;
@@ -891,4 +906,33 @@ inline int lot_t::prescheduledOrder()
     return _prescheduled_order;
 }
 
+inline void lot_t::setAutomotive(std::string _automotive_str)
+{
+    _is_automotive = _automotive_str.compare("Y") == 0;
+}
+
+inline void lot_t::setAutomotive(bool _automotive_val)
+{
+    _is_automotive = _automotive_val;
+}
+
+inline void lot_t::setHold(std::string _hold_str)
+{
+    _hold = _hold_str.compare("Y") == 0;
+}
+
+inline void lot_t::setHold(bool _hold_val)
+{
+    _hold = _hold_val;
+}
+
+inline void lot_t::setMvin(std::string _mvin_str)
+{
+    _mvin = _mvin_str.compare("Y") == 0;
+}
+
+inline void lot_t::setMvin(bool _mvin_val)
+{
+    _mvin = _mvin_val;
+}
 #endif

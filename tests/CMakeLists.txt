@@ -11,25 +11,26 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-file(GLOB_RECURSE test_cpp_sources ${CMAKE_CURRENT_SOURCE_DIR}/test_*/test_*.cpp)
-
 set(TEST_SRC
         test_entities/test_entities_ctor.cpp
+        test_entities/test_entities_read_dedicate_machines_file.cpp
         test_entity/test_entity.cpp
         test_lot/test_lot.cpp
         test_lot/test_lot_check.cpp
         test_lot/test_lot_addlog.cpp
+        test_lot/test_automotive.cpp
         test_lots/test_lots.cpp
         test_machines/test_machines_addMachine.cpp
         test_machines/test_machines_addPrescheduledJob.cpp 
         test_machines/test_machines_prescheduleJobs.cpp
         test_machines/test_machines_scheduleAGroup.cpp
         test_machines/test_machines_addGroupJobs.cpp
-        test_algorithm/test_prescheduling.cpp
+        test_machines/test_machines_isDedicatedMachine.cpp
         test_machines/test_machines_groupBy.cpp
         test_machines/test_machines_distributeAResource.cpp
-        test_machines/test_machines_canJobRunOnTheMachine.cpp
+        # test_machines/test_machines_canJobRunOnTheMachine.cpp
         test_machines/test_machines_addNewResource.cpp
+        test_algorithm/test_prescheduling.cpp
         test_csv/test_csv_read.cpp
         test_csv/test_csv_parse.cpp
         )

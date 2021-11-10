@@ -1,5 +1,5 @@
 //
-// Created by eugene on 2021/7/5.
+// Created by Eugene on 2021/7/5.
 //
 #ifndef __LOTS_H__
 #define __LOTS_H__
@@ -31,15 +31,7 @@ protected:
     std::map<std::string, std::vector<lot_t *> > tool_wire_lots;
     std::map<std::string, int> amount_of_wires;
     std::map<std::string, int> amount_of_tools;
-
-    /**
-     * initializeModelDistribution () - initialize model distribution to 0
-     * @param loc_ents : location maps to the entities in the location
-     * @return a mapping relationship mapping model name to 0
-     */
-    static std::map<std::string, int> initializeModelDistribution(
-        std::map<std::string, std::vector<entity_t *> > loc_ents);
-
+    std::set<std::string> _automotive_lot_numbers;
 
     /**
      * createLots () - create a vector of lots by reading and mapping the
@@ -235,12 +227,6 @@ protected:
 
 public:
     /**
-     * toolWireLotsHasLots () - if tool_wire classification has lot
-     * @return
-     */
-    bool toolWireLotsHasLots();
-
-    /**
      * addLots () - add the lots
      * If lot's creation isn't from lots_t::createLots, addLots can accept a
      * vector of lots having complete information from external function.
@@ -273,8 +259,15 @@ public:
 
     std::map<std::string, std::vector<lot_t *> > getLotsRecipeGroups();
 
+    inline std::set<std::string> getAutomotiveLots();
+
     inline void setProcessTimeRatio(double ratio);
 };
+
+inline std::set<std::string> lots_t::getAutomotiveLots()
+{
+    return _automotive_lot_numbers;
+}
 
 inline void lots_t::setProcessTimeRatio(double ratio)
 {

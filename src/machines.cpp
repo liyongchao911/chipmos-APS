@@ -567,7 +567,7 @@ map<string, int> machines_t::_distributeAResource(
     sort(data.begin(), data.end(), distEntryComparison);
 
     int original_number_of_resources = number_of_resources;
-    int i = 0;
+    unsigned int i = 0;
     map<string, int> result;
     while (i < data.size() - 1 && number_of_resources > 0) {
         int _n_res = data[i].ratio * original_number_of_resources;
@@ -650,16 +650,47 @@ void machines_t::distributeWires()
     // }
 }
 
+bool machines_t::_isMachineLocationAvailableForJob(string lot_number,
+                                                   string location)
+{
+    vector<string> locations = _job_can_run_locations[lot_number];
+    return find(locations.begin(), locations.end(), location) !=
+           locations.end();
+}
+
+bool machines_t::_isModelAvailableForJob(string lot_number, string model)
+{
+    map<string, double> process_times = _job_process_times[lot_number];
+    return process_times.count(model) != 0;
+}
+
+bool machines_t::_isMachineDedicatedForJob(string lot_number,
+                                           string cust,
+                                           string entity_name)
+{
+    if (_automotive_lot_numbers.count(lot_number)) {
+        if (_dedicate_machines.count(cust) == 0) {
+            cust = "others"s;
+        }
+        return _dedicate_machines.at(cust).count(entity_name) == 0
+                   ? false
+                   : _dedicate_machines.at(cust).at(entity_name);
+    }
+    return false;
+}
+
 bool machines_t::_canJobRunOnTheMachine(job_t *job, machine_t *machine)
 {
     string lot_number(job->base.job_info.data.text);
     string location(machine->location.data.text);
     string model(machine->model_name.data.text);
-    vector<string> locations = _job_can_run_locations[lot_number];
-    map<string, double> process_times = _job_process_times[lot_number];
-    return find(locations.begin(), locations.end(), location) !=
-               locations.end() &&
-           process_times.count(model) != 0;
+    string cust(job->customer.data.text);
+    string entity_name(machine->base.machine_no.data.text);
+
+
+    return _isMachineLocationAvailableForJob(lot_number, location) &&
+           _isModelAvailableForJob(lot_number, model) &&
+           _isMachineDedicatedForJob(lot_number, cust, entity_name);
 }
 
 bool machines_t::_addNewResource(

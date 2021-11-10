@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -113,8 +114,23 @@ protected:
     std::map<std::string, std::vector<ares_t *>> _wires;
     std::map<std::string, std::vector<ares_t *>> _loaded_wires;
 
+    // dedicate machines
+    std::map<std::string, std::map<std::string, bool>> _dedicate_machines;
 
-    bool _canJobRunOnTheMachine(job_t *job, machine_t *machine);
+    // automotive lots
+    std::set<std::string> _automotive_lot_numbers;
+
+    bool _isMachineLocationAvailableForJob(std::string lot_number,
+                                           std::string location);
+    bool _isModelAvailableForJob(std::string lot_number, std::string model);
+
+    bool _isMachineDedicatedForJob(std::string lot_number,
+                                   std::string cust,
+                                   std::string entity);
+
+    bool _canJobRunOnTheMachine(job_t *jb, machine_t *machine);
+
+
     void _init(setup_time_parameters_t param);
     int _scheduleAGroup(struct __machine_group_t *group);
     std::vector<machine_t *> _sortedMachines(std::vector<machine_t *> &ms);
@@ -259,6 +275,11 @@ public:
     void prepareJobs(int *number, job_t ***job_array);
 
 
+    void setDedicateMachines(
+        std::map<std::string, std::map<std::string, bool>> dedicate_machines);
+
+    void setAutomotiveLotNumber(std::set<std::string> automtv_lots);
+
     list_operations_t *getInitializedListOperations();
     job_base_operations_t *getInitializedJobBaseOperations();
     machine_base_operations_t *getInitilizedMachineBaseOperations();
@@ -350,6 +371,18 @@ inline void machines_t::setNumberOfTools(std::map<std::string, int> tool_number)
 inline void machines_t::setNumberOfWires(std::map<std::string, int> wire_number)
 {
     this->_number_of_wires = wire_number;
+}
+
+inline void machines_t::setDedicateMachines(
+    std::map<std::string, std::map<std::string, bool>> dedicate_machines)
+{
+    _dedicate_machines = dedicate_machines;
+}
+
+inline void machines_t::setAutomotiveLotNumber(
+    std::set<std::string> automotv_lot_numbers)
+{
+    _automotive_lot_numbers = automotv_lot_numbers;
 }
 
 #endif
