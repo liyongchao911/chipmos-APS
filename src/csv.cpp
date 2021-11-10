@@ -45,47 +45,95 @@ csv_t::csv_t(std::string filename,
 
 std::vector<std::string> csv_t::parseCsvRow(char *text, char delimiter)
 {
-    char *iter = text, *prev = text;
     std::vector<std::string> data;
-    bool endline = false;
-    while (!endline) {
-        if (*iter == delimiter) {
-            *iter = '\0';
-            data.push_back(prev);
-            prev = ++iter;
-        } else if (*iter == '\n' || *iter == '\0') {  // endline
-            *iter = '\0';
-            endline = true;
-            data.push_back(prev);
-        } else if (*iter == '\r' &&
-                   *(iter + 1) == '\n') {  // for newline characters '\r\n'
-            *iter = '\0';
-            data.push_back(prev);
-            endline = true;
-        } else if (*(iter + 1) == '\0') {
-            data.push_back(prev);
-            endline = true;
-        } else if (*iter == '"') {
-            std::string temp = "";
-            ++iter;
-            // if iter is '"', program expect next character is '"'.
-            while ((*iter != '"') || (*iter == '"' && *(iter + 1) == '"')) {
-                if ((*iter == '"') && *(iter + 1) == '"') {
-                    temp += "\"";
-                    iter += 2;
-                } else {
-                    temp += *iter;
-                    ++iter;
-                }
-            }
-            data.push_back(temp);
-            if (*iter)
-                iter += 2;
-            else
+    std::string token;
+
+    typedef enum {
+        STATE_NextCharacter,
+        STATE_ParseString,
+        STATE_QuotationInString,
+        STATE_EndOfLine,
+        STATE_Error,
+        STATE_StateCount
+    } ParserState;
+
+    ParserState state = STATE_NextCharacter;
+
+    while (state != STATE_EndOfLine) {
+        int c = *text++;
+        if (c == EOF) {
+            switch (state) {
+            case STATE_ParseString:
+                state = STATE_Error;
                 break;
-            prev = iter;
-        } else {
-            ++iter;
+            case STATE_QuotationInString:
+                data.push_back(token);
+                token.clear();
+            case STATE_NextCharacter:
+                state = STATE_EndOfLine;
+                break;
+            case STATE_Error:
+                std::cerr << "Error in csv_t::parseCsvRow()" << std::endl;
+                abort();
+            default:
+                break;
+            }
+        }
+        switch (state) {
+        case STATE_NextCharacter:
+            if (c == '\n' || c == '\r' || c == '\0') {
+                data.push_back(token);
+                token.clear();
+                state = STATE_EndOfLine;
+                break;
+            } else if (c == delimiter) {
+                data.push_back(token);
+                token.clear();
+                break;
+            } else if (c == '"') {
+                state = STATE_ParseString;
+                break;
+            }
+            token.append(1, static_cast<char>(c));
+            break;
+        case STATE_ParseString:
+            if (c == '"') {
+                state = STATE_QuotationInString;
+                break;
+            }
+            token.append(1, static_cast<char>(c));
+            break;
+        case STATE_QuotationInString:
+            if (c == '"') {
+                token.append(1, static_cast<char>(c));
+                state = STATE_ParseString;
+                break;
+            } else if (c == delimiter) {
+                data.push_back(token);
+                token.clear();
+                state = STATE_NextCharacter;
+                break;
+            } else if (c == '\n' || c == '\r' || c == '\0') {
+                data.push_back(token);
+                token.clear();
+                state = STATE_EndOfLine;
+                break;
+            } else {
+                /* 1. >>>1,2,st""r3<<<
+                 * Escaping double quotation mark without denoting token as
+                 * string
+                 *
+                 * 2. >>>1,2,"st"r3"<<<
+                 *    Have a wild double quotation mark in a string
+                 *
+                 * 3. >>>1,2,"str3" ,<<<
+                 *    Delimiter not located right after end of string
+                 */
+                state = STATE_Error;
+                break;
+            }
+        default:
+            break;
         }
     }
 
