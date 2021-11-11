@@ -690,7 +690,7 @@ bool machines_t::_canJobRunOnTheMachine(job_t *job, machine_t *machine)
 
     return _isMachineLocationAvailableForJob(lot_number, location) &&
            _isModelAvailableForJob(lot_number, model) &&
-           _isMachineDedicatedForJob(lot_number, cust, entity_name);
+           !_isMachineDedicatedForJob(lot_number, cust, entity_name);
 }
 
 bool machines_t::_addNewResource(
@@ -722,7 +722,6 @@ void machines_t::_chooseMachinesForAGroup(
 
     candidate_machines = _sortedMachines(candidate_machines);
 
-    // FIXME : need to delete the testing variable
     map<string, vector<string>> suitable_machines;
 
     int number_of_tools = group->number_of_tools;
