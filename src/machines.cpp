@@ -560,8 +560,7 @@ map<string, int> machines_t::_distributeAResource(
 
     for (map<string, int>::iterator it = groups_statistic.begin();
          it != groups_statistic.end(); ++it) {
-        data.push_back((struct __distribution_entry_t){
-            .name = it->first, .ratio = it->second / sum});
+        data.push_back(__distribution_entry_t{it->first, it->second / sum});
     }
 
     sort(data.begin(), data.end(), distEntryComparison);
