@@ -85,24 +85,26 @@ TEST_P(test_machines_is_dedicated_machine_t, test1)
               cs.out);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    test_is_dedicated_machine,
-    test_machines_is_dedicated_machine_t,
-    testing::Values(test_case2_t{{{"is_automotive"s, "Y"s},
+INSTANTIATE_TEST_SUITE_P(test_is_dedicated_machine,
+                         test_machines_is_dedicated_machine_t,
+                         testing::Values(
+                             test_case2_t{
+                                 {{"is_automotive"s, "Y"s},
                                   {"lot_number"s, "L1"s},
                                   {"cust"s, "C1"s},
                                   {"entity_name"s, "BB1"s}},
-                                 {{"C1"s, true}},
-                                 true},
-                    test_case2_t{{{"is_automotive"s, "N"s},
-                                  {"lot_number"s, "L1"s},
-                                  {"cust"s, "C1"s},
-                                  {"entity_name"s, "BB1"s}},
-                                 {{"C1"s, true}},
-                                 false},
-                    test_case2_t{{{"is_automotive"s, "Y"s},
-                                  {"lot_number"s, "L1"s},
-                                  {"cust"s, "QQ"s},
-                                  {"entity_name"s, "BB1"s}},
-                                 {{"C1"s, true}},
-                                 true}));
+                                 {           {"C1"s, true} },
+                                 true
+},
+                             test_case2_t{{{"is_automotive"s, "N"s},
+                                           {"lot_number"s, "L1"s},
+                                           {"cust"s, "C1"s},
+                                           {"entity_name"s, "BB1"s}},
+                                          {{"C1"s, true}},
+                                          false},
+                             test_case2_t{{{"is_automotive"s, "Y"s},
+                                           {"lot_number"s, "L1"s},
+                                           {"cust"s, "QQ"s},
+                                           {"entity_name"s, "BB1"s}},
+                                          {{"C1"s, true}},
+                                          true}));

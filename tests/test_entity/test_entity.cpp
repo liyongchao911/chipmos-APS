@@ -53,20 +53,22 @@ lot_t *test_entity_t::createALot(map<string, string> data)
 void test_entity_t::SetUp()
 {
     ent = nullptr;
-    entity_data = map<string, string>{{"entity", "BB211"},
-                                      {"model", "UTC3000"},
-                                      {"recover_time", "21-6-19 15:24"},
-                                      {"in_time", "21-6-19 14:24"},
-                                      {"prod_id", "048TPAW086"},
-                                      {"pin_package", "TSOP1-48/M2"},
-                                      {"lot_number", "P23AWDV31"},
-                                      {"customer", "MXIC"},
-                                      {"bd_id", "AAW048TP1041B"},
-                                      {"oper", "2200"},
-                                      {"qty", "1280"},
-                                      {"location", "TA-A"},
-                                      {"part_no", "PART_NO"},
-                                      {"part_id", "PART_ID"}};
+    entity_data = map<string, string>{
+        {      "entity",         "BB211"},
+        {       "model",       "UTC3000"},
+        {"recover_time", "21-6-19 15:24"},
+        {     "in_time", "21-6-19 14:24"},
+        {     "prod_id",    "048TPAW086"},
+        { "pin_package",   "TSOP1-48/M2"},
+        {  "lot_number",     "P23AWDV31"},
+        {    "customer",          "MXIC"},
+        {       "bd_id", "AAW048TP1041B"},
+        {        "oper",          "2200"},
+        {         "qty",          "1280"},
+        {    "location",          "TA-A"},
+        {     "part_no",       "PART_NO"},
+        {     "part_id",       "PART_ID"}
+    };
 
     ent = new entity_t(entity_data, timeConverter("21-6-19 14:34"));
     if (ent == nullptr) {
@@ -75,21 +77,23 @@ void test_entity_t::SetUp()
     }
 
 
-    lot_data_template = map<string, string>({{"route", "QFNS288"},
-                                             {"lot_number", "P23ASEA02"},
-                                             {"pin_package", "DFN-08YM2G"},
-                                             {"bd_id", "AAS008YM2024A"},
-                                             {"prod_id", "008YMAS034"},
-                                             {"urgent_code", "urgent"},
-                                             {"customer", "MXIC"},
-                                             {"wb_location", "BB211-1"},
-                                             {"qty", "16000"},
-                                             {"oper", "2200"},
-                                             {"hold", "N"},
-                                             {"mvin", "Y"},
-                                             {"sub_lot", "9"},
-                                             {"part_id", "PART_ID"},
-                                             {"part_no", "PART_NO"}});
+    lot_data_template = map<string, string>({
+        {      "route",       "QFNS288"},
+        { "lot_number",     "P23ASEA02"},
+        {"pin_package",    "DFN-08YM2G"},
+        {      "bd_id", "AAS008YM2024A"},
+        {    "prod_id",    "008YMAS034"},
+        {"urgent_code",        "urgent"},
+        {   "customer",          "MXIC"},
+        {"wb_location",       "BB211-1"},
+        {        "qty",         "16000"},
+        {       "oper",          "2200"},
+        {       "hold",             "N"},
+        {       "mvin",             "Y"},
+        {    "sub_lot",             "9"},
+        {    "part_id",       "PART_ID"},
+        {    "part_no",       "PART_NO"}
+    });
 
     lot_data_case1 = lot_data_template;
 

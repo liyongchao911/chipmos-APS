@@ -100,3 +100,7 @@ double randomDouble();
         sum / SIZE;                     \
     })
 #endif
+
+#define set_bit(num, i) ((num) |= (1 << (i)))
+
+#define check_bit(num, i) (((num) & (1 << (i))) ? 1 : 0)

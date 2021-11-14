@@ -62,23 +62,34 @@ vector<job_t *> test_machines_t_chooseMachinesForAGroup::createJobs(
 
 void test_machines_t_chooseMachinesForAGroup::SetUp()
 {
-    machine_case1 =
-        map<string, string>({{"model", "UTC1000"}, {"location", "TA"}});
+    machine_case1 = map<string, string>({
+        {   "model", "UTC1000"},
+        {"location",      "TA"}
+    });
 
-    machine_case2 =
-        map<string, string>({{"model", "UTC1000"}, {"location", "TB"}});
+    machine_case2 = map<string, string>({
+        {   "model", "UTC1000"},
+        {"location",      "TB"}
+    });
 
-    machine_case3 =
-        map<string, string>({{"model", "UTC3000"}, {"location", "TB"}});
+    machine_case3 = map<string, string>({
+        {   "model", "UTC3000"},
+        {"location",      "TB"}
+    });
 
-    job_case1 = map<string, string>({{"lot_number", "J1"},
-                                     {"location", "TA,TB"},
-                                     {"model", "UTC1000,UTC3000"},
-                                     {"part_id", "PART_ID1"},
-                                     {"part_no", "PART_NO1"}});
+    job_case1 = map<string, string>({
+        {"lot_number",              "J1"},
+        {  "location",           "TA,TB"},
+        {     "model", "UTC1000,UTC3000"},
+        {   "part_id",        "PART_ID1"},
+        {   "part_no",        "PART_NO1"}
+    });
 
-    job_case2 = map<string, string>({{"lot_number", "J2"} {"location", "TB"},
-                                     {"model", "UTC3000"},
-                                     {"part_id", "PART_ID2"},
-                                     {"part_no", "PART_NO2"}});
+    job_case2 = map<string, string>({
+        {"lot_number",       "J2"}
+        {  "location",       "TB"},
+        {     "model",  "UTC3000"},
+        {   "part_id", "PART_ID2"},
+        {   "part_no", "PART_NO2"}
+    });
 }

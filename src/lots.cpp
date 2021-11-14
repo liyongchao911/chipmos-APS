@@ -21,6 +21,20 @@
 
 using namespace std;
 
+lots_t::lots_t()
+{
+    // the _traversing_functions' order is fixed which means that
+    // you can't randomly change the order of content
+    // the order is deremined by the enum TRAVERSE_STATUS
+
+    // the concept is each bit of the return value of calculateQueueTime
+    // maps to a unique function.
+    _traversing_functions = {
+        &lots_t::_traversingError, &lots_t::_traversingFinished,
+        &lots_t::_traversingDAArrived, &lots_t::_traversingDAUnarrived,
+        &lots_t::_traversingDADecrement};
+}
+
 
 void lots_t::pushBackNotPrescheduledLot(lot_t *lot)
 {
@@ -73,15 +87,17 @@ void lots_t::readWip(string filename,
     csv_t wip(filename, "r", true, true);
     wip.dropNullRow();
     wip.trim(" ");
-    wip.setHeaders(map<string, string>({{"lot_number", "wlot_lot_number"},
-                                        {"qty", "wlot_qty_1"},
-                                        {"hold", "wlot_hold"},
-                                        {"oper", "wlot_oper"},
-                                        {"mvin", "wlot_mvin_perfmd"},
-                                        {"recipe", "bd_id"},
-                                        {"prod_id", "wlot_prod"},
-                                        {"urgent_code", "urgent_code"},
-                                        {"customer", "wlot_crt_dat_al_1"}}));
+    wip.setHeaders(map<string, string>({
+        { "lot_number",   "wlot_lot_number"},
+        {        "qty",        "wlot_qty_1"},
+        {       "hold",         "wlot_hold"},
+        {       "oper",         "wlot_oper"},
+        {       "mvin",  "wlot_mvin_perfmd"},
+        {     "recipe",             "bd_id"},
+        {    "prod_id",         "wlot_prod"},
+        {"urgent_code",       "urgent_code"},
+        {   "customer", "wlot_crt_dat_al_1"}
+    }));
     lot_t lot_tmp;
     for (unsigned int i = 0, size = wip.nrows(); i < size; ++i) {
         lot_tmp = lot_t(wip.getElements(i));
@@ -105,10 +121,11 @@ void lots_t::setPidBomId(string filename,
     // csv_t prod_pid_mapping("product_find_process_id.csv", "r", true, true);
     csv_t prod_pid_mapping(filename, "r", true, true);
     prod_pid_mapping.trim(" ");
-    prod_pid_mapping.setHeaders(
-        map<string, string>({{"prod_id", "product"},
-                             {"process_id", "process_id"},
-                             {"bom_id", "bom_id"}}));
+    prod_pid_mapping.setHeaders(map<string, string>({
+        {   "prod_id",    "product"},
+        {"process_id", "process_id"},
+        {    "bom_id",     "bom_id"}
+    }));
     map<string, string> prod_pid;
     map<string, string> prod_bom;
     for (unsigned int i = 0; i < prod_pid_mapping.nrows(); ++i) {
@@ -163,9 +180,11 @@ void lots_t::setLotSize(string filename,
     // csv_t eim("process_find_lot_size_and_entity.csv", "r", true, true);
     csv_t eim(filename, "r", true, true);
     eim.trim(" ");
-    eim.setHeaders(map<string, string>({{"process_id", "process_id"},
-                                        {"desc", "master_desc"},
-                                        {"lot_size", "remark"}}));
+    eim.setHeaders(map<string, string>({
+        {"process_id",  "process_id"},
+        {      "desc", "master_desc"},
+        {  "lot_size",      "remark"}
+    }));
     csv_t pid_lotsize_df;
     pid_lotsize_df = eim.filter("desc", "Lot Size");
     map<string, int> pid_lotsize;
@@ -216,11 +235,12 @@ void lots_t::setupRoute(std::string routelist,
     csv_t cure_time_df(cure_time, "r", true, true);
 
     routelist_df.trim(" ");
-    routelist_df.setHeaders(
-        map<string, string>({{"route", "wrto_route"},
-                             {"oper", "wrto_oper"},
-                             {"seq", "wrto_seq_num"},
-                             {"desc", "wrto_opr_shrt_desc"}}));
+    routelist_df.setHeaders(map<string, string>({
+        {"route",         "wrto_route"},
+        { "oper",          "wrto_oper"},
+        {  "seq",       "wrto_seq_num"},
+        { "desc", "wrto_opr_shrt_desc"}
+    }));
     routes.setQueueTime(queue_time);
     routes.setCureTime(eim_ptn, cure_time_df);
 
@@ -256,6 +276,64 @@ vector<lot_t> lots_t::wb7Filter(vector<lot_t> alllots,
     return lots;
 }
 
+void lots_t::_traversingError(lot_t &lot,
+                              std::vector<lot_t> &unfinished,
+                              std::vector<lot_t> &finished,
+                              vector<lot_t> &faulty_lot,
+                              da_stations_t &das)
+{
+    string err_msg(
+        "Error occures on routes.calculateQueueTime, the "
+        "reason is the lot can't reach W/B satation.");
+
+    lot.addLog(err_msg, ERROR_WB7);
+}
+
+void lots_t::_traversingFinished(lot_t &lot,
+                                 std::vector<lot_t> &unfinished,
+                                 std::vector<lot_t> &finished,
+                                 vector<lot_t> &faulty_lot,
+                                 da_stations_t &das)
+{
+    lot.addLog("Lot finishes traversing the route", SUCCESS);
+    finished.push_back(lot);
+}
+
+void lots_t::_traversingDAArrived(lot_t &lot,
+                                  std::vector<lot_t> &unfinished,
+                                  std::vector<lot_t> &finished,
+                                  vector<lot_t> &faulty_lot,
+                                  da_stations_t &das)
+{
+    lot.addLog(
+        "Lot is waiting on DA station, it is cataloged to "
+        "arrived",
+        SUCCESS);
+    das.addArrivedLotToDA(lot);
+}
+
+void lots_t::_traversingDAUnarrived(lot_t &lot,
+                                    std::vector<lot_t> &unfinished,
+                                    std::vector<lot_t> &finished,
+                                    vector<lot_t> &faulty_lot,
+                                    da_stations_t &das)
+{
+    lot.addLog(
+        "Lot traverses to DA station, it is cataloged to "
+        "unarrived",
+        SUCCESS);
+    das.addUnarrivedLotToDA(lot);
+}
+
+void lots_t::_traversingDADecrement(lot_t &lot,
+                                    std::vector<lot_t> &unfinished,
+                                    std::vector<lot_t> &finished,
+                                    vector<lot_t> &faulty_lot,
+                                    da_stations_t &das)
+{
+}
+
+
 vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
                                         vector<lot_t> &faulty_lots,
                                         vector<lot_t> &dontcare,
@@ -266,39 +344,47 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
     string err_msg;
     std::vector<lot_t> unfinished = lots;
     std::vector<lot_t> finished;
-
+    size_t enum_size = sizeof(enum TRAVERSE_STATUS);
     while (unfinished.size()) {
         foreach (unfinished, i) {
             try {
                 retval = routes.calculateQueueTime(unfinished[i]);
-                switch (retval) {
-                case -1:  // error
-                    err_msg =
-                        "Error occures on routes.calculateQueueTime, the "
-                        "reason is the lot can't reach W/B satation.";
-                    unfinished[i].addLog(err_msg, ERROR_WB7);
-                    faulty_lots.push_back(unfinished[i]);
-                    break;
-                case 0:  // lot is finished
-                    unfinished[i].addLog("Lot finishes traversing the route",
-                                         SUCCESS);
-                    finished.push_back(unfinished[i]);
-                    break;
-                case 2:  // add to DA_arrived
-                    unfinished[i].addLog(
-                        "Lot is waiting on DA station, it is cataloged to "
-                        "arrived",
-                        SUCCESS);
-                    das.addArrivedLotToDA(unfinished[i]);
-                    break;
-                case 1:  // add to DA_unarrived
-                    unfinished[i].addLog(
-                        "Lot traverses to DA station, it is cataloged to "
-                        "unarrived",
-                        SUCCESS);
-                    das.addUnarrivedLotToDA(unfinished[i]);
-                    break;
+                assert(retval != 0);
+                for (int j = 0; j < enum_size; ++j) {
+                    if (check_bit(retval, j)) {
+                        (this->*_traversing_functions[j])(unfinished[i],
+                                                          unfinished, finished,
+                                                          faulty_lots, das);
+                    }
                 }
+                // switch (retval) {
+                // case -1:  // error
+                //     err_msg =
+                //         "Error occures on routes.calculateQueueTime, the "
+                //         "reason is the lot can't reach W/B satation.";
+                //     unfinished[i].addLog(err_msg, ERROR_WB7);
+                //     faulty_lots.push_back(unfinished[i]);
+                //     break;
+                // case 0:  // lot is finished
+                //     unfinished[i].addLog("Lot finishes traversing the route",
+                //                          SUCCESS);
+                //     finished.push_back(unfinished[i]);
+                //     break;
+                // case 2:  // add to DA_arrived
+                //     unfinished[i].addLog(
+                //         "Lot is waiting on DA station, it is cataloged to "
+                //         "arrived",
+                //         SUCCESS);
+                //     das.addArrivedLotToDA(unfinished[i]);
+                //     break;
+                // case 1:  // add to DA_unarrived
+                //     unfinished[i].addLog(
+                //         "Lot traverses to DA station, it is cataloged to "
+                //         "unarrived",
+                //         SUCCESS);
+                //     das.addUnarrivedLotToDA(unfinished[i]);
+                //     break;
+                // }
             } catch (std::out_of_range
                          &e) {  // for da_stations_t function member,
                                 // addArrivedLotToDA and addUnarrivedLotToDA
@@ -352,8 +438,11 @@ void lots_t::setPartId(string filename,
     // filename = "BomList"
     csv_t bomlist(filename, "r", true, true);
     bomlist.trim(" ");
-    bomlist.setHeaders(map<string, string>(
-        {{"bom_id", "bom_id"}, {"oper", "oper"}, {"part_id", "part_id"}}));
+    bomlist.setHeaders(map<string, string>({
+        { "bom_id",  "bom_id"},
+        {   "oper",    "oper"},
+        {"part_id", "part_id"}
+    }));
     map<int, map<string, string> > bom_oper_part;
     for (unsigned int i = 0; i < bomlist.nrows(); ++i) {
         map<string, string> tmp = bomlist.getElements(i);
@@ -399,8 +488,10 @@ void lots_t::setAmountOfWire(string gw_filename,
     // filename = "GW Inventory.csv"
     csv_t gw(gw_filename, "r", true, true);
     gw.trim(" ");
-    gw.setHeaders(map<string, string>(
-        {{"gw_part_no", "gw_part_no"}, {"roll_length", "roll_length"}}));
+    gw.setHeaders(map<string, string>({
+        { "gw_part_no",  "gw_part_no"},
+        {"roll_length", "roll_length"}
+    }));
     map<string, int> part_roll;
     for (unsigned int i = 0; i < gw.nrows(); ++i) {
         map<string, string> tmp = gw.getElements(i);
@@ -480,8 +571,10 @@ void lots_t::setPartNo(string filename,
     // filename = "Process find heatblock.csv"
     csv_t heatblock(filename, "r", true, true);
     heatblock.trim(" ");
-    heatblock.setHeaders(map<string, string>(
-        {{"process_id", "process_id"}, {"remark", "remark"}}));
+    heatblock.setHeaders(map<string, string>({
+        {"process_id", "process_id"},
+        {    "remark",     "remark"}
+    }));
     map<string, string> pid_remark;
     for (unsigned int i = 0; i < heatblock.nrows(); ++i) {
         map<string, string> tmp = heatblock.getElements(i);
@@ -526,8 +619,11 @@ void lots_t::setAmountOfTools(string filename,
     // filename = "EMS Heatblock data.csv"
     csv_t ems(filename, "r", true, true);
     ems.trim(" ");
-    ems.setHeaders(map<string, string>(
-        {{"part_no", "part_no"}, {"qty1", "qty1"}, {"qty3", "qty3"}}));
+    ems.setHeaders(map<string, string>({
+        {"part_no", "part_no"},
+        {   "qty1",    "qty1"},
+        {   "qty3",    "qty3"}
+    }));
     map<string, int> pno_qty;
     for (unsigned int i = 0; i < ems.nrows(); ++i) {
         map<string, string> tmp = ems.getElements(i);
@@ -562,11 +658,13 @@ void lots_t::setUph(string uph_file_name,
 {
     csv_t uph_csv(uph_file_name, "r", true, true);
     uph_csv.trim(" ");
-    uph_csv.setHeaders(map<string, string>({{"oper", "OPER"},
-                                            {"cust", "CUST"},
-                                            {"recipe", "B/D#"},
-                                            {"model", "MODEL"},
-                                            {"uph", "G.UPH"}}));
+    uph_csv.setHeaders(map<string, string>({
+        {  "oper",  "OPER"},
+        {  "cust",  "CUST"},
+        {"recipe",  "B/D#"},
+        { "model", "MODEL"},
+        {   "uph", "G.UPH"}
+    }));
     bool retval = 0;
     vector<lot_t> temp;
     vector<lot_t> maybe_faulty;

@@ -29,6 +29,14 @@ struct station_t {
     int seq;
 };
 
+enum TRAVERSE_STATUS {
+    TRAVERSE_ERROR = 1,
+    TRAVERSE_FINISHED = 2,
+    TRAVERSE_DA_ARRIVED = 4,
+    TRAVERSE_DA_UNARRIVED = 8,
+    TRAVERSE_DA_MVIN = 16,
+};
+
 class route_t
 {
 private:

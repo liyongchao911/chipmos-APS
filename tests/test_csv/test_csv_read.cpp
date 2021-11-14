@@ -248,12 +248,14 @@ TEST_F(test_csv_read_t, test_csv_read_file_header)
 
     vector<test_csv_read_data_t> data;
     data.push_back(test_csv_read_data_t{
-        .header = "h1,h2,h3", .ans = {{"h1", 0}, {"h2", 1}, {"h3", 2}}});
+        .header = "h1,h2,h3", .ans = {{"h1", 0}, {"h2", 1}, {"h3", 2}}
+    });
 
 
     data.push_back(test_csv_read_data_t{
         .header = "h1,h2,h3,h4,h5",
-        .ans = {{"h1", 0}, {"h2", 1}, {"h3", 2}, {"h4", 3}, {"h5", 4}}});
+        .ans = {{"h1", 0}, {"h2", 1}, {"h3", 2}, {"h4", 3}, {"h5", 4}}
+    });
 
     data.push_back(test_csv_read_data_t{.header = ""});
 

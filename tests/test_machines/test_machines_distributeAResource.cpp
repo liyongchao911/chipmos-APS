@@ -107,5 +107,3 @@ INSTANTIATE_TEST_SUITE_P(
         tcs_distribute_resource_t{3,
                                   {{"g1", 43}, {"g2", 1}, {"g3", 5}},
                                   {{"g1", 1}, {"g2", 1}, {"g3", 1}}}));
-
-

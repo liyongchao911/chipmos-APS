@@ -4,6 +4,7 @@
 #ifndef __LOTS_H__
 #define __LOTS_H__
 
+#include <sys/stat.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -11,8 +12,17 @@
 #include "include/da.h"
 #include "include/entities.h"
 #include "include/entity.h"
+#include "include/infra.h"
 #include "include/lot.h"
 #include "include/route.h"
+
+class lots_t;
+
+typedef void (lots_t::*traversing_function)(lot_t &lot,
+                                            std::vector<lot_t> &unfinished,
+                                            std::vector<lot_t> &finished,
+                                            std::vector<lot_t> &faulty_lot,
+                                            da_stations_t &das);
 
 /**
  * class lots_t, a container of lot
@@ -32,6 +42,36 @@ protected:
     std::map<std::string, int> amount_of_wires;
     std::map<std::string, int> amount_of_tools;
     std::set<std::string> _automotive_lot_numbers;
+
+    std::vector<traversing_function> _traversing_functions;
+    void _traversingError(lot_t &lot,
+                          std::vector<lot_t> &unfinished,
+                          std::vector<lot_t> &finished,
+                          std::vector<lot_t> &faulty_lot,
+                          da_stations_t &das);
+    void _traversingFinished(lot_t &lot,
+                             std::vector<lot_t> &unfinished,
+                             std::vector<lot_t> &finished,
+                             std::vector<lot_t> &faulty_lot,
+                             da_stations_t &das);
+    void _traversingDAArrived(lot_t &lot,
+                              std::vector<lot_t> &unfinished,
+                              std::vector<lot_t> &finished,
+                              std::vector<lot_t> &faulty_lot,
+                              da_stations_t &das);
+    void _traversingDAUnarrived(lot_t &lot,
+                                std::vector<lot_t> &unfinished,
+                                std::vector<lot_t> &finished,
+                                std::vector<lot_t> &faulty_lot,
+                                da_stations_t &das);
+    void _traversingDADecrement(lot_t &lot,
+                                std::vector<lot_t> &unfinished,
+                                std::vector<lot_t> &finished,
+                                std::vector<lot_t> &faulty_lot,
+                                da_stations_t &das);
+
+    // traversing_function _traversingFinished;
+
 
     /**
      * createLots () - create a vector of lots by reading and mapping the
@@ -226,6 +266,8 @@ protected:
 
 
 public:
+    lots_t();
+
     /**
      * addLots () - add the lots
      * If lot's creation isn't from lots_t::createLots, addLots can accept a

@@ -56,12 +56,16 @@ TEST_P(ParseTest, csv_parse)
     delete cpt;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Default,
     ParseTest,
     testing::Values(
         // Hello World
-        ParseParameters{"hello,world", ',', {"hello", "world"}},
+        ParseParameters{
+            "hello,world",
+            ',',
+            {"hello", "world"}
+},
 
         // Empty String
         ParseParameters{R"("1","2","3",)", ',', {"1", "2", "3", ""}},
