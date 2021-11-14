@@ -53,19 +53,18 @@ void entity_t::setBaseTime(time_t base_time)
 
 machine_t entity_t::machine()
 {
-    machine_t machine = machine_t{
-        .base = {.machine_no = stringToInfo(_entity_name),
-                 .size_of_jobs = 0,
-                 .available_time = _recover_time},
-        .model_name = stringToInfo(_model_name),
-        .location = stringToInfo(_location),
-        .current_job = _current_lot->job(),
-        .makespan = 0,
-        .total_completion_time = 0,
-        .quality = 0,
-        .setup_times = 0,
-        .ptr_derived_object = nullptr
-    };
+    machine_t machine =
+        machine_t{.base = {.machine_no = stringToInfo(_entity_name),
+                           .size_of_jobs = 0,
+                           .available_time = _recover_time},
+                  .model_name = stringToInfo(_model_name),
+                  .location = stringToInfo(_location),
+                  .current_job = _current_lot->job(),
+                  .makespan = 0,
+                  .total_completion_time = 0,
+                  .quality = 0,
+                  .setup_times = 0,
+                  .ptr_derived_object = nullptr};
 
     machine.current_job.base.end_time = _recover_time;
     machine.current_job.base.start_time = _intime;
