@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include "include/lot.h"
 
+using namespace std;
+
 da_stations_t::da_stations_t(csv_t fcst)
 {
     setFcst(fcst);
@@ -182,5 +184,28 @@ void da_stations_t::removeAllLots()
          it != _da_stations_container.end(); it++) {
         it->second.arrived.clear();
         it->second.unarrived.clear();
+    }
+}
+
+void da_stations_t::decrementProductionCapacity(lot_t &lot)
+{
+    string recipe = lot.recipe();
+    try {
+        da_station_t &da = _da_stations_container.at(recipe);
+        double tmp = (double) lot.qty() / da.upm;
+        da.time += tmp;
+        if (da.time > 1440)
+            da.finished = true;
+    } catch (out_of_range &e) {
+        std::string error_msg;
+        error_msg +=
+            std::string(
+                "In function da_stations_t::decrementProductionCapacity "
+                "trigger exception : ") +
+            e.what() + " fcst doesn't have " + recipe +
+            " this recipe"
+            "but lot_number " +
+            lot.lotNumber() + " does";
+        throw(out_of_range(error_msg));
     }
 }

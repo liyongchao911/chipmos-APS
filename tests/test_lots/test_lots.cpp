@@ -52,70 +52,76 @@ void test_lots_t::SetUp()
         exit(EXIT_FAILURE);
 
 
-    _testing_data_template = map<string, string>({{"route", "QFNS288"},
-                                                  {"lot_number", "P23ASEA02"},
-                                                  {"pin_package", "DFN-08YM2G"},
-                                                  {"bd_id", "AAS008YM2024A"},
-                                                  {"prod_id", "008YMAS034"},
-                                                  {"urgent_code", ""},
-                                                  {"customer", ""},
-                                                  {"wb_location", ""},
-                                                  {"qty", "16000"},
-                                                  {"oper", "2200"},
-                                                  {"hold", "N"},
-                                                  {"mvin", "Y"},
-                                                  {"sub_lot", "9"},
-                                                  {"queue_time", ""},
-                                                  {"fcst_time", ""},
-                                                  {"amount_of_tools", ""},
-                                                  {"amount_of_wires", ""},
-                                                  {"CAN_RUN_MODELS", ""},
-                                                  {"PROCESS_TIME", ""},
-                                                  {"uphs", ""},
-                                                  {"part_id", ""},
-                                                  {"part_no", ""}});
+    _testing_data_template = map<string, string>({
+        {          "route",       "QFNS288"},
+        {     "lot_number",     "P23ASEA02"},
+        {    "pin_package",    "DFN-08YM2G"},
+        {          "bd_id", "AAS008YM2024A"},
+        {        "prod_id",    "008YMAS034"},
+        {    "urgent_code",              ""},
+        {       "customer",              ""},
+        {    "wb_location",              ""},
+        {            "qty",         "16000"},
+        {           "oper",          "2200"},
+        {           "hold",             "N"},
+        {           "mvin",             "Y"},
+        {        "sub_lot",             "9"},
+        {     "queue_time",              ""},
+        {      "fcst_time",              ""},
+        {"amount_of_tools",              ""},
+        {"amount_of_wires",              ""},
+        { "CAN_RUN_MODELS",              ""},
+        {   "PROCESS_TIME",              ""},
+        {           "uphs",              ""},
+        {        "part_id",              ""},
+        {        "part_no",              ""}
+    });
 
-    case1 = map<string, string>({{"route", "QFNS288"},
-                                 {"lot_number", "P23ASEA02"},
-                                 {"pin_package", "DFN-08YM2G"},
-                                 {"bd_id", "AAS008YM2024A"},
-                                 {"prod_id", "008YMAS034"},
-                                 {"urgent_code", "urgent"},
-                                 {"customer", "MXIC"},
-                                 {"wb_location", "NB123-1"},
-                                 {"qty", "16000"},
-                                 {"oper", "2200"},
-                                 {"hold", "N"},
-                                 {"mvin", "Y"},
-                                 {"sub_lot", "9"},
-                                 {"amount_of_tools", "100"},
-                                 {"amount_of_wires", "20"},
-                                 {"CAN_RUN_MODELS", ""},
-                                 {"PROCESS_TIME", ""},
-                                 {"uphs", ""},
-                                 {"part_id", "PART_ID"},
-                                 {"part_no", "PART_NO"}});
+    case1 = map<string, string>({
+        {          "route",       "QFNS288"},
+        {     "lot_number",     "P23ASEA02"},
+        {    "pin_package",    "DFN-08YM2G"},
+        {          "bd_id", "AAS008YM2024A"},
+        {        "prod_id",    "008YMAS034"},
+        {    "urgent_code",        "urgent"},
+        {       "customer",          "MXIC"},
+        {    "wb_location",       "NB123-1"},
+        {            "qty",         "16000"},
+        {           "oper",          "2200"},
+        {           "hold",             "N"},
+        {           "mvin",             "Y"},
+        {        "sub_lot",             "9"},
+        {"amount_of_tools",           "100"},
+        {"amount_of_wires",            "20"},
+        { "CAN_RUN_MODELS",              ""},
+        {   "PROCESS_TIME",              ""},
+        {           "uphs",              ""},
+        {        "part_id",       "PART_ID"},
+        {        "part_no",       "PART_NO"}
+    });
 
-    case2 = map<string, string>({{"route", "QFNS288"},
-                                 {"lot_number", "P23ASEA02"},
-                                 {"pin_package", "DFN-08YM2G"},
-                                 {"bd_id", "AAS008YM2024A"},
-                                 {"prod_id", "008YMAS034"},
-                                 {"urgent_code", "urgent"},
-                                 {"customer", "MXIC"},
-                                 {"wb_location", "BB211-1"},
-                                 {"qty", "16000"},
-                                 {"oper", "2200"},
-                                 {"hold", "N"},
-                                 {"mvin", "Y"},
-                                 {"sub_lot", "9"},
-                                 {"amount_of_tools", "100"},
-                                 {"amount_of_wires", "20"},
-                                 {"CAN_RUN_MODELS", ""},
-                                 {"PROCESS_TIME", ""},
-                                 {"uphs", ""},
-                                 {"part_id", "PART_ID"},
-                                 {"part_no", "PART_NO"}});
+    case2 = map<string, string>({
+        {          "route",       "QFNS288"},
+        {     "lot_number",     "P23ASEA02"},
+        {    "pin_package",    "DFN-08YM2G"},
+        {          "bd_id", "AAS008YM2024A"},
+        {        "prod_id",    "008YMAS034"},
+        {    "urgent_code",        "urgent"},
+        {       "customer",          "MXIC"},
+        {    "wb_location",       "BB211-1"},
+        {            "qty",         "16000"},
+        {           "oper",          "2200"},
+        {           "hold",             "N"},
+        {           "mvin",             "Y"},
+        {        "sub_lot",             "9"},
+        {"amount_of_tools",           "100"},
+        {"amount_of_wires",            "20"},
+        { "CAN_RUN_MODELS",              ""},
+        {   "PROCESS_TIME",              ""},
+        {           "uphs",              ""},
+        {        "part_id",       "PART_ID"},
+        {        "part_no",       "PART_NO"}
+    });
 }
 
 TEST_F(test_lots_t, test_lots_case1)
@@ -132,19 +138,20 @@ TEST_F(test_lots_t, test_lots_case1)
     EXPECT_EQ(lots->prescheduled_lots.size(), 0);
     EXPECT_EQ(lots->lots.size(), 1);
 
-    EXPECT_NO_THROW(lots->tool_lots.at(lot->_part_no));
-    EXPECT_EQ(lots->tool_lots.at(lot->_part_no)[0], lot);
+    EXPECT_NO_THROW(lots->tool_lots.at(lot->part_no()));
+    EXPECT_EQ(lots->tool_lots.at(lot->part_no())[0], lot);
 
     EXPECT_NO_THROW(lots->wire_lots.at(lot->_part_id));
     EXPECT_EQ(lots->wire_lots.at(lot->_part_id)[0], lot);
 
     EXPECT_NO_THROW(
-        lots->tool_wire_lots.at(lot->_part_no + "_" + lot->_part_id));
-    EXPECT_EQ(lots->tool_wire_lots.at(lot->_part_no + "_" + lot->_part_id)[0],
+        lots->tool_wire_lots.at(lot->part_no() + "_" + lot->_part_id));
+    EXPECT_EQ(lots->tool_wire_lots.at(lot->part_no() + "_" + lot->_part_id)[0],
               lot);
 
 
-    EXPECT_EQ(lots->amount_of_tools.at(lot->_part_no), lot->_amount_of_tools);
+    EXPECT_EQ(lots->amount_of_tools.at(lot->part_no()),
+              lot->getAmountOfTools());
     EXPECT_EQ(lots->amount_of_wires.at(lot->_part_id), lot->_amount_of_wires);
 
     delete lot;
@@ -165,10 +172,10 @@ TEST_F(test_lots_t, test_lots_case2)
     EXPECT_EQ(lots->prescheduled_lots.size(), 1);
     EXPECT_EQ(lots->lots.size(), 0);
 
-    EXPECT_ANY_THROW(lots->tool_lots.at(lot->_part_no));
+    EXPECT_ANY_THROW(lots->tool_lots.at(lot->part_no()));
     EXPECT_ANY_THROW(lots->wire_lots.at(lot->_part_id));
     EXPECT_ANY_THROW(
-        lots->tool_wire_lots.at(lot->_part_no + "_" + lot->_part_id));
+        lots->tool_wire_lots.at(lot->part_no() + "_" + lot->_part_id));
 
 
     delete lot;

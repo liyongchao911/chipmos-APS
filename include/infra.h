@@ -81,6 +81,7 @@ void stringToUpper(char *text);
 
 struct __info_t stringToInfo(std::string s);
 
+bool isNumeric(std::string s);
 
 void random(double *genes, int size);
 
@@ -99,3 +100,7 @@ double randomDouble();
         sum / SIZE;                     \
     })
 #endif
+
+#define set_bit(num, i) ((num) |= (1 << (i)))
+
+#define check_bit(num, i) (((num) & (1 << (i))) ? 1 : 0)

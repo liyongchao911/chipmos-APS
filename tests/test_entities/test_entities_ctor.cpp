@@ -38,17 +38,17 @@ void test_entities_t::SetUp()
 {
     entities = nullptr;
     data = map<string, string>{
-        {"entity", "BB211"},
-        {"model", "UTC3000"},
+        {      "entity",         "BB211"},
+        {       "model",       "UTC3000"},
         {"recover_time", "21-6-19 15:24"},
-        {"prod_id", "048TPAW086"},
-        {"pin_package", "TSOP1-48/M2"},
-        {"lot_number", "P23AWDV31"},
-        {"customer", "MXIC"},
-        {"bd_id", "AAW048TP1041B"},
-        {"oper", "2200"},
-        {"qty", "1280"},
-        {"location", "TA-A"},
+        {     "prod_id",    "048TPAW086"},
+        { "pin_package",   "TSOP1-48/M2"},
+        {  "lot_number",     "P23AWDV31"},
+        {    "customer",          "MXIC"},
+        {       "bd_id", "AAW048TP1041B"},
+        {        "oper",          "2200"},
+        {         "qty",          "1280"},
+        {    "location",          "TA-A"},
     };
 
     prod_map_to_pid = map<string, string>({
@@ -63,7 +63,9 @@ void test_entities_t::SetUp()
         {"PID", "PART_NO"},
     });
 
-    bomid_map_to_part_id = map<string, string>({{"BOMID_2200", "PART_ID"}});
+    bomid_map_to_part_id = map<string, string>({
+        {"BOMID_2200", "PART_ID"}
+    });
 
     entities = new entities_t();
 
@@ -109,7 +111,8 @@ TEST_F(test_entities_t, test_addMachine_entity_current_lot_setup)
     EXPECT_EQ(ent->_current_lot->_qty, 1280);
     EXPECT_EQ(ent->_current_lot->_oper, 2200);
     EXPECT_EQ(ent->_current_lot->_part_id.compare("PART_ID"), 0);
-    EXPECT_EQ(ent->_current_lot->_part_no.compare("PART_NO"), 0);
+    string part_no = ent->_current_lot->part_no();
+    EXPECT_EQ(part_no.compare("PART_NO"), 0);
 }
 
 TEST_F(test_entities_t, test_addMachine_entities_containers)

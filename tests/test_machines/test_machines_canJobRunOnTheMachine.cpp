@@ -79,25 +79,31 @@ void test_machines_t_canJobRunOnTheMachine::TearDown()
 
 void test_machines_t_canJobRunOnTheMachine::SetUp()
 {
-    case1 = map<string, string>({{"lot_number", "L1"},
-                                 {"machine_location", "TA"},
-                                 {"machine_model", "UTC1000"},
-                                 {"can_run_location", "TA,TB"},
-                                 {"can_run_models", "UTC1000,UTC2000,UTC3000"},
-                                 {"process_time", "1,2,3"}});
+    case1 = map<string, string>({
+        {      "lot_number",                      "L1"},
+        {"machine_location",                      "TA"},
+        {   "machine_model",                 "UTC1000"},
+        {"can_run_location",                   "TA,TB"},
+        {  "can_run_models", "UTC1000,UTC2000,UTC3000"},
+        {    "process_time",                   "1,2,3"}
+    });
 
-    case2 = map<string, string>({{"lot_number", "L1"},
-                                 {"machine_location", "TA"},
-                                 {"machine_model", "UTC5000"},
-                                 {"can_run_location", "TA,TB"},
-                                 {"can_run_models", "UTC1000,UTC2000,UTC3000"},
-                                 {"process_time", "1,2,3"}});
-    case3 = map<string, string>({{"lot_number", "L1"},
-                                 {"machine_location", "TC"},
-                                 {"machine_model", "UTC5000"},
-                                 {"can_run_location", "TA,TB"},
-                                 {"can_run_models", "UTC1000,UTC2000,UTC3000"},
-                                 {"process_time", "1,2,3"}});
+    case2 = map<string, string>({
+        {      "lot_number",                      "L1"},
+        {"machine_location",                      "TA"},
+        {   "machine_model",                 "UTC5000"},
+        {"can_run_location",                   "TA,TB"},
+        {  "can_run_models", "UTC1000,UTC2000,UTC3000"},
+        {    "process_time",                   "1,2,3"}
+    });
+    case3 = map<string, string>({
+        {      "lot_number",                      "L1"},
+        {"machine_location",                      "TC"},
+        {   "machine_model",                 "UTC5000"},
+        {"can_run_location",                   "TA,TB"},
+        {  "can_run_models", "UTC1000,UTC2000,UTC3000"},
+        {    "process_time",                   "1,2,3"}
+    });
 }
 
 TEST_F(test_machines_t_canJobRunOnTheMachine, test_correctness1)

@@ -3,7 +3,12 @@
 //
 
 #include "include/algorithm.h"
-
+#ifdef WIN32
+#include <winsock.h>
+#else
+#include <sys/socket.h>
+#endif
+#include <unistd.h>
 #include <vector>
 
 using namespace std;
@@ -23,8 +28,8 @@ void prescheduling(machines_t *machines, lots_t *lots)
             machines->addPrescheduledJob(job);
             prescheduled_jobs.push_back(job);
         } catch (out_of_range &e) {
-            cout << "Error " << prescheduled_lots[i]->preScheduledEntity()
-                 << endl;
+            // cout << "Error " << prescheduled_lots[i]->preScheduledEntity()
+            //      << endl;
             delete job;
             lots->pushBackNotPrescheduledLot(prescheduled_lots[i]);
         }
@@ -33,7 +38,7 @@ void prescheduling(machines_t *machines, lots_t *lots)
     machines->prescheduleJobs();
 }
 
-void stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
+int stage2Scheduling(machines_t *machines, lots_t *lots, double peak_period)
 {
     map<string, vector<lot_t *> > groups;
     machines->setNumberOfTools(lots->amountOfTools());
@@ -64,11 +69,16 @@ void stage2Scheduling(machines_t *machines, lots_t *lots, bool peak_period)
     if (peak_period) {
         machines->distributeOrphanMachines();
     }
-    machines->scheduleGroups();
+    machines->distributeOrphanMachines(peak_period);
+    int stage2_setup_times = machines->scheduleGroups();
+    return stage2_setup_times;
 }
 
 
-void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop)
+void stage3Scheduling(machines_t *machines,
+                      lots_t *lots,
+                      population_t *pop,
+                      int fd)
 {
     machines->groupJobsByToolAndWire();
     machines->distributeTools();
@@ -98,10 +108,10 @@ void stage3Scheduling(machines_t *machines, lots_t *lots, population_t *pop)
     pop->operations.job_ops = machines->getInitializedJobBaseOperations();
     pop->operations.list_ops = machines->getInitializedListOperations();
 
-    cout << "Number of machines : " << pop->objects.NUMBER_OF_MACHINES << endl;
-    cout << "Number of jobs : " << pop->objects.NUMBER_OF_JOBS << endl;
+    // cout << "Number of machines : " << pop->objects.NUMBER_OF_MACHINES <<
+    // endl; cout << "Number of jobs : " << pop->objects.NUMBER_OF_JOBS << endl;
 
-    geneticAlgorithm(pop);
+    geneticAlgorithm(pop, fd);
 }
 
 void prepareChromosomes(chromosome_base_t **_chromosomes,
@@ -168,7 +178,7 @@ void chromosomeSelection(chromosome_base_t *chromosomes,
     }
 }
 
-void geneticAlgorithm(population_t *pop)
+void geneticAlgorithm(population_t *pop, int fd)
 {
     int AMOUNT_OF_JOBS = pop->objects.NUMBER_OF_JOBS;
     int NUMBER_OF_MACHINES = pop->objects.NUMBER_OF_MACHINES;
@@ -187,19 +197,25 @@ void geneticAlgorithm(population_t *pop)
     job_base_operations_t *job_ops = pop->operations.job_ops;
     // initialize machine_op
     int k;
+
+    char output_string[1024];
+    int string_length = 0;
     for (k = 0; k < pop->parameters.GENERATIONS; ++k) {
         for (int i = 0; i < pop->parameters.AMOUNT_OF_R_CHROMOSOMES;
              ++i) {  // for all chromosomes
-            chromosomes[i].fitnessValue = decoding(
-                chromosomes[i], jobs, machines, machine_ops, list_ops, job_ops,
-                AMOUNT_OF_JOBS, NUMBER_OF_MACHINES, MAX_SETUP_TIMES,
-                pop->parameters.weights, pop->parameters.scheduling_parameters);
+            chromosomes[i].fitnessValue =
+                decoding(chromosomes[i], jobs, machines, machine_ops, list_ops,
+                         job_ops, AMOUNT_OF_JOBS, NUMBER_OF_MACHINES,
+                         MAX_SETUP_TIMES, pop->parameters.weights,
+                         pop->parameters.setup_times_parameters);
         }
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES,
               sizeof(chromosomes[0]), chromosomeCmp);
-        printf("%d,%.3f\n", k, chromosomes[0].fitnessValue);
-
+        string_length =
+            sprintf(output_string, "%d/%d-%lf\n", k,
+                    pop->parameters.GENERATIONS, chromosomes[0].fitnessValue);
+        write(1, output_string, string_length);
         // statistic
         chromosomeSelection(chromosomes, tmp_chromosomes,
                             pop->parameters.SELECTION_RATE,
@@ -230,7 +246,7 @@ void geneticAlgorithm(population_t *pop)
 
     decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops,
              AMOUNT_OF_JOBS, NUMBER_OF_MACHINES, MAX_SETUP_TIMES,
-             pop->parameters.weights, pop->parameters.scheduling_parameters);
+             pop->parameters.weights, pop->parameters.setup_times_parameters);
 
     // update machines' avaliable time and set the last job
     for (int i = 0; i < NUMBER_OF_MACHINES; ++i) {

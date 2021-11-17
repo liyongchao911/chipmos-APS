@@ -1,3 +1,6 @@
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
 #include <cstdlib>
 #include <ctime>
 #include <map>
@@ -13,6 +16,8 @@
 #include "include/lots.h"
 #include "include/machines.h"
 #include "include/population.h"
+#include "include/progress.h"
+
 
 using namespace std;
 
@@ -21,29 +26,96 @@ map<string, string> outputJobInMachine(machine_t *machine);
 
 void outputJobInMachine(map<string, machine_t *>, csv_t *csv);
 
-lots_t createLots(int argc, const char *argv[]);
-entities_t createEntities(int argc, const char *argv[]);
+lots_t createLots(int argc, const char **, map<string, string>);
+entities_t createEntities(int argc, const char **argv, map<string, string>);
+
+void *run(void *);
+
+typedef struct __thread_data_t {
+    map<string, string> arguments;
+    int argc;
+    const char **argv;
+    int fd;
+    int id;
+} thread_data_t;
 
 char MESSAGE[] =
-    "version 0.0.3\n"
+    "version 0.0.5\n"
     "Author : NCKU Smart Production Lab";
 
-int main(int argc, const char *argv[])
+sem_t SEM;
+
+int main(int argc, const char **argv)
 {
     if (argc < 2) {
         printf("%s\n", MESSAGE);
         printf("Please specify the path of configuration file\n");
         exit(EXIT_FAILURE);
     }
+    sem_init(&SEM, 0, 15);
 
     csv_t cfg(argv[1], "r", true, true);
-    map<string, string> arguments = cfg.getElements(0);
-
-    lots_t lots = createLots(argc, argv);
-    entities_t entities = createEntities(argc, argv);
+    // get the cfg size
+    int nthreads = cfg.nrows();
+    pthread_t *threads = (pthread_t *) malloc(sizeof(pthread_t) * nthreads);
+    thread_data_t **thread_data_array =
+        (thread_data_t **) malloc(sizeof(thread_data_t *) * nthreads);
 
 
     srand(time(NULL));
+    // progress_bar_attr_t *pbattr =
+    //     create_progress_bar_attr(nthreads + 1, "127.0.0.1", 8081);
+    // pthread_t accept_thread, progress_bar_thread;
+    // pthread_create(&accept_thread, NULL, accept_connection, (void *) pbattr);
+
+    // int fds[1024] = {-1};
+    // for (int i = 0; i < nthreads; ++i) {
+    //     fds[i] = create_client_connection("127.0.0.1", 8081);
+    // }
+    // int main_fd = create_client_connection("127.0.0.1", 8081);
+    // pthread_join(accept_thread, NULL);
+
+    // pthread_create(&progress_bar_thread, NULL, run_progress_bar_server,
+    //                (void *) pbattr);
+    // map<string, string> arguments = cfg.getElements(0);
+    for (unsigned int i = 0; i < cfg.nrows(); ++i) {
+        thread_data_array[i] = new thread_data_t();
+        *thread_data_array[i] = thread_data_t{.arguments = cfg.getElements(i),
+                                              .argc = argc,
+                                              .argv = argv,
+                                              .fd = 1,
+                                              .id = (int) i};
+        pthread_create(threads + i, NULL, run, thread_data_array[i]);
+    }
+
+    for (unsigned int i = 0; i < cfg.nrows(); ++i) {
+        pthread_join(threads[i], NULL);
+    }
+    sem_destroy(&SEM);
+    // send(main_fd, "close", 5, 0);
+    // pthread_join(progress_bar_thread, NULL);
+    // delete_attr(&pbattr);
+
+
+    return 0;
+}
+
+void *run(void *_data)
+{
+    // sem_wait(&SEM);
+    thread_data_t *data = (thread_data_t *) _data;
+    int argc = data->argc;
+    const char **argv = data->argv;
+    int id = data->id;
+    printf("Thread[%d] starts...\n", id);
+    map<string, string> arguments = data->arguments;
+
+    lots_t lots = createLots(argc, argv, arguments);
+    entities_t entities = createEntities(argc, argv, arguments);
+
+    if (data->fd < 0)
+        data->fd = 1;
+
     population_t pop = population_t{
         .parameters =
             {.AMOUNT_OF_CHROMOSOMES = 100,
@@ -58,7 +130,7 @@ int main(int argc, const char *argv[])
                              stoi(arguments["weight_total_completion_time"]),
                          .WEIGHT_MAX_SETUP_TIMES =
                              stoi(arguments["weight_max_setup_times"])},
-             .scheduling_parameters =
+             .setup_times_parameters =
                  {
                      .TIME_CWN = stod(arguments["setup_time_cwn"]),
                      .TIME_CK = stod(arguments["setup_time_ck"]),
@@ -68,24 +140,32 @@ int main(int argc, const char *argv[])
                      .TIME_CSC = stod(arguments["setup_time_csc"]),
                      .TIME_USC = stod(arguments["setup_time_usc"]),
                      .TIME_ICSI = stod(arguments["setup_time_icsi"]),
-                 }},
+                 },
+             .scheduling_parameters =
+                 {.PEAK_PERIOD = stof(arguments["peak_period"]),
+                  .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"]),
+                  .MINUTE_THRESHOLD = stoi(arguments["minute_threshold"])}},
+
     };
 
-    machines_t *machines = new machines_t(pop.parameters.scheduling_parameters,
+    machines_t *machines = new machines_t(pop.parameters.setup_times_parameters,
                                           pop.parameters.weights);
 
-    machines->setThreshold(stoi(arguments["minute_threshold"]));
+    machines->setThreshold(
+        pop.parameters.scheduling_parameters.MINUTE_THRESHOLD);
 
     vector<entity_t *> all_entities = entities.allEntities();
     foreach (all_entities, i) {
         machines->addMachine(all_entities[i]->machine());
     }
-    bool peak_period = stoi(arguments["peak_period"]);
     prescheduling(machines, &lots);
-    stage2Scheduling(machines, &lots, peak_period);
-    stage3Scheduling(machines, &lots, &pop);
+    int stage2_setup_times = stage2Scheduling(
+        machines, &lots, pop.parameters.scheduling_parameters.PEAK_PERIOD);
+    pop.parameters.scheduling_parameters.MAX_SETUP_TIMES -= stage2_setup_times;
+    stage3Scheduling(machines, &lots, &pop, data->fd);
     vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
-    csv_t result("./output/result.csv", "w");
+    string directory = "output_" + arguments["no"];
+    csv_t result(directory + "/result.csv", "w");
     foreach (scheduled_jobs, i) {
         result.addData(outputJob(*scheduled_jobs[i]));
     }
@@ -94,21 +174,20 @@ int main(int argc, const char *argv[])
         result.addData(outputJob(*pop.objects.jobs[i]));
     }
     result.write();
-    return 0;
+
+    printf("Thread[%d] is finished...\n", id);
+    // sem_post(&SEM);
+    return NULL;
 }
 
 
-
-lots_t createLots(int argc, const char *argv[])
+lots_t createLots(int argc, const char **argv, map<string, string> arguments)
 {
-    csv_t cfg(argv[1], "r", true, true);
-    map<string, string> arguments = cfg.getElements(0);
-
     lots_t lots;
     lot_t *lot;
     if (argc >= 3) {
-        printf("Create lots by using pre-created lots.csv file : %s\n",
-               argv[2]);
+        // printf("Create lots by using pre-created lots.csv file : %s\n",
+        //        argv[2]);
         csv_t lots_csv(argv[2], "r", true, true);
         vector<lot_t *> all_lots;
         for (int i = 0, nrows = lots_csv.nrows(); i < nrows; ++i) {
@@ -117,18 +196,18 @@ lots_t createLots(int argc, const char *argv[])
         }
         lots.addLots(all_lots);
     } else {
-        printf("Create lots by using configure file : %s\n", argv[1]);
+        // printf("Create lots by using configure file : %s\n", argv[1]);
         lots.createLots(arguments);
     }
+    lots.setProcessTimeRatio(stod(arguments["process_time_ratio"]));
 
     return lots;
 }
 
-entities_t createEntities(int argc, const char *argv[])
+entities_t createEntities(int argc,
+                          const char **argv,
+                          map<string, string> arguments)
 {
-    csv_t cfg(argv[1], "r", true, true);
-    map<string, string> arguments = cfg.getElements(0);
-
     csv_t machine_csv(arguments["machines"], "r", true, true);
     machine_csv.trim(" ");
     machine_csv.setHeaders(map<string, string>({{"entity", "ENTITY"},

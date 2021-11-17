@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-
 #include "include/csv.h"
+#include "include/infra.h"
 #include "include/lot.h"
 
 extern const int WB_STATIONS[];
@@ -28,6 +28,20 @@ struct station_t {
     int oper;
     int seq;
 };
+
+#define TRAVERSE_TABLE                                                \
+    X(TRAVERSE_ERROR, =, 1), X(TRAVERSE_FINISHED, =, 2),              \
+        X(TRAVERSE_DA_ARRIVED, =, 4), X(TRAVERSE_DA_UNARRIVED, =, 8), \
+        X(TRAVERSE_DA_MVIN, =, 16)
+
+
+#define X(name, eq, val) name eq val
+enum TRAVERSE_STATUS { TRAVERSE_TABLE };
+#undef X
+
+extern const int TRAVERSE_STATUS_VALUES[];
+extern const int TRAVERSE_STATUS_SIZE;
+
 
 class route_t
 {

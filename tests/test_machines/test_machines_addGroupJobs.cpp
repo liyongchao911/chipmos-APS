@@ -90,20 +90,21 @@ void test_machines_t_addGroupsJobs::SetUp()
     }
 
 
-    entity_data_template =
-        map<string, string>{{"entity", "BB211"},
-                            {"model", "UTC3000"},
-                            {"recover_time", "2021/6/19 15:24"},
-                            {"prod_id", "048TPAW086"},
-                            {"pin_package", "TSOP1-48/M2"},
-                            {"lot_number", "P23AWDV31"},
-                            {"customer", "MXIC"},
-                            {"bd_id", "AAS008YM2024A"},
-                            {"oper", "2200"},
-                            {"qty", "1280"},
-                            {"location", "TA-A"},
-                            {"part_no", "PART_NO"},
-                            {"part_id", "PART_ID"}};
+    entity_data_template = map<string, string>{
+        {      "entity",           "BB211"},
+        {       "model",         "UTC3000"},
+        {"recover_time", "2021/6/19 15:24"},
+        {     "prod_id",      "048TPAW086"},
+        { "pin_package",     "TSOP1-48/M2"},
+        {  "lot_number",       "P23AWDV31"},
+        {    "customer",            "MXIC"},
+        {       "bd_id",   "AAS008YM2024A"},
+        {        "oper",            "2200"},
+        {         "qty",            "1280"},
+        {    "location",            "TA-A"},
+        {     "part_no",         "PART_NO"},
+        {     "part_id",         "PART_ID"}
+    };
 
     test_entity_case1 = entity_data_template;
     test_entity_case2 = entity_data_template;
@@ -123,29 +124,30 @@ void test_machines_t_addGroupsJobs::SetUp()
     ent4 = createAnEntity(test_entity_case4);
 
 
-    lot_data_template =
-        map<string, string>({{"route", "QFNS288"},
-                             {"lot_number", "P23ASEA02"},
-                             {"pin_package", "DFN-08YM2G"},
-                             {"bd_id", "AAS008YM2024A"},
-                             {"prod_id", "008YMAS034"},
-                             {"urgent_code", "urgent"},
-                             {"customer", ""},
-                             {"wb_location", ""},
-                             {"qty", "16000"},
-                             {"oper", "2200"},
-                             {"hold", "N"},
-                             {"mvin", "Y"},
-                             {"sub_lot", "9"},
-                             {"queue_time", "240.345"},
-                             {"fcst_time", "123.2"},
-                             {"amount_of_tools", "10"},
-                             {"amount_of_wires", "20"},
-                             {"CAN_RUN_MODELS", "UTC1000S,UTC2000S,UTC3000"},
-                             {"PROCESS_TIME", "123.45,456.78,789.1"},
-                             {"uphs", "23,45,67"},
-                             {"part_id", "PART_ID"},
-                             {"part_no", "PART_NO"}});
+    lot_data_template = map<string, string>({
+        {          "route",                   "QFNS288"},
+        {     "lot_number",                 "P23ASEA02"},
+        {    "pin_package",                "DFN-08YM2G"},
+        {          "bd_id",             "AAS008YM2024A"},
+        {        "prod_id",                "008YMAS034"},
+        {    "urgent_code",                    "urgent"},
+        {       "customer",                          ""},
+        {    "wb_location",                          ""},
+        {            "qty",                     "16000"},
+        {           "oper",                      "2200"},
+        {           "hold",                         "N"},
+        {           "mvin",                         "Y"},
+        {        "sub_lot",                         "9"},
+        {     "queue_time",                   "240.345"},
+        {      "fcst_time",                     "123.2"},
+        {"amount_of_tools",                        "10"},
+        {"amount_of_wires",                        "20"},
+        { "CAN_RUN_MODELS", "UTC1000S,UTC2000S,UTC3000"},
+        {   "PROCESS_TIME",       "123.45,456.78,789.1"},
+        {           "uphs",                  "23,45,67"},
+        {        "part_id",                   "PART_ID"},
+        {        "part_no",                   "PART_NO"}
+    });
 
 
     test_lot_case1 = lot_data_template;
