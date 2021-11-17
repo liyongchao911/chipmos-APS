@@ -16,7 +16,7 @@ jobs:
     - name: Test
       run : |
         cd build
-        ./test --gtest_repeat=1000
+        ./test --gtest_repeat=10
 
   on_windows:
     # The CMake configure and build commands are platform agnostic and should work equally

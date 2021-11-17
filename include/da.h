@@ -98,6 +98,8 @@ public:
     void removeAllLots();
 
     std::vector<lot_t> getParentLots();
+
+    void decrementProductionCapacity(lot_t &lot);
 };
 
 inline std::vector<lot_t> da_stations_t::getParentLots()

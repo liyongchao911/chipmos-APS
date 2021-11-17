@@ -1,9 +1,10 @@
 //
-// Created by eugene on 2021/7/5.
+// Created by Eugene on 2021/7/5.
 //
 #ifndef __LOTS_H__
 #define __LOTS_H__
 
+#include <sys/stat.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -11,8 +12,17 @@
 #include "include/da.h"
 #include "include/entities.h"
 #include "include/entity.h"
+#include "include/infra.h"
 #include "include/lot.h"
 #include "include/route.h"
+
+class lots_t;
+
+typedef void (lots_t::*traversing_function)(lot_t &lot,
+                                            std::vector<lot_t> &unfinished,
+                                            std::vector<lot_t> &finished,
+                                            std::vector<lot_t> &faulty_lot,
+                                            da_stations_t &das);
 
 /**
  * class lots_t, a container of lot
@@ -31,14 +41,36 @@ protected:
     std::map<std::string, std::vector<lot_t *> > tool_wire_lots;
     std::map<std::string, int> amount_of_wires;
     std::map<std::string, int> amount_of_tools;
+    std::set<std::string> _automotive_lot_numbers;
 
-    /**
-     * initializeModelDistribution () - initialize model distribution to 0
-     * @param loc_ents : location maps to the entities in the location
-     * @return a mapping relationship mapping model name to 0
-     */
-    static std::map<std::string, int> initializeModelDistribution(
-        std::map<std::string, std::vector<entity_t *> > loc_ents);
+    std::vector<traversing_function> _traversing_functions;
+    void _traversingError(lot_t &lot,
+                          std::vector<lot_t> &unfinished,
+                          std::vector<lot_t> &finished,
+                          std::vector<lot_t> &faulty_lot,
+                          da_stations_t &das);
+    void _traversingFinished(lot_t &lot,
+                             std::vector<lot_t> &unfinished,
+                             std::vector<lot_t> &finished,
+                             std::vector<lot_t> &faulty_lot,
+                             da_stations_t &das);
+    void _traversingDAArrived(lot_t &lot,
+                              std::vector<lot_t> &unfinished,
+                              std::vector<lot_t> &finished,
+                              std::vector<lot_t> &faulty_lot,
+                              da_stations_t &das);
+    void _traversingDAUnarrived(lot_t &lot,
+                                std::vector<lot_t> &unfinished,
+                                std::vector<lot_t> &finished,
+                                std::vector<lot_t> &faulty_lot,
+                                da_stations_t &das);
+    void _traversingDADecrement(lot_t &lot,
+                                std::vector<lot_t> &unfinished,
+                                std::vector<lot_t> &finished,
+                                std::vector<lot_t> &faulty_lot,
+                                da_stations_t &das);
+
+    // traversing_function _traversingFinished;
 
 
     /**
@@ -71,7 +103,8 @@ protected:
                                     std::string wire_stock_filename,
                                     std::string bdid_mapping_models_filename,
                                     std::string uph_filename,
-                                    std::string cure_time_filename);
+                                    std::string cure_time_filename,
+                                    std::string dir_suffix);
 
     /**
      * readWip () - read wip filename
@@ -231,14 +264,9 @@ protected:
                 std::vector<lot_t> &lots,
                 std::vector<lot_t> &faulty_lots);
 
-    std::vector<lot_group_t> selectGroups(int max);
 
 public:
-    /**
-     * toolWireLotsHasLots () - if tool_wire classification has lot
-     * @return
-     */
-    bool toolWireLotsHasLots();
+    lots_t();
 
     /**
      * addLots () - add the lots
@@ -250,41 +278,6 @@ public:
 
     void pushBackNotPrescheduledLot(lot_t *lot);
 
-    /**
-     * round () - determine which lot is in a round of scheduling.
-     * The function is used determine which group of lot can be scheduled in
-     * this round. Each lot in the function will choose its can run entities The
-     * function ensure each returned lot_group has sufficient tool and wire and
-     * entity.
-     *
-     * The function sorts the lot groups by the number of lots and chooses max
-     * of 50 lot groups. The number of tools and wires distributed to each
-     * groups is determined by the ratio of lot number in a group. The entities
-     * chosen for each group follow the statistic result of models distribution
-     * of the lots. The number of entities in the group is min{number_of_tools,
-     * numnber_of_wires, can_run_entities}.
-     *
-     * @param machines
-     * @return a vector of lot_group_t instance in a round of scheduling plan
-     */
-    // std::vector<lot_group_t> round(entities_t machines);
-
-    /**
-     * rounds () - create multiple rounds until all lots are in scheduling plan
-     *
-     * rounds function invoke round function untill all lots are scheduling in
-     * each round.
-     *
-     */
-    // std::vector<std::vector<lot_group_t> > rounds(entities_t ents);
-
-    /**
-     * createLots () - create all lots by read multiple files
-     *
-     * The parameter passed to the function is a map<string, string> type
-     * variable which is used to store the functionality and the path of the
-     * file. createLots is a virtual function.
-     */
     virtual void createLots(std::map<std::string, std::string> files);
 
 
@@ -304,41 +297,30 @@ public:
      */
     std::map<std::string, int> amountOfTools();
 
-    /**
-     * setupToolWireAmount () - setup the tool's and wire's number for groups
-     *
-     *The function makes statistics on the tools and wires used by groups. The
-     *number of tools and wires for each group is determined by the ratio of the
-     *number of lots in each group which means that the more lots the group has,
-     *the more tools and wires the group would be distributed.
-     */
-    void setupToolWireAmount(std::vector<lot_group_t> &selected_groups);
-
-    /**
-     * bdidStatistic () - make statistics on the bdid for a vector of lots
-     *
-     * @param lots : a vector of pointers point to the lot_t instance
-     * @return a std::map container which maps the bdid to the number of lots
-     * using this bdid
-     */
-    std::map<std::string, int> bdidStatistic(std::vector<lot_t *> lots);
-
-    /**
-     * modelStatistic () - make statistics on the models for a vector of lots
-     *
-     * @param lots : a vector of pointers to lot_t instance
-     * @param loc_ents : a map container maps the location name to a vector of
-     * pointers point to the entity_t instance
-     * @return a std::map container which maps the
-     */
-    std::map<std::string, int> modelStatistic(
-        std::vector<lot_t *> lots,
-        std::map<std::string, std::vector<entity_t *> > loc_ents);
-
     std::vector<lot_t *> prescheduledLots();
 
     std::map<std::string, std::vector<lot_t *> > getLotsRecipeGroups();
+
+    inline std::set<std::string> getAutomotiveLots();
+
+    inline void setProcessTimeRatio(double ratio);
 };
+
+inline std::set<std::string> lots_t::getAutomotiveLots()
+{
+    return _automotive_lot_numbers;
+}
+
+inline void lots_t::setProcessTimeRatio(double ratio)
+{
+    foreach (lots, i) {
+        lots[i]->setProcessTimeRatio(ratio);
+    }
+
+    foreach (prescheduled_lots, i) {
+        prescheduled_lots[i]->setProcessTimeRatio(ratio);
+    }
+}
 
 inline std::vector<lot_t *> lots_t::prescheduledLots()
 {

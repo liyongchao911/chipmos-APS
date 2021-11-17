@@ -3,6 +3,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 #include "include/entity.h"
 #include "include/info.h"
@@ -20,75 +21,132 @@ lot_t::lot_t()
     _status = SUCCESS;
 }
 
+std::map<std::string, std::string> lot_t::rearrangeData(
+    std::map<std::string, std::string> elements)
+{
+    elements["recipe"] =
+        elements.count("recipe") == 1 ? elements["recipe"] : elements["bd_id"];
+
+    if (elements.count("bd_id") == 1) {
+        elements["recipe"] = elements.at("bd_id");
+    } else if (elements.count("recipe") == 0) {
+        elements["recipe"] = std::string("");
+    }
+
+    if (elements.count("queue_time") == 0) {
+        elements["queue_time"] = std::string("0");
+    }
+
+    if (elements.count("fcst_time") == 0) {
+        elements["fcst_time"] = std::string("0");
+    }
+
+    if (elements.count("dest_oper") == 0) {
+        elements["dest_oper"] = elements["oper"];
+    }
+
+    if (elements.count("amount_of_tools") == 0) {
+        elements["amount_of_tools"] = std::string("0");
+    }
+
+    if (elements.count("amount_of_wires") == 0) {
+        elements["amount_of_wires"] = std::string("0");
+    }
+
+    if (elements.count("part_no") == 0) {
+        elements["part_no"] = std::string("");
+    }
+
+    if (elements.count("part_id") == 0) {
+        elements["part_id"] = std::string("");
+    }
+
+    if (elements.count("sub_lot") == 0) {
+        elements["sub_lot"] = std::string("-1");
+    }
+
+    if (elements.count("qty") == 0) {
+        elements["qty"] = std::string("0");
+    }
+
+    return elements;
+}
+
+bool lot_t::checkDataFormat(std::map<std::string, std::string> &elements,
+                            std::string &log)
+{
+    // numeric data : queue_time, fcst_time,  dest_oper, amount_of_tools,
+    // amount_of_wires, sub_lot, qty
+    std::vector<std::string> numeric_keys = {
+        "queue_time",      "fcst_time", "dest_oper", "amount_of_tools",
+        "amount_of_wires", "sub_lot",   "qty"};
+
+    std::vector<std::string> wrong_keys;
+    for (auto key : numeric_keys) {
+        if (elements.count(key) == 0) {
+            continue;
+        } else if (!isNumeric(elements[key])) {
+            wrong_keys.push_back(key);
+            elements[key] = std::string("0");  // give the default value
+        }
+    }
+
+    log += "wrong keys : ";
+    log += join(wrong_keys, ",");
+
+    if (wrong_keys.size())
+        return false;
+    return true;
+}
+
+
 lot_t::lot_t(std::map<std::string, std::string> elements)
 {
     _status = SUCCESS;
+
+    elements = rearrangeData(elements);
+
+    std::string lg;
+    if (!checkDataFormat(elements, lg)) {
+        addLog(lg, ERROR_BAD_DATA_FORMAT);
+    }
+
     _route = elements["route"];
     _lot_number = elements["lot_number"];
     _pin_package = elements["pin_package"];
-    _recipe =
-        elements.count("recipe") == 1 ? elements["recipe"] : elements["bd_id"];
+    _recipe = elements["recipe"];
     _prod_id = elements["prod_id"];
     _urgent = elements["urgent_code"];
     _customer = elements["customer"];
     _wb_location = elements["wb_location"];
 
+    setHold(elements["hold"]);
+    setMvin(elements["mvin"]);
+    setAutomotive(elements["automotive"]);
 
-    try {
-        _qty = std::stoi(elements["qty"]);
-    } catch (std::invalid_argument &e) {
-#ifdef LOG_ERROR
-        std::cerr << e.what() << std::endl;
-        std::cerr << "[" << _lot_number << "]"
-                  << "exception is triggered in converting qty to integer"
-                  << std::endl;
-#endif
-        _qty = 0;
-    }
-    try {
-        _oper = std::stoi(elements["oper"]);
-    } catch (std::invalid_argument &e) {
-#ifdef LOG_ERROR
-        std::cerr << e.what() << std::endl;
-        std::cerr << "[" << _lot_number << "]"
-                  << "exception is triggered in converting oper to integer"
-                  << std::endl;
-#endif
-        _oper = 0;
+    _queue_time = std::stod(elements["queue_time"]);
+    _fcst_time = std::stod(elements["fcst_time"]);
+    tmp_oper = stoi(elements["dest_oper"]);
+    _sub_lots = std::stoi(elements["sub_lot"]);
+
+    _amount_of_wires = stoi(elements["amount_of_wires"]);
+
+    int _number_of_tools = stoi(elements["amount_of_tools"]);
+    std::string _part_no = elements["part_no"];
+    if (_part_no.length()) {
+        setAmountOfTools(_part_no, _number_of_tools);
     }
 
-    _hold = (elements["hold"].compare("Y") == 0) ? true : false;
-    _mvin = (elements["mvin"].compare("Y") == 0) ? true : false;
+    _qty = std::stoi(elements["qty"]);
+    _oper = std::stoi(elements["oper"]);
 
-    if (elements.count("queue_time") == 0) {
-        _queue_time = 0;
-    } else {
-        _queue_time = std::stod(elements["queue_time"]);
-    }
-
-    _queue_time =
-        (elements.count("queue_time") == 0 ? 0
-                                           : std::stod(elements["queue_time"]));
-
-    _fcst_time =
-        (elements.count("fcst_time") == 0 ? 0
-                                          : std::stod(elements["fcst_time"]));
     _outplan_time = 0;
-
     _finish_traversal = false;
-
-    tmp_oper = (elements.count("dest_oper") == 0)
-                   ? _oper
-                   : std::stoi(elements["dest_oper"]);
     tmp_mvin = _mvin;
 
     _is_sub_lot = _lot_number.length() > 8 ? true : false;
-    _amount_of_tools = elements.count("amount_of_tools") == 0
-                           ? 0
-                           : std::stoi(elements["amount_of_tools"]);
-    _amount_of_wires = elements.count("amount_of_wires") == 0
-                           ? 0
-                           : std::stoi(elements["amount_of_wires"]);
+    _part_id = elements["part_id"];
+
 
     if (elements.count("CAN_RUN_MODELS") != 0 &&
         elements.count("PROCESS_TIME") != 0 && elements.count("uphs")) {
@@ -113,17 +171,6 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
         }
     }
 
-    // if(elements.count("CAN_RUN_LOCATIONS") != 0){
-    //     char * text = strdup(elements["CAN_RUN_LOCATIONS"].c_str());
-    //     std::vector<std::string> locations = split(text, ',');
-    //     free(text);
-    //     _can_run_locations = locations;
-    // }
-
-    _part_id = elements.count("part_id") == 0 ? "" : elements["part_id"];
-    _part_no = elements.count("part_no") == 0 ? "" : elements["part_no"];
-    _sub_lots =
-        elements.count("sub_lot") == 0 ? -1 : std::stoi(elements["sub_lot"]);
 
     _prescheduled_order = -1;
     if (_wb_location.length() && _wb_location[0] != 'N') {
@@ -164,10 +211,6 @@ bool lot_t::checkFormation()
     if (_qty <= 0) {
         data_members.push_back("qty");
     }
-
-    // if(_sub_lots <= 0){
-    //     data_members.push_back("sub_lots");
-    // }
 
     if (data_members.size()) {
         error_msg = data_members.size() > 1 ? "These information, "
@@ -226,17 +269,26 @@ std::map<std::string, std::string> lot_t::data()
     d["process_id"] = _process_id;
     d["bom_id"] = _bom_id;
     d["part_id"] = _part_id;
-    d["part_no"] = _part_no;
+    try {
+        d["part_no"] = part_no();
+    } catch (std::logic_error &e) {
+        d["part_no"] = "";
+    }
 
     d["qty"] = std::to_string(_qty);
     d["oper"] = std::to_string(_oper);
     d["dest_oper"] = std::to_string(tmp_oper);
     d["lot_size"] = std::to_string(_lot_size);
     d["amount_of_wires"] = std::to_string(_amount_of_wires);
-    d["amount_of_tools"] = std::to_string(_amount_of_tools);
+    try {
+        d["amount_of_tools"] = std::to_string(getAmountOfTools());
+    } catch (std::logic_error &e) {
+        d["amount_of_tools"] = "";
+    }
     d["hold"] = _hold ? "Y" : "N";
     d["mvin"] = _mvin ? "Y" : "N";
     d["is_sub_lot"] = _is_sub_lot ? "Y" : "N";
+    d["automotive"] = _is_automotive ? "Y" : "N";
     d["queue_time"] = std::to_string(_queue_time);
     d["fcst_time"] = std::to_string(_fcst_time);
     d["log"] = join(_log, "||");
@@ -245,7 +297,12 @@ std::map<std::string, std::string> lot_t::data()
     d["wb_location"] = _wb_location;
     d["prescheduled_machine"] = _prescheduled_machine;
     d["prescheduled_order"] = std::to_string(_prescheduled_order);
-    d["code"] = std::string(ERROR_NAMES[_status]);
+    // d["code"] = std::string(ERROR_NAMES[_status]);
+    std::vector<std::string> code;
+    foreach (_statuses, i) {
+        code.push_back(std::string(ERROR_NAMES[_statuses[i]]));
+    }
+
 
     std::vector<std::string> models;
     for (std::map<std::string, double>::iterator it = _uphs.begin();
@@ -268,8 +325,9 @@ std::map<std::string, std::string> lot_t::data()
 
     d["CAN_RUN_MODELS"] = join(models, ",");
     d["PROCESS_TIME"] = join(process_times, ",");
-    // d["CAN_RUN_LOCATIONS"] = join(_can_run_locations, ",");
     d["uphs"] = join(uphs, ",");
+    d["code"] = join(code, ",");
+
     return d;
 }
 
@@ -391,7 +449,7 @@ job_t lot_t::job()
 
     j.base.job_info = stringToInfo(_lot_number);
 
-    j.part_no = stringToInfo(_part_no);
+    j.part_no = stringToInfo(part_no());
     j.part_id = stringToInfo(_part_id);
     j.prod_id = stringToInfo(_prod_id);
 
@@ -451,12 +509,19 @@ job_t lot_t::job()
     return j;
 }
 
-std::map<std::string, double> lot_t::getEntityProcessTime()
+bool lot_t::isLotOkay()
 {
-    return _entity_process_times;
-}
+    bool ret = true;
 
-bool lotGroupCmp(lot_group_t g1, lot_group_t g2)
-{
-    return (g1.lot_amount > g2.lot_amount);
+    // check data from wip
+    //  1. check lot number is sub lot
+    ret &= isSubLot();
+
+    // check hold
+    ret ^= _hold;
+
+    // check statuses
+    ret &= (_statuses.size() == 0);
+
+    return ret;
 }

@@ -16,7 +16,9 @@ set(src_files
         machines.cpp
         machine.cpp
         route.cpp
+        progress.c
         )
+set(CMAKE_BUILD_TYPE Debug)
 add_library(src STATIC ${src_files})
-target_compile_features(src PUBLIC cxx_std_11)
+target_compile_features(src PUBLIC cxx_std_17)
 target_include_directories(src PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

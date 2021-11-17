@@ -2,37 +2,41 @@
 #define __LOT_H__
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "include/csv.h"
 #include "include/infra.h"
 #include "include/job.h"
 
-#define ERROR_TABLE                                                       \
-    X(SUCCESS, = 0x00, "SUCCESS")                                         \
-    X(ERROR_WIP_INFORMATION_LOSS, = 0x01, "ERROR_WIP_INFORMATION_LOSS")   \
-    X(ERROR_PROCESS_ID, = 0x02, "ERROR_PROCESS_ID")                       \
-    X(ERROR_BOM_ID, = 0x03, "ERROR_BOM_ID")                               \
-    X(ERROR_LOT_SIZE, = 0x04, "ERROR_LOT_SIZE")                           \
-    X(ERROR_INVALID_LOT_SIZE, = 0x05, "ERROR_INVALID_LOT_SIZE")           \
-    X(ERROR_DA_FCST_VALUE, = 0x06, "ERROR_DA_FCST_VALUE")                 \
-    X(ERROR_INVALID_OPER_IN_ROUTE, = 0x07, "ERROR_INVALID_OPER_IN_ROUTE") \
-    X(ERROR_INVALID_QUEUE_TIME_COMBINATION, = 0x08,                       \
-      "ERROR_INVALID_QUEUE_TIME_COMBINATION")                             \
-    X(ERROR_HOLD, = 0x09, "ERROR_HOLD")                                   \
-    X(ERROR_WB7, = 0x0A, "ERROR_WB7")                                     \
-    X(ERROR_CONDITION_CARD, = 0x0B, "ERROR_CONDITION_CARD")               \
-    X(ERROR_PART_ID, = 0x0C, "ERROR_PART_ID")                             \
-    X(ERROR_NO_WIRE, = 0x0D, "ERROR_NO_WIRE")                             \
-    X(ERROR_WIRE_MAPPING_ERROR, = 0x0E, "ERROR_WIRE_MAPPING_ERROR")       \
-    X(ERROR_PART_NO, = 0x0F, "ERROR_PART_NO")                             \
-    X(ERROR_NO_TOOL, = 0x10, "ERROR_NO_TOOL")                             \
-    X(ERROR_TOOL_MAPPING_ERROR, = 0x11, "ERROR_TOOL_MAPPING_ERROR")       \
-    X(ERROR_UPH_FILE_ERROR, = 0x12, "ERROR_UPH_FILE")                     \
-    X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")
+#define ERROR_TABLE                                                         \
+    X(SUCCESS, = 0x00, "SUCCESS")                                           \
+    X(ERROR_WIP_INFORMATION_LOSS, = 0x01, "ERROR_WIP_INFORMATION_LOSS")     \
+    X(ERROR_PROCESS_ID, = 0x02, "ERROR_PROCESS_ID")                         \
+    X(ERROR_BOM_ID, = 0x03, "ERROR_BOM_ID")                                 \
+    X(ERROR_LOT_SIZE, = 0x04, "ERROR_LOT_SIZE")                             \
+    X(ERROR_INVALID_LOT_SIZE, = 0x05, "ERROR_INVALID_LOT_SIZE")             \
+    X(ERROR_DA_FCST_VALUE, = 0x06, "ERROR_DA_FCST_VALUE")                   \
+    X(ERROR_INVALID_OPER_IN_ROUTE, = 0x07, "ERROR_INVALID_OPER_IN_ROUTE")   \
+    X(ERROR_INVALID_QUEUE_TIME_COMBINATION, = 0x08,                         \
+      "ERROR_INVALID_QUEUE_TIME_COMBINATION")                               \
+    X(ERROR_HOLD, = 0x09, "ERROR_HOLD")                                     \
+    X(ERROR_WB7, = 0x0A, "ERROR_WB7")                                       \
+    X(ERROR_CONDITION_CARD, = 0x0B, "ERROR_CONDITION_CARD")                 \
+    X(ERROR_PART_ID, = 0x0C, "ERROR_PART_ID")                               \
+    X(ERROR_NO_WIRE, = 0x0D, "ERROR_NO_WIRE")                               \
+    X(ERROR_WIRE_MAPPING_ERROR, = 0x0E, "ERROR_WIRE_MAPPING_ERROR")         \
+    X(ERROR_PART_NO, = 0x0F, "ERROR_PART_NO")                               \
+    X(ERROR_NO_TOOL, = 0x10, "ERROR_NO_TOOL")                               \
+    X(ERROR_TOOL_MAPPING_ERROR, = 0x11, "ERROR_TOOL_MAPPING_ERROR")         \
+    X(ERROR_UPH_FILE_ERROR, = 0x12, "ERROR_UPH_FILE")                       \
+    X(ERROR_UPH_0, = 0x13, "ERROR_UPH_0")                                   \
+    X(ERROR_NOT_IN_SCHEDULING_PLAN, = 0x14, "ERROR_NOT_IN_SCHEDULING_PLAN") \
+    X(ERROR_BAD_DATA_FORMAT, = 0x15, "ERROR_BAD_DATA_FORMAT")
 
 
 #define X(item, value, name) item value,
@@ -52,7 +56,8 @@ protected:
     std::string _process_id;
     std::string _bom_id;
     std::string _part_id;
-    std::string _part_no;
+    // std::string _part_no;
+
     std::string _urgent;
     std::string _customer;
     std::string _wb_location;
@@ -64,12 +69,13 @@ protected:
     int _lot_size;
     int _sub_lots;
     int _amount_of_wires;
-    int _amount_of_tools;
+    int _number_of_tools;
     int _prescheduled_order;
 
     bool _hold;
     bool _mvin;
     bool _is_sub_lot;
+    bool _is_automotive;
 
     double _queue_time;  // for all queue time;
     double _fcst_time;   // for DA fcst time
@@ -81,13 +87,42 @@ protected:
     std::vector<std::string> _log;
     std::vector<std::string> _can_run_models;
     std::vector<std::string> _can_run_locations;
-    std::vector<std::string> _can_run_entities;
 
     std::map<std::string, double> _uphs;
     std::map<std::string, double> _model_process_times;
-    std::map<std::string, double> _entity_process_times;
 
+    std::map<std::string, int> _tools;
+
+    // TODO : should be removed
     enum ERROR_T _status;
+
+    std::vector<ERROR_T> _statuses;
+
+    /**
+     * setAmountOfTools () - setup the number of designated tools
+     *
+     * The function takes two parameters one is @b part_number and the other
+     * is @b number_of_tools. The part_number will be set to available directly.
+     *
+     * @param part_number : the designated tool's name
+     * @param number_of_tools : the number of designated tool
+     */
+    int setAmountOfTools(std::string part_number, int number_of_tools);
+
+    std::map<std::string, std::string> rearrangeData(
+        std::map<std::string, std::string> elements);
+
+    bool checkDataFormat(std::map<std::string, std::string> &elements,
+                         std::string &log);
+
+    void setAutomotive(std::string);
+    void setAutomotive(bool);
+
+    void setHold(std::string);
+    void setHold(bool);
+
+    void setMvin(std::string);
+    void setMvin(bool);
 
 public:
     int tmp_oper;
@@ -103,7 +138,7 @@ public:
      * relationship between key and data from dataframe. For example,
      * elements["route"] == "BGA321", elements["lot_number"] == "AASJSDKA01".
      * The mapping relationship is from WIP(work in process) sheet. The
-     * constructor will initialize lots of data members. After initalizing the
+     * constructor initializes lots of data members. After initalizing the
      * data members, the constructor will checke if data member has incorrect
      * data. If data has incorrect data, the constructor will throw exception
      * and the error message will point out which information is not provided or
@@ -221,11 +256,17 @@ public:
     void setPartNo(std::string part_no);
 
     /**
-     * setAmountOfTools () - setup amount of tools can be used for this lot
+     * setAmountOfTools () - setup the number of tools
      *
-     * @param amount : a integer type of variable
+     * The function gets a parameter which includes all tools' name
+     * and their amount. The function only takes the information of the
+     * tools owned by the lot.
+     *
+     * @param number_of_tools : a mapping relation between tools' name and
+     * their amount
+     * @return : the total number of the tools can be used
      */
-    void setAmountOfTools(int amount);
+    int setAmountOfTools(std::map<std::string, int> number_of_tools);
 
     /**
      * setAmountOfWires () - setup amount of wires which can be used for this
@@ -309,6 +350,8 @@ public:
      * @return true if traversal is finished.
      */
     bool isTraversalFinish();
+
+    bool isAutomotive();
 
     /**
      * route () - get the route of this lot
@@ -475,12 +518,6 @@ public:
     bool isEntitySuitable(std::string location);
 
     /**
-     * getCanRunEntities () - get can run entities vector
-     * @return
-     */
-    std::vector<std::string> getCanRunEntities();
-
-    /**
      * job () - generate job_t instance by lot
      * In this function, job_t fields are initialized to its variable. The field
      * includes list.getValue, part_no, pin_package, job_info, customer,
@@ -488,13 +525,6 @@ public:
      * @return job_t instance
      */
     job_t job();
-
-    /**
-     * getEntityProcessTime () - get can run entity and their process time.
-     * @return map<string, double> type data mapping entity's name to its
-     * process time
-     */
-    std::map<std::string, double> getEntityProcessTime();
 
     /**
      * clearCanRunLocation () clear all can run locations
@@ -520,7 +550,38 @@ public:
     void setNotPrescheduled();
 
     std::map<std::string, double> getModelProcessTimes();
+
+    virtual bool isInSchedulingPlan();
+
+    /**
+     * isLotOkay () - check if lot is faulty
+     * The lot is faulty means that lot lacks of some important information
+     * or the lot's state is not allowed to schedule. If the lot lacks of some
+     * information in data process, the ERROR code will be recorded.
+     */
+    virtual bool isLotOkay();
+
+    /**
+     *
+     */
+    inline void setProcessTimeRatio(double ratio);
 };
+
+inline void lot_t::setProcessTimeRatio(double ratio)
+{
+    for (auto it = _model_process_times.begin();
+         it != _model_process_times.end(); it++) {
+        it->second *= ratio;
+    }
+}
+
+inline bool lot_t::isInSchedulingPlan()
+{
+    if (_lot_number.find("PXX") != std::string::npos) {
+        return false;
+    }
+    return true;
+}
 
 inline std::map<std::string, double> lot_t::getModelProcessTimes()
 {
@@ -548,11 +609,6 @@ inline std::map<std::string, double> lot_t::getUphs()
     return _uphs;
 }
 
-inline std::vector<std::string> lot_t::getCanRunEntities()
-{
-    return _can_run_entities;
-}
-
 inline std::vector<std::string> lot_t::getCanRunLocations()
 {
     return _can_run_locations;
@@ -565,7 +621,12 @@ inline void lot_t::setBomId(std::string bom_id)
 
 inline std::string lot_t::part_no()
 {
-    return _part_no;
+    if (_tools.size() > 0) {
+        return _tools.begin()->first;
+    } else {
+        return "";
+        // throw std::logic_error("The part_no hasn't been set");
+    }
 }
 
 inline bool lot_t::isTraversalFinish()
@@ -573,18 +634,19 @@ inline bool lot_t::isTraversalFinish()
     return _finish_traversal;
 }
 
+inline bool lot_t::isAutomotive()
+{
+    return _is_automotive;
+}
+
 inline int lot_t::oper()
 {
     return _oper;
 }
 
-// inline int lot_t::getAmountOfMachines()
-// {
-//     return std::min(_amount_of_tools, _amount_of_wires);
-// }
 inline int lot_t::getAmountOfTools()
 {
-    return _amount_of_tools;
+    return _tools[part_no()];
 }
 
 inline int lot_t::getAmountOfWires()
@@ -611,11 +673,9 @@ inline bool lot_t::mvin()
 inline void lot_t::addLog(std::string _text, enum ERROR_T code)
 {
     _log.push_back(_text);
-    if (_status != SUCCESS) {
-        fprintf(stderr, "Warning: You set the unscess code to another code!\n");
-        _status = code;
-    } else
-        _status = code;
+    if (code != SUCCESS) {
+        _statuses.push_back(code);
+    }
 }
 
 inline std::string lot_t::log()
@@ -721,7 +781,12 @@ inline void lot_t::setPartId(std::string partid)
 
 inline void lot_t::setPartNo(std::string part_no)
 {
-    _part_no = part_no;
+    if (_tools.count(part_no) == 0) {
+        _tools[part_no] = 0;
+    } else {
+        std::cerr << _lot_number << "set part no(" << part_no << ")twice"
+                  << std::endl;
+    }
 }
 
 
@@ -730,10 +795,25 @@ inline std::string lot_t::part_id()
     return _part_id;
 }
 
-
-inline void lot_t::setAmountOfTools(int tool)
+inline int lot_t::setAmountOfTools(std::string part_number, int number_of_tools)
 {
-    _amount_of_tools = tool;
+    _tools[part_number] = number_of_tools;
+    return number_of_tools;
+}
+
+inline int lot_t::setAmountOfTools(std::map<std::string, int> number_of_tools)
+{
+    int sum = 0;
+    std::map<std::string, int> tls;
+    for (auto it = _tools.begin(); it != _tools.end(); ++it) {
+        if (number_of_tools.count(it->first) != 0) {
+            it->second = number_of_tools.at(it->first);  // safe, check it above
+            sum += it->second;
+            tls[it->first] = it->second;
+        }
+    }
+    _tools = tls;  // remove the tool whose amount is 0
+    return sum;
 }
 
 
@@ -744,6 +824,7 @@ inline void lot_t::setAmountOfWires(int amount)
 
 inline bool lot_t::isModelValid(std::string model)
 {
+    std::string _part_no = part_no();
     if (_part_no.find("A0801") !=
         std::string::npos) {  // if part_no contains A0801
         if (model.compare("UTC1000") == 0 || model.compare("UTC1000S") == 0 ||
@@ -825,30 +906,33 @@ inline int lot_t::prescheduledOrder()
     return _prescheduled_order;
 }
 
+inline void lot_t::setAutomotive(std::string _automotive_str)
+{
+    _is_automotive = _automotive_str.compare("Y") == 0;
+}
 
-typedef struct {
-    std::string wire_tools_name;
-    std::string wire_name;
-    std::string tool_name;
-    unsigned long long lot_amount;
-    int tool_amount;
-    int wire_amount;
-    int machine_amount;
-    std::map<std::string, int> models_statistic;
-    std::map<std::string, int> bdid_statistic;
-    // std::vector<entity_t *> entities;
-    std::vector<std::string> entity_names;
-    std::vector<lot_t *> lots;
-} lot_group_t;
+inline void lot_t::setAutomotive(bool _automotive_val)
+{
+    _is_automotive = _automotive_val;
+}
 
-/**
- * lotGroupCmp () - compare two group by its lot amount
- * @param g1 : group 1
- * @param g2 : group 2
- * @return true if g1.lot_amount > g2.lot_amount
- */
-bool lotGroupCmp(lot_group_t g1, lot_group_t g2);
+inline void lot_t::setHold(std::string _hold_str)
+{
+    _hold = _hold_str.compare("Y") == 0;
+}
 
+inline void lot_t::setHold(bool _hold_val)
+{
+    _hold = _hold_val;
+}
 
+inline void lot_t::setMvin(std::string _mvin_str)
+{
+    _mvin = _mvin_str.compare("Y") == 0;
+}
 
+inline void lot_t::setMvin(bool _mvin_val)
+{
+    _mvin = _mvin_val;
+}
 #endif

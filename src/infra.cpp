@@ -1,4 +1,5 @@
-#include <include/infra.h>
+#include <algorithm>
+#include <cctype>
 #include <cstdlib>
 
 #ifdef WIN32
@@ -123,4 +124,22 @@ struct __info_t stringToInfo(std::string s)
 #endif
     strncpy(info.data.text, s.c_str(), info.text_size);
     return info;
+}
+
+bool isNumeric(std::string s)
+{
+    int number_of_dot = 0;
+    if (s.length()) {
+        for (auto c : s) {
+            if (c == '.') {
+                ++number_of_dot;
+            } else if (!isdigit(c)) {
+                return false;
+            }
+        }
+        if (number_of_dot <= 1) {
+            return true;
+        }
+    }
+    return false;
 }

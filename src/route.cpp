@@ -19,6 +19,12 @@ const int NUMBER_OF_DA_STATIONS = ARRAY_SIZE(DA_STATIONS, int);
 const int CURE_STATIONS[] = {2140, 2425, 3140, 3340, 4140};
 const int NUMBER_OF_CURE_STATIONS = ARRAY_SIZE(CURE_STATIONS, int);
 
+#define X(name, eq, val) val
+const int TRAVERSE_STATUS_VALUES[] = {TRAVERSE_TABLE};
+#undef X
+
+const int TRAVERSE_STATUS_SIZE = ARRAY_SIZE(TRAVERSE_STATUS_VALUES, int);
+
 using namespace std;
 
 
@@ -224,8 +230,10 @@ int route_t::findStationIdx(std::string routename, int oper)
  */
 int route_t::calculateQueueTime(lot_t &lot)
 {
+    int retval = 0;
+
     if (lot.isTraversalFinish())
-        return 0;
+        return TRAVERSE_FINISHED;
 
     std::string routename = lot.route();
 
@@ -257,7 +265,7 @@ int route_t::calculateQueueTime(lot_t &lot)
             lot.tmp_mvin = false;  // mvin = false
         } else {                   // lot is waiting at WB station
             lot.setTraverseFinished();
-            return 0;
+            return TRAVERSE_FINISHED;
         }
     }
 
@@ -268,9 +276,10 @@ int route_t::calculateQueueTime(lot_t &lot)
             lot.isSubLot()) {  // lot is in DA and mvin and which is sublot
             idx += 1;          // advance
             lot.tmp_mvin = false;
+            retval |= TRAVERSE_DA_MVIN;
         } else {  // lot is in D/A and hasn't moved in or which still is sublot
             lot.tmp_oper = _routes[routename][++idx].oper;  // advance
-            return 2;  // advance and dispatch
+            return TRAVERSE_DA_ARRIVED;  // advance and dispatch
         }
     }
 
@@ -319,16 +328,18 @@ int route_t::calculateQueueTime(lot_t &lot)
                 lot.tmp_oper = _routes[routename][i + 1]  // ad
                                    .oper;  // lot traverse to DA station
                 lot.addQueueTime(qt);
-                return 1;
+                retval |= TRAVERSE_DA_UNARRIVED;
+                return retval;
             } else if (_wb_stations.count(oper)) {  // traverse to W/B station
                 lot.tmp_mvin = false;
                 lot.tmp_oper = oper;
                 lot.addQueueTime(qt);
                 lot.setTraverseFinished();
-                return 0;
+                retval |= TRAVERSE_FINISHED;
+                return retval;
             }
         }
     }
 
-    return -1;
+    return TRAVERSE_ERROR;
 }
