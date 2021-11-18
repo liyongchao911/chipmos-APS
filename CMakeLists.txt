@@ -20,7 +20,7 @@ add_subdirectory(src)
 if(WIN32)
     target_link_libraries(main src pgalib)
 else()
-    target_link_libraries(main src pgalib)
+    target_link_libraries(main src pgalib pthread)
 endif()
 
 # if(WIN32)
