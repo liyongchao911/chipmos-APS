@@ -1,6 +1,11 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <vector>
+#include <string>
+
+#include "include/infra.h"
+#include "include/info.h"
 
 #ifdef WIN32
 #include <intrin.h>
