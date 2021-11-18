@@ -65,19 +65,19 @@ void test_machines_groupBy::SetUp()
     _groups["2_1"] = new (struct __machine_group_t);
     _groups["1_2"] = new (struct __machine_group_t);
 
-    *_groups["1_1"] = (struct __machine_group_t){
+    *_groups["1_1"] = __machine_group_t{
         .unscheduled_jobs = createJobs(part_ids1, part_nos1),
     };
 
-    *_groups["1_2"] = (struct __machine_group_t){
+    *_groups["1_2"] = __machine_group_t{
         .unscheduled_jobs = createJobs(part_ids1, part_nos2),
     };
 
-    *_groups["2_1"] = (struct __machine_group_t){
+    *_groups["2_1"] = __machine_group_t{
         .unscheduled_jobs = createJobs(part_ids2, part_nos1),
     };
 
-    *_groups["2_2"] = (struct __machine_group_t){
+    *_groups["2_2"] = __machine_group_t{
         .unscheduled_jobs = createJobs(part_ids2, part_nos2),
     };
 

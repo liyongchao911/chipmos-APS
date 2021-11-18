@@ -19,6 +19,10 @@
 #include "include/lots.h"
 #include "include/route.h"
 
+#ifdef WIN32
+#include <direct.h>
+#endif
+
 using namespace std;
 
 lots_t::lots_t()

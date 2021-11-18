@@ -116,48 +116,7 @@ public:
      */
     void addMapping(std::string model_name, int n, ...);
 
-    /**
-     * readConditionCardsDir () - read the condition cards' directory
-     *
-     * The directory structure of condition card is below.
-     * .
-     * ├── CARD_OFFICAL
-     * │   ├── AAB008YB2009A
-     * │   │   └── AAB008YB2009A-2200-Criteria.csv
-     * │   ├── AAB008YD2012B
-     * │   │   ├── AAB008YD2012B-2200-Criteria.csv
-     * │   │   └── AAB008YD2012B-3200-Criteria.csv
-     * ...
-     * ├── CARD_TEMP
-     * │   ├── AAB024XJ6011A
-     * │   │   ├── 20210413-B-AAB024XJ6011A-2200-Criteria.csv
-     * │   │   ├── 20210413-B-AAB024XJ6011A-3200-Criteria.csv
-     * │   │   ├── 20210413-B-AAB024XJ6011A-3400-Criteria.csv
-     * │   │   └── 20210413-B-AAB024XJ6011A-3600-Criteria.csv
-     * ...
-     *
-     * readConditionCardsDir deals with CARD_OFFICAL and CARD_TEMP. The function
-     * will iterate all sub-directory and read the condition cards inside.
-     * readConditionCards is in charge of reading sub-directories such as
-     * AAB008Y2009, AAB008YD2012B and etc...
-     *
-     * @param dir_name : sub-directory name
-     * @bool replace : replace the old information or not.
-     */
-    void readConditionCardsDir(std::string dir_name, bool replace = false);
 
-    /**
-     * readConditionCards () - read the directory which contains lots of
-     * condition cards
-     *
-     * readConditionCards will iterate all condition cards' file name and pass
-     * the path to readConditionCard function, which is in charge of reading a
-     * single condition card file. The function will store data into _models
-     *
-     * @param sub_dir_name : name of sub-directory name
-     * @param relace : replace old data if true is passed into the function
-     */
-    void readConditionCards(std::string sub_dir_name, bool replace = false);
 
     void readBdIdModelsMappingFile(std::string filename);
 
