@@ -16,7 +16,7 @@ add_executable(
 
 add_subdirectory(lib)
 add_subdirectory(src)
-# add_subdirectory(tests)
+add_subdirectory(tests)
 if(WIN32)
     target_link_libraries(main src pgalib)
 else()
