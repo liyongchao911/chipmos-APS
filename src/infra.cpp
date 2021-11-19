@@ -1,11 +1,12 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
-#include <vector>
 #include <string>
+#include <vector>
 
-#include "include/infra.h"
+#include "include/def.h"
 #include "include/info.h"
+#include "include/infra.h"
 
 #ifdef WIN32
 #include <intrin.h>
@@ -122,11 +123,7 @@ struct __info_t stringToInfo(std::string s)
     unsigned text_size = s.length() > 32 ? 32 : s.length();
     memset(info.data.number, 0, sizeof(unsigned int) * 8);
     info.text_size = text_size;
-#ifdef WIN32
-    info.number_size = 32 - __lzcnt(text_size >> 2) + 1;
-#else
     info.number_size = 32 - __builtin_clz(text_size >> 2) + 1;
-#endif
     strncpy(info.data.text, s.c_str(), info.text_size);
     return info;
 }
