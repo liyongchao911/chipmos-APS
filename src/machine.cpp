@@ -215,7 +215,7 @@ void scheduling(machine_t *machine,
                 tool->time = start_time;
                 wire->time = start_time;
             } else {
-                perror(
+                printf(
                     "Tools and wires have number of resources, however, they "
                     "can't find the part_id or part_no");
                 exit(EXIT_FAILURE);
