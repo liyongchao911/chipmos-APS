@@ -46,17 +46,17 @@ INSTANTIATE_TEST_SUITE_P(
     stringToInfo,
     test_string_to_info_t,
     testing::Values(
-        string_to_info_test_case{"HELLO", 5, 2},
-        string_to_info_test_case{"AK07374-XC2-F4{FT1}{FRM-PP}", 27, 7},
-        string_to_info_test_case{"AK07374-XC2-F4{FT1}{FRM-PP}111111111", 36, 9},
+        string_to_info_test_case{"HELLO", 5, 1},
+        string_to_info_test_case{"AK07374-XC2-F4{FT1}{FRM-PP}", 27, 4},
+        string_to_info_test_case{"AK07374-XC2-F4{FT1}{FRM-PP}111111111", 36, 5},
         string_to_info_test_case{
             "AK07374-XC2-F4{FT1}{FRM-PP}AK07374-XC2-F4{FT1}{FRM-PP}1234567", 61,
-            16},
+            8},
         string_to_info_test_case{
             "AK07374-XC2-F4{FT1}{FRM-PP}AK07374-XC2-F4{FT1}{FRM-PP}123456", 60,
-            15},
+            8},
         string_to_info_test_case{
             "AK07374-XC2-F4{FT1}{FRM-PP}AK07374-XC2-F4{FT1}{FRM-PP}123456789",
-            63, 16}
+            63, 8}
 
         ));

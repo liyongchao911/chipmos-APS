@@ -11,10 +11,10 @@ extern "C" {
 struct __info_t {
     union {
         char text[64];
-        unsigned int number[16];
+        unsigned long long number[8];
     } data;
     unsigned int text_size : 6;
-    unsigned int number_size : 5;
+    unsigned int number_size : 4;
 };
 
 typedef struct __info_t info_t;

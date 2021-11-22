@@ -123,8 +123,8 @@ struct __info_t stringToInfo(std::string s)
     unsigned text_size = s.length() >= 63 ? 63 : s.length();
     memset(info.data.number, 0, sizeof(info.data.text));
     info.text_size = text_size;
-    info.number_size = (text_size >> 2);
-    info.number_size += (text_size ^ (info.number_size << 2)) ? 1 : 0;
+    info.number_size = (text_size >> 3);
+    info.number_size += (text_size ^ (info.number_size << 3)) ? 1 : 0;
     strncpy(info.data.text, s.c_str(), info.text_size);
     return info;
 }
