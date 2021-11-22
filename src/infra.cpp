@@ -1,8 +1,17 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <string>
+#include <vector>
 
+#include "include/def.h"
+#include "include/info.h"
 #include "include/infra.h"
+
+#ifdef WIN32
+#include <intrin.h>
+#endif
+
 
 std::vector<std::string> split(char *text, char delimiter)
 {
@@ -115,7 +124,6 @@ struct __info_t stringToInfo(std::string s)
     memset(info.data.number, 0, sizeof(unsigned int) * 8);
     info.text_size = text_size;
     info.number_size = 32 - __builtin_clz(text_size >> 2) + 1;
-
     strncpy(info.data.text, s.c_str(), info.text_size);
     return info;
 }

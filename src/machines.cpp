@@ -232,14 +232,14 @@ void machines_t::addGroupJobs(string recipe, vector<job_t *> jobs)
 
     _dispatch_groups[recipe] = new (struct __machine_group_t);
     *_dispatch_groups[recipe] =
-        (struct __machine_group_t){.machines = machines,
-                                   .unscheduled_jobs = jobs,
-                                   .scheduled_jobs = vector<job_t *>(),
-                                   .part_no = part_no,
-                                   .part_id = part_id,
-                                   .recipe = recipe,
-                                   .tools = vector<ares_t *>(),
-                                   .wires = vector<ares_t *>()};
+        __machine_group_t{.machines = machines,
+                          .unscheduled_jobs = jobs,
+                          .scheduled_jobs = vector<job_t *>(),
+                          .part_no = part_no,
+                          .part_id = part_id,
+                          .recipe = recipe,
+                          .tools = vector<ares_t *>(),
+                          .wires = vector<ares_t *>()};
 
     _loadResource(_dispatch_groups[recipe]);
 }
@@ -509,7 +509,7 @@ void machines_t::groupJobsByToolAndWire()
             string key = part_no + "_" + part_id;
             if (_tool_wire_jobs_groups.count(key) == 0) {
                 _tool_wire_jobs_groups[key] = new (struct __job_group_t);
-                *(_tool_wire_jobs_groups[key]) = (struct __job_group_t){
+                *(_tool_wire_jobs_groups[key]) = __job_group_t{
                     .part_no = part_no,
                     .part_id = part_id,
                     .number_of_tools = _number_of_tools.count(part_no) == 0
@@ -1094,9 +1094,9 @@ void machines_t::_linkMachineToAJob(job_t *job)
         string model_name(machine->model_name.data.text);
         double ptime = _job_process_times[lot_number][model_name];
         process_time_t pt =
-            (process_time_t){.machine_no = machine->base.machine_no,
-                             .machine = machine,
-                             .process_time = ptime};
+            process_time_t{.machine_no = machine->base.machine_no,
+                           .machine = machine,
+                           .process_time = ptime};
         process_times[i] = pt;
     }
     job_ops->set_process_time(&job->base, process_times,

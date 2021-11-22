@@ -8,7 +8,7 @@
 #else
 #include <sys/socket.h>
 #endif
-#include <unistd.h>
+// #include <unistd.h>
 #include <vector>
 
 using namespace std;
@@ -212,10 +212,10 @@ void geneticAlgorithm(population_t *pop, int fd)
         // sort the chromosomes
         qsort(chromosomes, pop->parameters.AMOUNT_OF_R_CHROMOSOMES,
               sizeof(chromosomes[0]), chromosomeCmp);
-        string_length =
-            sprintf(output_string, "%d/%d-%lf\n", k,
-                    pop->parameters.GENERATIONS, chromosomes[0].fitnessValue);
-        write(1, output_string, string_length);
+        string_length = printf("%d/%d-%lf\n", k, pop->parameters.GENERATIONS,
+                               chromosomes[0].fitnessValue);
+        // fprintf(stdout, output_string);
+        // write(1, output_string, string_length);
         // statistic
         chromosomeSelection(chromosomes, tmp_chromosomes,
                             pop->parameters.SELECTION_RATE,

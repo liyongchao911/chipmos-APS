@@ -19,6 +19,10 @@
 #include "include/lots.h"
 #include "include/route.h"
 
+#ifdef WIN32
+#include <direct.h>
+#endif
+
 using namespace std;
 
 lots_t::lots_t()
@@ -325,6 +329,7 @@ void lots_t::_traversingDADecrement(lot_t &lot,
                                     vector<lot_t> &faulty_lot,
                                     da_stations_t &das)
 {
+    das.decrementProductionCapacity(lot);
 }
 
 
@@ -338,7 +343,7 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
     string err_msg;
     std::vector<lot_t> unfinished = lots;
     std::vector<lot_t> finished;
-    size_t enum_size = sizeof(enum TRAVERSE_STATUS);
+    int enum_size = TRAVERSE_STATUS_SIZE;
     while (unfinished.size()) {
         foreach (unfinished, i) {
             try {
@@ -381,7 +386,8 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
                 // }
             } catch (std::out_of_range
                          &e) {  // for da_stations_t function member,
-                                // addArrivedLotToDA and addUnarrivedLotToDA
+                                // addArrivedLotToDA, addUnarrivedLotToDA,
+                                // decrementProductionCapacity
                 unfinished[i].addLog(e.what(), ERROR_DA_FCST_VALUE);
                 faulty_lots.push_back(unfinished[i]);
             } catch (std::logic_error &e) {  // for calculateQueueTime

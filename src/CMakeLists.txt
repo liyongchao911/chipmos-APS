@@ -16,10 +16,10 @@ set(src_files
         machines.cpp
         machine.cpp
         route.cpp
-        progress.c
         machine_constraint.cpp
         machine_constraint_r.cpp
         machine_constraint_a.cpp
+#         progress.c
         )
 set(CMAKE_BUILD_TYPE Debug)
 add_library(src STATIC ${src_files})

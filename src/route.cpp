@@ -19,6 +19,12 @@ const int NUMBER_OF_DA_STATIONS = ARRAY_SIZE(DA_STATIONS, int);
 const int CURE_STATIONS[] = {2140, 2425, 3140, 3340, 4140};
 const int NUMBER_OF_CURE_STATIONS = ARRAY_SIZE(CURE_STATIONS, int);
 
+#define X(name, eq, val) val
+const int TRAVERSE_STATUS_VALUES[] = {TRAVERSE_TABLE};
+#undef X
+
+const int TRAVERSE_STATUS_SIZE = ARRAY_SIZE(TRAVERSE_STATUS_VALUES, int);
+
 using namespace std;
 
 

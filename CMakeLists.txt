@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 project(ChipmosWb LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 include_directories(${CMAKE_SOURCE_DIR})
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -11,15 +12,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_executable(
     main 
-    main.cpp
-)
+    main.cpp)
 
 add_subdirectory(lib)
 add_subdirectory(src)
 add_subdirectory(tests)
-
 if(WIN32)
-    target_link_libraries(main src pgalib -static-libstdc++ m pthread ws2_32 wsock32)
+    target_link_libraries(main src pgalib)
 else()
-    target_link_libraries(main src pgalib stdc++ m pthread)
+    target_link_libraries(main src pgalib pthread)
 endif()
+
+# if(WIN32)
+#     target_link_libraries(main src pgalib -static-libstdc++ m)
+# else()
+#     target_link_libraries(main src pgalib stdc++ m)
+# endif()
