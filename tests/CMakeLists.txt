@@ -35,7 +35,6 @@ set(TEST_SRC
         test_csv/test_csv_parse.cpp
         test_machine_constraint/test_machine_constraint_base.cpp
         test_machine_constraint/test_transform_attr_to_regex_string.cpp
-        test_machine_constraint/machine_constraint_testing_file.h
         test_machine_constraint/test_machine_constraint_r.cpp
         test_machine_constraint/test_machine_constraint_a.cpp)
 
