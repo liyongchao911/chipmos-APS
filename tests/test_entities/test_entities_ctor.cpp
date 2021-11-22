@@ -38,17 +38,17 @@ void test_entities_t::SetUp()
 {
     entities = nullptr;
     data = map<string, string>{
-        {      "entity",         "BB211"},
-        {       "model",       "UTC3000"},
+        {"entity", "BB211"},
+        {"model", "UTC3000"},
         {"recover_time", "21-6-19 15:24"},
-        {     "prod_id",    "048TPAW086"},
-        { "pin_package",   "TSOP1-48/M2"},
-        {  "lot_number",     "P23AWDV31"},
-        {    "customer",          "MXIC"},
-        {       "bd_id", "AAW048TP1041B"},
-        {        "oper",          "2200"},
-        {         "qty",          "1280"},
-        {    "location",          "TA-A"},
+        {"prod_id", "048TPAW086"},
+        {"pin_package", "TSOP1-48/M2"},
+        {"lot_number", "P23AWDV31"},
+        {"customer", "MXIC"},
+        {"bd_id", "AAW048TP1041B"},
+        {"oper", "2200"},
+        {"qty", "1280"},
+        {"location", "TA-A"},
     };
 
     prod_map_to_pid = map<string, string>({
@@ -63,9 +63,7 @@ void test_entities_t::SetUp()
         {"PID", "PART_NO"},
     });
 
-    bomid_map_to_part_id = map<string, string>({
-        {"BOMID_2200", "PART_ID"}
-    });
+    bomid_map_to_part_id = map<string, string>({{"BOMID_2200", "PART_ID"}});
 
     entities = new entities_t();
 

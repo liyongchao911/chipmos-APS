@@ -10,6 +10,7 @@ typedef struct __info_t job_info_t;
 typedef struct job_t {
     job_info_t part_no;
     job_info_t pin_package;
+    job_info_t pkg_id;
     job_info_t customer;
     char urgent_code;
     job_base_t base;

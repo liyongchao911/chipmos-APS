@@ -6,11 +6,9 @@ void entities_t::_readProcessIdFile(std::string filename)
 {
     csv_t csv(filename, "r", true, true);
     csv.trim(" ");
-    csv.setHeaders(map<string, string>({
-        {   "prod_id",    "product"},
-        {"process_id", "process_id"},
-        {    "bom_id",     "bom_id"}
-    }));
+    csv.setHeaders(map<string, string>({{"prod_id", "product"},
+                                        {"process_id", "process_id"},
+                                        {"bom_id", "bom_id"}}));
 
     map<string, string> row;
     for (int i = 0, nrows = csv.nrows(); i < nrows; ++i) {
@@ -24,10 +22,8 @@ void entities_t::_readPartNoFile(std::string filename)
 {
     csv_t csv(filename, "r", true, true);
     csv.trim(" ");
-    csv.setHeaders(map<string, string>({
-        {"process_id", "process_id"},
-        {    "remark",     "remark"}
-    }));
+    csv.setHeaders(map<string, string>(
+        {{"process_id", "process_id"}, {"remark", "remark"}}));
     map<string, string> pid_remark;
     map<string, string> row;
     string remark;
@@ -49,11 +45,8 @@ void entities_t::_readPartIdFile(std::string filename)
 {
     csv_t csv(filename, "r", true, true);
     csv.trim(" ");
-    csv.setHeaders(map<string, string>({
-        { "bom_id",  "bom_id"},
-        {   "oper",    "oper"},
-        {"part_id", "part_id"}
-    }));
+    csv.setHeaders(map<string, string>(
+        {{"bom_id", "bom_id"}, {"oper", "oper"}, {"part_id", "part_id"}}));
     map<string, string> row;
     for (int i = 0, size = csv.nrows(); i < size; ++i) {
         row = csv.getElements(i);

@@ -335,24 +335,31 @@ int machines_t::_scheduleAGroup(struct __machine_group_t *group)
         sort(machines.begin(), machines.end(), machinePtrComparison);
         foreach (machines, j) {
             // FIXME : don't use average process time to schedule
-            string model(machines[j]->model_name.data.text);
-            if (_job_process_times[lot_number].count(model) == 0) {
-                unscheduled_jobs[i]->base.ptime =
-                    _averageProcessTime(_job_process_times[lot_number]);
-            } else {
-                unscheduled_jobs[i]->base.ptime =
-                    _job_process_times[lot_number][model];
-            }
-            setup_times +=
-                staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
-            break;
-            // if(_canJobRunOnTheMachine(unscheduled_jobs[i], machines[j])){
+            // if (_job_process_times[lot_number].count(model) == 0) {
             //     unscheduled_jobs[i]->base.ptime =
-            //     _job_process_times[lot_number][model];
-            //     staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
-            //     in = true;
-            //     break;
+            //         _averageProcessTime(_job_process_times[lot_number]);
+            // } else {
+            //     unscheduled_jobs[i]->base.ptime =
+            //         _job_process_times[lot_number][model];
             // }
+            // setup_times +=
+            //     staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
+            // break;
+
+            string model(machines[j]->model_name.data.text);
+            if (_canJobRunOnTheMachine(unscheduled_jobs[i], machines[j],
+                                       false)) {
+                if (_job_process_times[lot_number].count(model) == 0) {
+                    unscheduled_jobs[i]->base.ptime =
+                        _averageProcessTime(_job_process_times[lot_number]);
+                } else {
+                    unscheduled_jobs[i]->base.ptime =
+                        _job_process_times[lot_number][model];
+                }
+                setup_times +=
+                    staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
+                break;
+            }
         }
         group->scheduled_jobs.push_back(unscheduled_jobs[i]);
     }
@@ -378,7 +385,6 @@ int machines_t::scheduleGroups()
     }
 
     // if the job exceeds the threshold, job will be rescheduled
-    //
     reconsiderJobs();
     vector<job_t *> stage2_scheduled_jobs;
     foreach (_v_machines, i) {
@@ -386,13 +392,6 @@ int machines_t::scheduleGroups()
         _collectScheduledJobs(_v_machines[i], _scheduled_jobs);
         _collectScheduledJobs(_v_machines[i], stage2_scheduled_jobs);
     }
-
-    // iter(stage2_scheduled_jobs, i){
-    //     if(strcmp(stage2_scheduled_jobs[i]->base.job_info.data.text,
-    //     "P22NVCB24") == 0){
-    //         printf("Found P22NVCB24 ! in line 390\n");
-    //     }
-    // }
 
     // update the tools and the wires
     _setupContainersForMachines();
@@ -614,7 +613,7 @@ void machines_t::distributeTools()
 
 void machines_t::distributeWires()
 {
-    // distribute tools
+    // distribute wires
     for (map<string, std::vector<struct __job_group_t *>>::iterator it =
              _wire_jobs_groups.begin();
          it != _wire_jobs_groups.end(); ++it) {
@@ -678,7 +677,9 @@ bool machines_t::_isMachineDedicatedForJob(string lot_number,
     return false;
 }
 
-bool machines_t::_canJobRunOnTheMachine(job_t *job, machine_t *machine)
+bool machines_t::_canJobRunOnTheMachine(job_t *job,
+                                        machine_t *machine,
+                                        bool strict_model)
 {
     string lot_number(job->base.job_info.data.text);
     string location(machine->location.data.text);
@@ -688,7 +689,7 @@ bool machines_t::_canJobRunOnTheMachine(job_t *job, machine_t *machine)
 
 
     return _isMachineLocationAvailableForJob(lot_number, location) &&
-           _isModelAvailableForJob(lot_number, model) &&
+           (!strict_model || _isModelAvailableForJob(lot_number, model)) &&
            !_isMachineDedicatedForJob(lot_number, cust, entity_name);
 }
 

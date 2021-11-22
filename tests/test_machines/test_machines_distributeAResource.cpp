@@ -68,11 +68,9 @@ INSTANTIATE_TEST_SUITE_P(
     test_correctness,
     test_machines_t_distributeAResource,
     testing::Values(
-        tcs_distribute_resource_t{
-            100,
-            {{"g1", 40}, {"g2", 60}},
-            {{"g1", 40}, {"g2", 60}}
-},
+        tcs_distribute_resource_t{100,
+                                  {{"g1", 40}, {"g2", 60}},
+                                  {{"g1", 40}, {"g2", 60}}},
 
         tcs_distribute_resource_t{50,
                                   {{"g1", 40}, {"g2", 60}},

@@ -61,11 +61,7 @@ INSTANTIATE_TEST_SUITE_P(
     ParseTest,
     testing::Values(
         // Hello World
-        ParseParameters{
-            "hello,world",
-            ',',
-            {"hello", "world"}
-},
+        ParseParameters{"hello,world", ',', {"hello", "world"}},
 
         // Empty String
         ParseParameters{R"("1","2","3",)", ',', {"1", "2", "3", ""}},

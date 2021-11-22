@@ -128,7 +128,9 @@ protected:
                                    std::string cust,
                                    std::string entity);
 
-    bool _canJobRunOnTheMachine(job_t *jb, machine_t *machine);
+    bool _canJobRunOnTheMachine(job_t *jb,
+                                machine_t *machine,
+                                bool strict_model = true);
 
 
     void _init(setup_time_parameters_t param);

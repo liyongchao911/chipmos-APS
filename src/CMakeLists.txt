@@ -17,6 +17,9 @@ set(src_files
         machine.cpp
         route.cpp
         progress.c
+        machine_constraint.cpp
+        machine_constraint_r.cpp
+        machine_constraint_a.cpp
         )
 set(CMAKE_BUILD_TYPE Debug)
 add_library(src STATIC ${src_files})
