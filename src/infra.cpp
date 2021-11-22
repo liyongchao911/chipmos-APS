@@ -120,10 +120,11 @@ double randomDouble()
 struct __info_t stringToInfo(std::string s)
 {
     struct __info_t info;
-    unsigned text_size = s.length() > 32 ? 32 : s.length();
-    memset(info.data.number, 0, sizeof(unsigned int) * 8);
+    unsigned text_size = s.length() >= 63 ? 63 : s.length();
+    memset(info.data.number, 0, sizeof(info.data.text));
     info.text_size = text_size;
-    info.number_size = 32 - __builtin_clz(text_size >> 2) + 1;
+    info.number_size = (text_size >> 2);
+    info.number_size += (text_size ^ (info.number_size << 2)) ? 1 : 0;
     strncpy(info.data.text, s.c_str(), info.text_size);
     return info;
 }

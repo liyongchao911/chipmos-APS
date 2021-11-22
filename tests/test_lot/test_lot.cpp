@@ -93,21 +93,20 @@ void test_lot_t::SetUp()
                                      {"part_no", ""}});
 
 
-    test_wip_data_1 = map<string, string>({
-        {"route", "QFNS288"},
-        {"lot_number", "P23ASEA02"},
-        {"pin_package", "DFN-08YM2G"},
-        {"bd_id", "AAS008YM2024A"},
-        {"prod_id", "008YMAS034"},
-        {"urgent_code", "urgent"},
-        {"customer", "ICSI"},
-        {"wb_location", "BB211-1"},
-        {"qty", "16000"},
-        {"oper", "2200"},
-        {"hold", "N"},
-        {"mvin", "Y"},
-        {"sub_lot", "9"},
-    });
+    test_wip_data_1 = map<string, string>({{"route", "QFNS288"},
+                                           {"lot_number", "P23ASEA02"},
+                                           {"pin_package", "DFN-08YM2G"},
+                                           {"bd_id", "AAS008YM2024A"},
+                                           {"prod_id", "008YMAS034"},
+                                           {"urgent_code", "urgent"},
+                                           {"customer", "ICSI"},
+                                           {"wb_location", "BB211-1"},
+                                           {"qty", "16000"},
+                                           {"oper", "2200"},
+                                           {"hold", "N"},
+                                           {"mvin", "Y"},
+                                           {"sub_lot", "9"},
+                                           {"package_id", "PACKAGE_ID"}});
 
     test_wip_data_2 = map<string, string>({
         {"route", "QFNS288"},
@@ -284,6 +283,7 @@ TEST_F(test_lot_t, test_lot_ctor_wip_data1)
 
     EXPECT_EQ(lot->_prescheduled_order, 1);
     EXPECT_EQ(lot->_prescheduled_machine.compare("BB211"), 0);
+    EXPECT_EQ(lot->_pkg_id.compare("PACKAGE_ID"), 0);
 
     EXPECT_EQ(lot->_status, SUCCESS);
 

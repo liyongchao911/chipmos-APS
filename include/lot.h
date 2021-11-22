@@ -56,6 +56,7 @@ protected:
     std::string _process_id;
     std::string _bom_id;
     std::string _part_id;
+    std::string _pkg_id;
     // std::string _part_no;
 
     std::string _urgent;

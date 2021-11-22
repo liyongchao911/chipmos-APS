@@ -69,6 +69,10 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["qty"] = std::string("0");
     }
 
+    if (elements.count("package_id") == 0) {
+        elements["package_id"] = "";
+    }
+
     return elements;
 }
 
@@ -119,6 +123,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _urgent = elements["urgent_code"];
     _customer = elements["customer"];
     _wb_location = elements["wb_location"];
+    _pkg_id = elements["package_id"];
 
     setHold(elements["hold"]);
     setMvin(elements["mvin"]);
@@ -212,6 +217,9 @@ bool lot_t::checkFormation()
         data_members.push_back("qty");
     }
 
+    if (_pkg_id.length() == 0)
+        data_members.push_back("pkg_id");
+
     if (data_members.size()) {
         error_msg = data_members.size() > 1 ? "These information, "
                                             : "This"
@@ -285,6 +293,7 @@ std::map<std::string, std::string> lot_t::data()
     } catch (std::logic_error &e) {
         d["amount_of_tools"] = "";
     }
+    d["package_id"] = _pkg_id;
     d["hold"] = _hold ? "Y" : "N";
     d["mvin"] = _mvin ? "Y" : "N";
     d["is_sub_lot"] = _is_sub_lot ? "Y" : "N";
@@ -452,6 +461,7 @@ job_t lot_t::job()
     j.part_no = stringToInfo(part_no());
     j.part_id = stringToInfo(_part_id);
     j.prod_id = stringToInfo(_prod_id);
+    j.pkg_id = stringToInfo(_pkg_id);
 
     j.pin_package = stringToInfo(_pin_package);
     j.customer = stringToInfo(_customer);

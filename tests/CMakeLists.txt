@@ -36,7 +36,9 @@ set(TEST_SRC
         test_machine_constraint/test_machine_constraint_base.cpp
         test_machine_constraint/test_transform_attr_to_regex_string.cpp
         test_machine_constraint/test_machine_constraint_r.cpp
-        test_machine_constraint/test_machine_constraint_a.cpp)
+        test_machine_constraint/test_machine_constraint_a.cpp
+        test_infrastructure/test_string_to_info.cpp
+        )
 
 add_executable(
     test
