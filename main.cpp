@@ -1,11 +1,11 @@
 // #include <pthread.h>
 // #include <semaphore.h>
 // #include <unistd.h>
-#include <thread>
 #include <cstdlib>
 #include <ctime>
 #include <map>
 #include <string>
+#include <thread>
 
 #define LOG_ERROR
 
@@ -63,7 +63,7 @@ int main(int argc, const char **argv)
     int nthreads = cfg.nrows();
     /*pthread_t *threads = (pthread_t *) malloc(sizeof(pthread_t) * nthreads);*/
     vector<thread> threads;
-    
+
     thread_data_t **thread_data_array =
         (thread_data_t **) malloc(sizeof(thread_data_t *) * nthreads);
 
@@ -98,7 +98,7 @@ int main(int argc, const char **argv)
     for (unsigned int i = 0, size = threads.size(); i < size; ++i) {
         threads[i].join();
     }
-    
+
     // send(main_fd, "close", 5, 0);
     // pthread_join(progress_bar_thread, NULL);
     // delete_attr(&pbattr);
@@ -107,7 +107,7 @@ int main(int argc, const char **argv)
     return 0;
 }
 
-void run(thread_data_t * data)
+void run(thread_data_t *data)
 {
     // sem_wait(&SEM);
     // thread_data_t *data = (thread_data_t *) _data;

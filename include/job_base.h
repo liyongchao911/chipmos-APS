@@ -146,7 +146,7 @@ __qualifier__ unsigned int machine_selection(job_base_t *self);
 __qualifier__ info_t get_machine_no(job_base_t *self);
 
 
-#define __JOB_BASE_OPS                                                      \
+#define __JOB_BASE_OPS                                                    \
     {                                                                     \
         .init = job_base_init, .reset = job_base_reset,                   \
         .set_ms_gene_addr = set_ms_gene_addr,                             \
@@ -161,11 +161,9 @@ __qualifier__ info_t get_machine_no(job_base_t *self);
     }
 
 #ifdef __cplusplus
-#define JOB_BASE_OPS \
-    job_base_operations_t __JOB_BASE_OPS
+#define JOB_BASE_OPS job_base_operations_t __JOB_BASE_OPS
 #else
-#define JOB_BASE_OPS \
-(job_base_operations_t) __JOB_BASE_OPS
+#define JOB_BASE_OPS (job_base_operations_t) __JOB_BASE_OPS
 #endif
 
 #if defined __NVCC__ || defined __cplusplus

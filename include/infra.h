@@ -90,7 +90,7 @@ int randomRange(int start, int end, int different_num);
 double randomDouble();
 
 
-#define _average(array, size)            \
+#define _average(array, size)           \
     ({                                  \
         double sum = 0;                 \
         __typeof__(size) SIZE = (size); \
@@ -101,7 +101,7 @@ double randomDouble();
         sum / SIZE;                     \
     })
 
-template<class T>
+template <class T>
 double __average(T array, int size)
 {
     double sum = 0;
