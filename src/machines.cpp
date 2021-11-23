@@ -670,11 +670,25 @@ bool machines_t::_isMachineDedicatedForJob(string lot_number,
         if (_dedicate_machines.count(cust) == 0) {
             cust = "others"s;
         }
-        return _dedicate_machines.at(cust).count(entity_name) == 0
-                   ? false
-                   : _dedicate_machines.at(cust).at(entity_name);
+        return _dedicate_machines.at(cust).count(entity_name) != 0 &&
+               _dedicate_machines.at(cust).at(entity_name);
     }
     return false;
+}
+
+bool machines_t::_isMachineRestrainedForJob(job_t *job, machine_t *machine)
+{
+    bool care = false;
+    bool retval = true;
+    bool result = true;
+    retval = _mcs_r->isMachineRestrained(job, machine, &care);
+    if (care)
+        result = retval;
+
+    retval = _mcs_a->isMachineRestrained(job, machine, &care);
+    if (care)
+        result = retval;
+    return result;
 }
 
 bool machines_t::_canJobRunOnTheMachine(job_t *job,
@@ -687,10 +701,10 @@ bool machines_t::_canJobRunOnTheMachine(job_t *job,
     string cust(job->customer.data.text);
     string entity_name(machine->base.machine_no.data.text);
 
-
     return _isMachineLocationAvailableForJob(lot_number, location) &&
            (!strict_model || _isModelAvailableForJob(lot_number, model)) &&
-           !_isMachineDedicatedForJob(lot_number, cust, entity_name);
+           !_isMachineDedicatedForJob(lot_number, cust, entity_name) &&
+           _isMachineRestrainedForJob(job, machine);
 }
 
 bool machines_t::_addNewResource(
@@ -1214,7 +1228,6 @@ bool machines_t::_distributeOrphanMachines(struct __machine_group_t *group,
             ares_t *wire = _availableResource(_wires, part_id);
             // check if tool and wire are sufficient
             if (tool != nullptr && wire != nullptr) {
-                // printf("rnd : %.3f, probability : %.3f\n", rnd, probability);
                 tool->used = true;
                 wire->used = true;
                 group->machines.push_back(orphan_machine);

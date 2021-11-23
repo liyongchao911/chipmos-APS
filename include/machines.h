@@ -10,6 +10,7 @@
 #include "include/job_base.h"
 #include "include/machine.h"
 #include "include/machine_base.h"
+#include "include/machine_constraint.h"
 #include "include/parameters.h"
 
 /**
@@ -120,6 +121,9 @@ protected:
     // automotive lots
     std::set<std::string> _automotive_lot_numbers;
 
+    // machine constraints
+    machine_constraint_t *_mcs_a, *_mcs_r;
+
     bool _isMachineLocationAvailableForJob(std::string lot_number,
                                            std::string location);
     bool _isModelAvailableForJob(std::string lot_number, std::string model);
@@ -127,6 +131,8 @@ protected:
     bool _isMachineDedicatedForJob(std::string lot_number,
                                    std::string cust,
                                    std::string entity);
+
+    bool _isMachineRestrainedForJob(job_t *job, machine_t *machine);
 
     bool _canJobRunOnTheMachine(job_t *jb,
                                 machine_t *machine,
@@ -291,7 +297,26 @@ public:
     ~machines_t();
 
     void setThreshold(int day_threshold);
+
+    void setMachineConstraintA(machine_constraint_t *mcs_a);
+    void setMachineConstraintR(machine_constraint_t *mcs_r);
 };
+
+inline void machines_t::setMachineConstraintA(machine_constraint_t *mcs_a)
+{
+    _mcs_a = mcs_a;
+}
+
+inline void machines_t::setMachineConstraintR(machine_constraint_t *mcs_r)
+{
+    _mcs_r = mcs_r;
+}
+
+// inline void
+// machines_t::setMachineConstraints(std::vector<machine_constraint_t *> mcsts)
+// {
+//     _machine_constraints = mcsts;
+// }
 
 inline void machines_t::setThreshold(int day_threshold)
 {

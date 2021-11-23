@@ -66,10 +66,8 @@ int stage2Scheduling(machines_t *machines, lots_t *lots, double peak_period)
         }
         machines->addGroupJobs(it->first, jobs);
     }
-    if (peak_period) {
-        machines->distributeOrphanMachines();
-    }
     machines->distributeOrphanMachines(peak_period);
+    // TODO: add entity_limit
     int stage2_setup_times = machines->scheduleGroups();
     return stage2_setup_times;
 }
@@ -83,6 +81,7 @@ void stage3Scheduling(machines_t *machines,
     machines->groupJobsByToolAndWire();
     machines->distributeTools();
     machines->distributeWires();
+    // TODO: add entity limit
     machines->chooseMachinesForGroups();
 
 

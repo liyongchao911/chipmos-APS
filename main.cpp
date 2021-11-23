@@ -165,6 +165,9 @@ void run(thread_data_t *data)
     foreach (all_entities, i) {
         machines->addMachine(all_entities[i]->machine());
     }
+    machines->setMachineConstraintA(entities.getMachineConstraintA());
+    machines->setMachineConstraintR(entities.getMachineConstraintR());
+
     prescheduling(machines, &lots);
     int stage2_setup_times = stage2Scheduling(
         machines, &lots, pop.parameters.scheduling_parameters.PEAK_PERIOD);

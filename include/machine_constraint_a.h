@@ -17,6 +17,13 @@ protected:
                               std::string restrained_model,
                               std::string entity_name,
                               std::string machine_model) override;
+    bool _isMachineRestrained(constraint_oper_t &oper,
+                              job_t *job,
+                              machine_t *machine,
+                              bool *care) override;
+    bool _isMachineRestrainedForTheValue(
+        std::vector<constraint_entry_t> entries,
+        machine_t *machine) override;
 
 public:
     explicit machine_constraint_a_t(csv_t csv);
