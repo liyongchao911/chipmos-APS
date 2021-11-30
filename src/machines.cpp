@@ -681,14 +681,17 @@ bool machines_t::_isMachineRestrainedForJob(job_t *job, machine_t *machine)
     bool care = false;
     bool retval = true;
     bool result = true;
-    retval = _mcs_r->isMachineRestrained(job, machine, &care);
-    if (care)
-        result = retval;
+    if (_mcs_r && _mcs_a) {
+        retval = _mcs_r->isMachineRestrained(job, machine, &care);
+        if (care)
+            result = retval;
 
-    retval = _mcs_a->isMachineRestrained(job, machine, &care);
-    if (care)
-        result = retval;
-    return result;
+        retval = _mcs_a->isMachineRestrained(job, machine, &care);
+        if (care)
+            result = retval;
+        return result;
+    } else  // if no any constraint
+        return true;
 }
 
 bool machines_t::_canJobRunOnTheMachine(job_t *job,
