@@ -76,19 +76,60 @@ machine_constraint_t::machine_constraint_t(csv_t csv)
     }
 }
 
-vector<machine_t *> machine_constraint_t::getAvailableMachines(
-    job_t *job,
-    vector<machine_t *> machines)
+vector<constraint_entry_t> machine_constraint_t::getConstraintEntries(
+    std::map<std::string, std::vector<constraint_entry_t>> entries,
+    const std::string &cust,
+    const std::string &val)
 {
-    string pkg_id(job->pkg_id.data.text);
-    string pin_pkg(job->pin_package.data.text);
-    string cust(job->customer.data.text);
-    return this->_getAvailableMachines(pin_pkg, pkg_id, cust, job->oper,
-                                       machines);
+    vector<constraint_entry_t> out;
+    if (entries.count(cust) == 0)
+        return out;
+
+    vector<constraint_entry_t> possible_entries = entries.at(cust);
+    foreach (possible_entries, i) {
+        if (regex_match(val, possible_entries[i].check_val)) {
+            out.push_back(possible_entries[i]);
+        }
+    }
+    return out;
 }
 
 
-std::vector<machine_t *> machine_constraint_t::_getRestrainedMachine(
+bool machine_constraint_t::isMachineRestrained(job_t *job,
+                                               machine_t *machine,
+                                               bool *care)
+{
+    if (job && machine) {
+        string pinpkg(job->pin_package.data.text);
+        string pkg_id(job->pkg_id.data.text);
+        string cust(job->customer.data.text);
+        if (_table.count(job->oper) == 0) {
+            return true;
+        } else {
+            return _isMachineRestrained(_table.at(job->oper), job, machine,
+                                        care);
+            // bool ret_val1 =
+            //     _table.at(job->oper).restrained_entity.count(cust) == 0 ||
+            //     _isMachineRestrained(
+            //         pkg_id, _table.at(job->oper).restrained_entity[cust],
+            //         machine);
+
+            // bool ret_val2 =
+            //     _table.at(job->oper).restrained_entity_pinpkg.count(cust) ==
+            //         0 ||
+            //     _isMachineRestrained(
+            //         pinpkg,
+            //         _table.at(job->oper).restrained_entity_pinpkg[cust],
+            //         machine);
+
+            // return ret_val1 && ret_val2;
+        }
+    } else {
+        return false;
+    }
+}
+
+std::vector<machine_t *> machine_group_constraint_t::_getRestrainedMachine(
     const std::string &val,
     std::vector<constraint_entry_t> entries,
     std::vector<machine_t *> machine_group)
@@ -113,7 +154,7 @@ std::vector<machine_t *> machine_constraint_t::_getRestrainedMachine(
     return result;
 }
 
-vector<machine_t *> machine_constraint_t::_getAvailableMachines(
+vector<machine_t *> machine_group_constraint_t::_getAvailableMachines(
     std::string pin_pkg,
     std::string pkg_id,
     std::string customer,
@@ -142,4 +183,15 @@ vector<machine_t *> machine_constraint_t::_getAvailableMachines(
 
     set<machine_t *> machine_set(group.begin(), group.end());
     return vector<machine_t *>(machine_set.begin(), machine_set.end());
+}
+
+vector<machine_t *> machine_group_constraint_t::getAvailableMachines(
+    job_t *job,
+    vector<machine_t *> machines)
+{
+    string pkg_id(job->pkg_id.data.text);
+    string pin_pkg(job->pin_package.data.text);
+    string cust(job->customer.data.text);
+    return this->_getAvailableMachines(pin_pkg, pkg_id, cust, job->oper,
+                                       machines);
 }

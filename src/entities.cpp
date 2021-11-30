@@ -71,7 +71,16 @@ void entities_t::_readDedicateMachines(std::string filename)
     csv.close();
 }
 
-
+void entities_t::_setupMachineConstraints(std::string filename)
+{
+    csv_t csv(filename, "r", true, true);
+    csv.trim(" ");
+    csv_t r_csv, a_csv;
+    r_csv = csv.filter("el_action", "R");
+    a_csv = csv.filter("el_action", "A");
+    _mcs_r = new machine_constraint_r_t(r_csv);
+    _mcs_a = new machine_constraint_a_t(a_csv);
+}
 
 entities_t::entities_t()
 {
@@ -86,6 +95,7 @@ entities_t::entities_t(std::map<std::string, std::string> arguments)
     _readPartNoFile(arguments["pid_heatblock"]);
     _readPartIdFile(arguments["bom_list"]);
     _readDedicateMachines(arguments["dedicate_machines"]);
+    _setupMachineConstraints(arguments["ent_limit"]);
 }
 
 void entities_t::setTime(string time)
