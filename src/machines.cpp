@@ -83,6 +83,8 @@ void machines_t::_init(setup_time_parameters_t parameters)
     machine_ops->reset = machineReset;
 
     threshold = 10000000;
+    _mcs_a = nullptr;
+    _mcs_r = nullptr;
 }
 
 
