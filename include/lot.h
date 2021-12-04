@@ -78,6 +78,7 @@ protected:
     bool _is_sub_lot;
     bool _is_automotive;
 
+	double _cr;
     double _queue_time;  // for all queue time;
     double _fcst_time;   // for DA fcst time
     double _outplan_time;
