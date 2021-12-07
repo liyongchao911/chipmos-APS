@@ -207,6 +207,8 @@ bool machinePtrComparison(machine_t *m1, machine_t *m2)
 
 bool jobPtrComparison(job_t *j1, job_t *j2)
 {
+	if(j1->base.arriv_t == j2->base.arriv_t)
+		return j1->cr < j2->cr;
     return j1->base.arriv_t < j2->base.arriv_t;
 }
 

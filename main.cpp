@@ -136,7 +136,9 @@ void run(thread_data_t *data)
                          .WEIGHT_TOTAL_COMPLETION_TIME =
                              stoi(arguments["weight_total_completion_time"]),
                          .WEIGHT_MAX_SETUP_TIMES =
-                             stoi(arguments["weight_max_setup_times"])},
+                             stoi(arguments["weight_max_setup_times"]),
+			 			 .WEIGHT_CR = 
+							 stoi(arguments["weight_cr"])},
              .setup_times_parameters =
                  {
                      .TIME_CWN = stod(arguments["setup_time_cwn"]),
