@@ -189,15 +189,18 @@ void machines_t::prescheduleJobs()
     // printf("========================================\n");
 }
 
-void machines_t::_collectScheduledJobs(machine_t *machine,
-                                       std::vector<job_t *> &scheduled_jobs)
+int machines_t::_collectScheduledJobs(machine_t *machine,
+                                      std::vector<job_t *> &scheduled_jobs)
 {
+    int count = 0;
     list_ele_t *list;
     list = machine->base.root;
     while (list) {
+        ++count;
         scheduled_jobs.push_back((job_t *) list->ptr_derived_object);
         list = list->next;
     }
+    return count;
 }
 
 bool machinePtrComparison(machine_t *m1, machine_t *m2)
@@ -332,22 +335,12 @@ int machines_t::_scheduleAGroup(struct __machine_group_t *group)
     }
     int setup_times = 0;
     sort(unscheduled_jobs.begin(), unscheduled_jobs.end(), jobPtrComparison);
+    bool flag = false;
     foreach (unscheduled_jobs, i) {
         string lot_number(unscheduled_jobs[i]->base.job_info.data.text);
         sort(machines.begin(), machines.end(), machinePtrComparison);
+        flag = false;
         foreach (machines, j) {
-            // FIXME : don't use average process time to schedule
-            // if (_job_process_times[lot_number].count(model) == 0) {
-            //     unscheduled_jobs[i]->base.ptime =
-            //         _averageProcessTime(_job_process_times[lot_number]);
-            // } else {
-            //     unscheduled_jobs[i]->base.ptime =
-            //         _job_process_times[lot_number][model];
-            // }
-            // setup_times +=
-            //     staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
-            // break;
-
             string model(machines[j]->model_name.data.text);
             if (_canJobRunOnTheMachine(unscheduled_jobs[i], machines[j],
                                        false)) {
@@ -360,10 +353,16 @@ int machines_t::_scheduleAGroup(struct __machine_group_t *group)
                 }
                 setup_times +=
                     staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
+
+                flag = true;
                 break;
             }
         }
-        group->scheduled_jobs.push_back(unscheduled_jobs[i]);
+        if (flag) {
+            group->scheduled_jobs.push_back(unscheduled_jobs[i]);
+        } else {
+            group->unscheduled_jobs.push_back(unscheduled_jobs[i]);
+        }
     }
 
     return setup_times;
@@ -379,20 +378,6 @@ int machines_t::scheduleGroups()
              _dispatch_groups.begin();
          it != _dispatch_groups.end(); it++) {
         total_setup_times += _scheduleAGroup(it->second);
-
-        // iter(it->second->machines, j)
-        // {
-        //     _collectScheduledJobs(it->second->machines[j], _scheduled_jobs);
-        // }
-    }
-
-    // if the job exceeds the threshold, job will be rescheduled
-    reconsiderJobs();
-    vector<job_t *> stage2_scheduled_jobs;
-    foreach (_v_machines, i) {
-        setLastJobInMachine(_v_machines[i]);
-        _collectScheduledJobs(_v_machines[i], _scheduled_jobs);
-        _collectScheduledJobs(_v_machines[i], stage2_scheduled_jobs);
     }
 
     // update the tools and the wires

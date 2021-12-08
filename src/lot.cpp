@@ -421,7 +421,7 @@ void lot_t::setCanRunLocation(
                     continue;
                 }
             } else if (locations[j].compare("TB-P") == 0) {
-                if (_pin_package.find("TSOP1") != std::string::npos ||
+                if (_pin_package.find("TSOP1") != std::string::npos &&
                     _part_id[4] == 'A') {
                     continue;
                 } else {
