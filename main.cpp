@@ -10,6 +10,7 @@
 #define LOG_ERROR
 
 #include "include/algorithm.h"
+#include "include/arg_parser.h"
 #include "include/csv.h"
 #include "include/entity.h"
 #include "include/infra.h"
@@ -18,8 +19,6 @@
 #include "include/machines.h"
 #include "include/population.h"
 
-
-
 using namespace std;
 
 map<string, string> outputJob(job_t job);
@@ -27,8 +26,8 @@ map<string, string> outputJobInMachine(machine_t *machine);
 
 void outputJobInMachine(map<string, machine_t *>, csv_t *csv);
 
-lots_t createLots(int argc, const char **, map<string, string>);
-entities_t createEntities(int argc, const char **argv, map<string, string>);
+lots_t createLots(map<string, string>);
+entities_t createEntities(map<string, string>);
 
 typedef struct __thread_data_t {
     map<string, string> arguments;
@@ -43,20 +42,24 @@ char MESSAGE[] =
     "version 0.0.5\n"
     "Author : NCKU Smart Production Lab";
 
+argument_parser_t *parser = new argument_parser_t();
 
 
 int main(int argc, const char **argv)
 {
-    string file_name;
-    if (argc < 2) {
-        printf("%s\n", MESSAGE);
-        printf("Please specify the path of configuration file\n");
-        // exit(EXIT_FAILURE);
-        file_name = "config.csv";
-    } else {
-        file_name = argv[1];
-    }
+    parser->add_args({"", "setup input file", ARG_STRING}, {"-f"s, "--file"s});
+    parser->add_args({"", "only preprocess the files", ARG_NONE},
+                     {"-p"s, "--preprocessing"s});
+    parser->add_args({"", "list the available arguments\n", ARG_NONE},
+                     {"-h"s, "--help"s});
 
+    parser->parse_argument_list(argc, argv);
+
+    string file_name = parser->get_argument_value("--file");
+    if (file_name.length() == 0) {
+        printf("%s\n", MESSAGE);
+        printf("Please give the --file argument");
+    }
 
     csv_t cfg(file_name, "r", true, true);
     // get the cfg size
@@ -69,21 +72,6 @@ int main(int argc, const char **argv)
 
 
     srand(time(NULL));
-    // progress_bar_attr_t *pbattr =
-    //     create_progress_bar_attr(nthreads + 1, "127.0.0.1", 8081);
-    // pthread_t accept_thread, progress_bar_thread;
-    // pthread_create(&accept_thread, NULL, accept_connection, (void *) pbattr);
-
-    // int fds[1024] = {-1};
-    // for (int i = 0; i < nthreads; ++i) {
-    //     fds[i] = create_client_connection("127.0.0.1", 8081);
-    // }
-    // int main_fd = create_client_connection("127.0.0.1", 8081);
-    // pthread_join(accept_thread, NULL);
-
-    // pthread_create(&progress_bar_thread, NULL, run_progress_bar_server,
-    //                (void *) pbattr);
-    // map<string, string> arguments = cfg.getElements(0);
     for (unsigned int i = 0; i < cfg.nrows(); ++i) {
         thread_data_array[i] = new thread_data_t();
         *thread_data_array[i] = thread_data_t{.arguments = cfg.getElements(i),
@@ -91,34 +79,29 @@ int main(int argc, const char **argv)
                                               .argv = argv,
                                               .fd = 1,
                                               .id = (int) i};
-        // pthread_create(threads + i, NULL, run, thread_data_array[i]);
+        printf("Thread[%d] starts\n", i);
         threads.push_back(thread(run, thread_data_array[i]));
     }
 
     for (unsigned int i = 0, size = threads.size(); i < size; ++i) {
         threads[i].join();
+        printf("Thread[%d] is finished\n", i);
     }
-
-    // send(main_fd, "close", 5, 0);
-    // pthread_join(progress_bar_thread, NULL);
-    // delete_attr(&pbattr);
-
 
     return 0;
 }
 
 void run(thread_data_t *data)
 {
-    // sem_wait(&SEM);
-    // thread_data_t *data = (thread_data_t *) _data;
-    int argc = data->argc;
-    const char **argv = data->argv;
     int id = data->id;
-    printf("Thread[%d] starts...\n", id);
     map<string, string> arguments = data->arguments;
 
-    lots_t lots = createLots(argc, argv, arguments);
-    entities_t entities = createEntities(argc, argv, arguments);
+    lots_t lots = createLots(arguments);
+    entities_t entities = createEntities(arguments);
+
+    if (parser->is_set("-p")) {
+        pthread_exit(NULL);
+    }
 
     if (data->fd < 0)
         data->fd = 1;
@@ -184,38 +167,34 @@ void run(thread_data_t *data)
         result.addData(outputJob(*pop.objects.jobs[i]));
     }
     result.write();
-
-    printf("Thread[%d] is finished...\n", id);
-    // sem_post(&SEM);
 }
 
 
-lots_t createLots(int argc, const char **argv, map<string, string> arguments)
+lots_t createLots(map<string, string> arguments)
 {
     lots_t lots;
-    lot_t *lot;
-    if (argc >= 3) {
-        // printf("Create lots by using pre-created lots.csv file : %s\n",
-        //        argv[2]);
-        csv_t lots_csv(argv[2], "r", true, true);
-        vector<lot_t *> all_lots;
-        for (int i = 0, nrows = lots_csv.nrows(); i < nrows; ++i) {
-            lot = new lot_t(lots_csv.getElements(i));
-            all_lots.push_back(lot);
-        }
-        lots.addLots(all_lots);
-    } else {
-        // printf("Create lots by using configure file : %s\n", argv[1]);
-        lots.createLots(arguments);
-    }
+    // lot_t *lot;
+    // int argc = parser->argc();
+    // if (argc >= 3) {
+    //     // printf("Create lots by using pre-created lots.csv file : %s\n",
+    //     //        argv[2]);
+    //     csv_t lots_csv(argv[2], "r", true, true);
+    //     vector<lot_t *> all_lots;
+    //     for (int i = 0, nrows = lots_csv.nrows(); i < nrows; ++i) {
+    //         lot = new lot_t(lots_csv.getElements(i));
+    //         all_lots.push_back(lot);
+    //     }
+    //     lots.addLots(all_lots);
+    // } else {
+    // printf("Create lots by using configure file : %s\n", argv[1]);
+    lots.createLots(arguments);
+    // }
     lots.setProcessTimeRatio(stod(arguments["process_time_ratio"]));
 
     return lots;
 }
 
-entities_t createEntities(int argc,
-                          const char **argv,
-                          map<string, string> arguments)
+entities_t createEntities(map<string, string> arguments)
 {
     csv_t machine_csv(arguments["machines"], "r", true, true);
     machine_csv.trim(" ");
