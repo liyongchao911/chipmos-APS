@@ -69,6 +69,10 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["qty"] = std::string("0");
     }
 
+    if (elements.count("oper") == 0 || elements["oper"].length() == 0) {
+        elements["oper"] = std::string("0");
+    }
+
     if (elements.count("package_id") == 0) {
         elements["package_id"] = "";
     }
