@@ -77,6 +77,10 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["package_id"] = "";
     }
 
+	if (elements.count("CR") == 0 || elements["CR"].compare("0") == 0 ) {
+		elements["CR"] = std::string("10000");
+	}
+
     return elements;
 }
 
@@ -133,6 +137,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     setMvin(elements["mvin"]);
     setAutomotive(elements["automotive"]);
 
+	_cr = std::stod(elements["CR"]);
     _queue_time = std::stod(elements["queue_time"]);
     _fcst_time = std::stod(elements["fcst_time"]);
     tmp_oper = stoi(elements["dest_oper"]);
@@ -492,6 +497,7 @@ job_t lot_t::job()
     } else
         j.urgent_code = '\0';
 
+	j.cr = _cr;
     j.base.qty = _qty;
     j.base.start_time = j.base.end_time = 0;
     j.base.arriv_t = _queue_time;
