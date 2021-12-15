@@ -411,6 +411,25 @@ bool machines_t::_isThereAnyUnusedResource(
 vector<job_t *> machines_t::_jobsExceedDispatchingThreshold(machine_t *machine,
                                                             int threshold)
 {
+    // The function of _jobsExceedDispatchingThreshold is deeling with
+    // the job whose start time exceeds the threshold. The function would
+    // take off that jobs and reschedule them in stage3 scheduling algorithm
+    //
+    // FIXME: In this function there is a big BUG.
+    // When I review the code and wanna know the code which setups the available
+    // time for stage3 scheduling, I found nowhere. I want to patch up the bug
+    // but I found it is a little bit difficult. 
+    //
+    // The first thing I need to do is adding a field to store the truely available_time.
+    // The field available_time in machine_base_t is used to store the current scheduled
+    // point rather then the available_time. I have made the bug because I thought that
+    // the scheduling process and the result of scheduling process isn't invertible which
+    // means that the jobs, scheduled on the machines, won't be taken off and each machine
+    // schedules all the jobs it has once. However, the stage2 scheduling process works
+    // differently. Stage2 scheduling process schedules a job for a machine once and schedules
+    // another job for another machine and so on. Therefore, the current scheduling point is
+    // stored at the field available_time in stage2 scheduling process.
+
     vector<job_t *> jobs;
     list_ele_t *iterator = machine->base.root;
     int i = 0;
