@@ -156,6 +156,7 @@
             "weight_setup_times" : [200000],
             "weight_max_setup_times" : [1000],
             "weight_total_completion_time" : [1],
+            "weight_cr" : [20000],
             "setup_time_cwn" : [30],
             "setup_time_ck" : [0],
             "setup_time_eu" : [0],
