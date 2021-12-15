@@ -16,6 +16,7 @@ set(src_files
         machines.cpp
         machine.cpp
         route.cpp
+        record_gap.cpp
         )
 add_library(src STATIC ${src_files})
 target_compile_features(src PUBLIC cxx_std_11)

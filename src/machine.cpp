@@ -48,7 +48,7 @@ double setupTimeCK(job_base_t *_prev, job_base_t *_next, double time)
         if (prev->part_no.data.text[5] == next->part_no.data.text[5]) {
             return 0.0;
         } else {
-            return 0;
+            return time;
         }
     }
     return 0;
@@ -59,7 +59,7 @@ double setupTimeEU(job_base_t *_prev, job_base_t *_next, double time)
     if (_next) {
         job_t *next = (job_t *) _next->ptr_derived_object;
         if (next->urgent_code)
-            return 0;  // FIXME
+            return time;
         else
             return 0;
     }
