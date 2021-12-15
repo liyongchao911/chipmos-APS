@@ -1,4 +1,3 @@
-#include <dirent.h>
 #include <include/condition_card.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -84,64 +83,6 @@ bool isExcelFile(string filename)
     return filename.rfind(".xls") != string::npos;
 }
 
-void condition_cards_h::readConditionCardsDir(string dir_name, bool replace)
-{
-    dir_name = dirName(dir_name);
-    DIR *dir;
-    struct dirent *dent;
-    struct stat file;
-    string sub_dir_name;
-
-    dir = opendir(dir_name.c_str());
-    while ((dent = readdir(dir)) != NULL) {
-        sub_dir_name = dir_name + dent->d_name;
-        stat(sub_dir_name.c_str(), &file);
-        if (S_ISDIR(file.st_mode)) {
-            readConditionCards(sub_dir_name, replace);
-        }
-    }
-}
-
-
-void condition_cards_h::readConditionCards(string sub_dir_name, bool replace)
-{
-    DIR *dir;
-    struct dirent *dent;
-    struct stat file;
-    card_t tmep;
-    vector<string> text;
-    sub_dir_name = dirName(sub_dir_name);
-    dir = opendir(sub_dir_name.c_str());
-    string path;
-
-    while ((dent = readdir(dir)) != NULL) {  // check if dent is file or dir
-        path = sub_dir_name + dent->d_name;
-        stat(path.c_str(), &file);
-        if (S_ISREG(file.st_mode)) {
-            if (isCsvFile(path)) {
-                text = split(dent->d_name, '-');
-                card_t card =
-                    readConditionCard(path, text.at(text.size() - 3),
-                                      stoul(text.at(text.size() - 2)));
-
-                // check if card.recipe exist, if yes, check card.oper exiset
-                if (_models.count(card.recipe) > 0 &&
-                    _models[card.recipe].count(card.oper) != 0) {
-                    if (replace) {
-                        _models[card.recipe][card.oper] = card;
-                    } else {
-                        continue;
-                    }
-                } else {  // recipe and oper are inexist
-                    _models[card.recipe][card.oper] = card;
-                }
-            } else if (isExcelFile(path)) {
-                // do something
-            }
-        }
-        // printf("%s\n", path.c_str());
-    }
-}
 
 card_t condition_cards_h::readConditionCard(string filename,
                                             string recipe,

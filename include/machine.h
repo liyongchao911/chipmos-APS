@@ -64,9 +64,9 @@ void scheduling(machine_t *mahcine,
                 weights_t weights,
                 setup_time_parameters_t scheduling_parameters);
 
-void staticAddJob(machine_t *machine,
-                  job_t *job,
-                  machine_base_operations_t *ops);
+int staticAddJob(machine_t *machine,
+                 job_t *job,
+                 machine_base_operations_t *ops);
 
 void insertAlgorithm(machine_t *machine,
                      machine_base_operations_t *ops,

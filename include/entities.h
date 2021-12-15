@@ -3,12 +3,15 @@
 #define CHIPMOSWB_ENTITIES_H
 
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "include/csv.h"
 #include "include/entity.h"
+#include "include/machine_constraint_a.h"
+#include "include/machine_constraint_r.h"
 
 class entities_t
 {
@@ -32,6 +35,11 @@ private:
     std::map<std::string, std::string> bom_id_map_to_part_id;
     std::map<std::string, std::string> pid_map_to_part_no;
 
+    std::map<std::string, std::map<std::string, bool> > _dedicate_machines;
+
+    // std::vector<machine_constraint_t *> _machine_constraints;
+    machine_constraint_t *_mcs_a;
+    machine_constraint_t *_mcs_r;
 
     time_t _time;
 
@@ -40,6 +48,10 @@ private:
     void _readPartNoFile(std::string filename);
 
     void _readPartIdFile(std::string filename);
+
+    void _readDedicateMachines(std::string filename);
+
+    void _setupMachineConstraints(std::string filename);
 
 public:
     entities_t();
@@ -74,7 +86,29 @@ public:
     void setTime(std::string text);
 
     entity_t *getEntityByName(std::string entity_name);
+
+    std::map<std::string, std::map<std::string, bool> > getDedicateMachines();
+
+    // inline std::vector<machine_constraint_t *> getMachineConstraints();
+    machine_constraint_t *getMachineConstraintA();
+    machine_constraint_t *getMachineConstraintR();
 };
+
+inline machine_constraint_t *entities_t::getMachineConstraintA()
+{
+    return _mcs_a;
+}
+
+inline machine_constraint_t *entities_t::getMachineConstraintR()
+{
+    return _mcs_r;
+}
+
+inline std::map<std::string, std::map<std::string, bool> >
+entities_t::getDedicateMachines()
+{
+    return _dedicate_machines;
+}
 
 inline entity_t *entities_t::getEntityByName(std::string entity_name)
 {

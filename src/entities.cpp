@@ -55,6 +55,32 @@ void entities_t::_readPartIdFile(std::string filename)
     }
 }
 
+void entities_t::_readDedicateMachines(std::string filename)
+{
+    csv_t csv(filename, "r", true, true);
+    csv.trim(" ");
+    _dedicate_machines.clear();
+    map<string, string> row;
+    for (int i = 0, size = csv.nrows(); i < size; ++i) {
+        row = csv.getElements(i);
+        // _dedicate_machines[row.at("customer") + "_" + row.at("entity")] =
+        // row.at("pass").compare("Y") == 0 ? true : false;
+        _dedicate_machines[row.at("customer")][row.at("entity")] =
+            row.at("pass").compare("Y") == 0;
+    }
+    csv.close();
+}
+
+void entities_t::_setupMachineConstraints(std::string filename)
+{
+    csv_t csv(filename, "r", true, true);
+    csv.trim(" ");
+    csv_t r_csv, a_csv;
+    r_csv = csv.filter("el_action", "R");
+    a_csv = csv.filter("el_action", "A");
+    _mcs_r = new machine_constraint_r_t(r_csv);
+    _mcs_a = new machine_constraint_a_t(a_csv);
+}
 
 entities_t::entities_t()
 {
@@ -68,6 +94,8 @@ entities_t::entities_t(std::map<std::string, std::string> arguments)
     _readProcessIdFile(arguments["pid_bomid"]);
     _readPartNoFile(arguments["pid_heatblock"]);
     _readPartIdFile(arguments["bom_list"]);
+    _readDedicateMachines(arguments["dedicate_machines"]);
+    _setupMachineConstraints(arguments["ent_limit"]);
 }
 
 void entities_t::setTime(string time)

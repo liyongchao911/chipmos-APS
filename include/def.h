@@ -16,8 +16,10 @@
 
 #if defined(WIN32) || defined(_WIN32)
 #define PATH_SEPARATOR "\\"
+#define __builtin_clz __lzcnt
 #else
 #define PATH_SEPARATOR "/"
 #endif
+
 
 #endif

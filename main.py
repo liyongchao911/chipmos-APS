@@ -3,7 +3,9 @@ import os
 import re
 import pandas as pd
 import argparse
+import copy
 from datetime import datetime
+
 
 
 def filePreprocessing(path, files:dict, csv_config):
@@ -15,7 +17,6 @@ def filePreprocessing(path, files:dict, csv_config):
         if(not file_function in csv_config):
             csv_config[file_function] = []
         try:
-
             if(re.search(r'.csv', file_path) != None):
                 df = pd.read_csv(file_path, dtype=str)
                 file_path = file_path.replace(r'.csv', '')
@@ -44,10 +45,29 @@ def filePreprocessing(path, files:dict, csv_config):
         csv_config[file_function].append(file_path + ".csv")
     return csv_config
 
-def preprocessing(conf:dict):
+def processing(conf:dict):
+    all_df = []
+    for entry in conf:
+        dfs = preprocess_entry(entry)
+        all_df.append(pd.concat(dfs))
+    
+    all_df = pd.concat(all_df)
+    all_df.to_csv("config.csv", index=False)
+
+def product(args, repeat=1):
+    pools = [tuple(pool) for pool in args] * repeat
+    result = [[]]
+    for pool in pools:
+        result = [x+[y] for x in result for y in pool]
+    for prod in result:
+        yield tuple(prod)
+
+def preprocess_entry(conf:dict):
     csv_config = {}
     path = conf["file_path"]
-    csv_config_file_path = os.path.join(path, "config.csv")
+    no = conf["no"]
+    csv_config["no"] = conf["no"]
+    # csv_config_file_path = "config.csv"
     csv_config = filePreprocessing(path, conf["preprocess_files"], csv_config)
     csv_config = filePreprocessing(path, conf["nopreprocess_files"], csv_config)
 
@@ -55,14 +75,28 @@ def preprocessing(conf:dict):
     time = re.split(r"_|\.csv", wip_filename)[1]
     dt = datetime.strptime(time, "%Y%m%d%H%M%S")
 
-    csv_config["std_time"] = [ dt.strftime("%y-%m-%d %H:%M")]
+    csv_config["std_time"] = [dt.strftime("%y-%m-%d %H:%M")]
+    items = []
+    params = []
     for item in conf["parameters"]:
-        csv_config[item] = conf["parameters"][item]
-    df = pd.DataFrame(csv_config)
-    df.to_csv(csv_config_file_path, index=False)
-    # print(json.dumps(csv_config, indent=4))
-
-    return csv_config_file_path
+        items.append(item)
+        params.append(conf["parameters"][item])
+    print("params : ")
+    print(params)
+    results = list(product(params))
+    dfs = []
+    no_suffix = 0
+    for result in results:
+        new_csv_config = copy.deepcopy(csv_config)
+        new_csv_config["no"] = ''.join([str(no), "-", str(no_suffix)])
+        no_suffix += 1
+        size = len(items)
+        print(result)
+        for i in range(size):
+            new_csv_config[items[i]] = result[i]
+        df = pd.DataFrame(new_csv_config)
+        dfs.append(df)
+    return dfs
 
 
 if __name__ == '__main__':
@@ -94,4 +128,4 @@ if __name__ == '__main__':
     args = arg_parser.parse_args()
 
     config = args.config
-    csv_config_file_path = preprocessing(json.load(open(config))) 
+    csv_config_file_path = processing(json.load(open(config))) 

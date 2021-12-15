@@ -93,21 +93,20 @@ void test_lot_t::SetUp()
                                      {"part_no", ""}});
 
 
-    test_wip_data_1 = map<string, string>({
-        {"route", "QFNS288"},
-        {"lot_number", "P23ASEA02"},
-        {"pin_package", "DFN-08YM2G"},
-        {"bd_id", "AAS008YM2024A"},
-        {"prod_id", "008YMAS034"},
-        {"urgent_code", "urgent"},
-        {"customer", "ICSI"},
-        {"wb_location", "BB211-1"},
-        {"qty", "16000"},
-        {"oper", "2200"},
-        {"hold", "N"},
-        {"mvin", "Y"},
-        {"sub_lot", "9"},
-    });
+    test_wip_data_1 = map<string, string>({{"route", "QFNS288"},
+                                           {"lot_number", "P23ASEA02"},
+                                           {"pin_package", "DFN-08YM2G"},
+                                           {"bd_id", "AAS008YM2024A"},
+                                           {"prod_id", "008YMAS034"},
+                                           {"urgent_code", "urgent"},
+                                           {"customer", "ICSI"},
+                                           {"wb_location", "BB211-1"},
+                                           {"qty", "16000"},
+                                           {"oper", "2200"},
+                                           {"hold", "N"},
+                                           {"mvin", "Y"},
+                                           {"sub_lot", "9"},
+                                           {"package_id", "PACKAGE_ID"}});
 
     test_wip_data_2 = map<string, string>({
         {"route", "QFNS288"},
@@ -157,7 +156,7 @@ void test_lot_t::SetUp()
         {"sub_lot", "9"},
     });
 
-    test_wip_data_4 = map<string, string>({
+    test_wip_data_5 = map<string, string>({
         {"route", "QFNS288"},
         {"lot_number", "P23ASEA"},
         {"pin_package", "DFN-08YM2G"},
@@ -175,29 +174,31 @@ void test_lot_t::SetUp()
 
 
 
-    test_lot_csv_data_1 =
-        map<string, string>({{"route", "QFNS288"},
-                             {"lot_number", "P23ASEA02"},
-                             {"pin_package", "DFN-08YM2G"},
-                             {"recipe", "AAS008YM2024A"},
-                             {"prod_id", "008YMAS034"},
-                             {"urgent_code", "urgent"},
-                             {"customer", ""},
-                             {"wb_location", ""},
-                             {"qty", "16000"},
-                             {"oper", "2200"},
-                             {"hold", "N"},
-                             {"mvin", "Y"},
-                             {"sub_lot", "9"},
-                             {"queue_time", "240.345"},
-                             {"fcst_time", "123.2"},
-                             {"amount_of_tools", "10"},
-                             {"amount_of_wires", "20"},
-                             {"CAN_RUN_MODELS", "UTC1000S,UTC2000S,UTC3000S"},
-                             {"PROCESS_TIME", "123.45,456.78,789.1"},
-                             {"uphs", "23,45,67"},
-                             {"part_id", "PART_ID"},
-                             {"part_no", "PART_NO"}});
+    test_lot_csv_data_1 = map<string, string>(
+        {{"route", "QFNS288"},
+         {"lot_number", "P23ASEA02"},
+         {"pin_package", "DFN-08YM2G"},
+         {"recipe", "AAS008YM2024A"},
+         {"prod_id", "008YMAS034"},
+         {"urgent_code", "urgent"},
+         {"customer", ""},
+         {"wb_location", ""},
+         {"qty", "16000"},
+         {"oper", "2200"},
+         {"hold", "N"},
+         {"mvin", "Y"},
+         {"sub_lot", "9"},
+         {"queue_time", "240.345"},
+         {"fcst_time", "123.2"},
+         {"amount_of_tools", "10"},
+         {"amount_of_wires", "20"},
+         {"CAN_RUN_MODELS", "UTC1000S,UTC2000S,UTC3000S"},
+         {"PROCESS_TIME", "123.45,456.78,789.1"},
+         {"uphs", "23,45,67"},
+         {"part_id", "PART_ID"},
+         {"part_no", "PART_NO"},
+         {"package_id",
+          "AK07374-XC2-F4{FT1}{FRM-PP}AK07374-XC2-F4{FT1}{FRM-PP}123456789"}});
 
     test_lot_csv_data_2 =
         map<string, string>({{"route", "QFNS288"},
@@ -284,6 +285,7 @@ TEST_F(test_lot_t, test_lot_ctor_wip_data1)
 
     EXPECT_EQ(lot->_prescheduled_order, 1);
     EXPECT_EQ(lot->_prescheduled_machine.compare("BB211"), 0);
+    EXPECT_EQ(lot->_pkg_id.compare("PACKAGE_ID"), 0);
 
     EXPECT_EQ(lot->_status, SUCCESS);
 
@@ -400,7 +402,7 @@ TEST_F(test_lot_t, test_lot_job1)
 
     EXPECT_EQ(strcmp(job.base.job_info.data.text, lot->_lot_number.c_str()), 0);
 
-    EXPECT_EQ(strcmp(job.part_no.data.text, lot->_part_no.c_str()), 0);
+    EXPECT_EQ(strcmp(job.part_no.data.text, lot->part_no().c_str()), 0);
     EXPECT_EQ(strcmp(job.part_id.data.text, lot->_part_id.c_str()), 0);
     EXPECT_EQ(strcmp(job.prod_id.data.text, lot->_prod_id.c_str()), 0);
 
@@ -415,6 +417,10 @@ TEST_F(test_lot_t, test_lot_job1)
     EXPECT_EQ(job.base.end_time, 0);
     EXPECT_EQ(job.base.arriv_t, lot->_queue_time);
     EXPECT_EQ(job.is_scheduled, false);
+    EXPECT_EQ(
+        lot->_pkg_id.compare(
+            "AK07374-XC2-F4{FT1}{FRM-PP}AK07374-XC2-F4{FT1}{FRM-PP}123456789"),
+        0);
 
     info_t machine_no = job.base.machine_no;
     info_t empty_info = emptyInfo();
@@ -442,4 +448,14 @@ TEST_F(test_lot_t, test_lot_job3)
     info_t empty_info = emptyInfo();
     EXPECT_NE(strcmp(job.bdid.data.text, empty_info.data.text), 0);
     EXPECT_NEAR(job.base.ptime, 123.45, 0.000001);
+}
+
+TEST_F(test_lot_t, test_lot_isInSchedulingPlan)
+{
+    test_lot_csv_data_4["lot_number"] = "PXXABK07";
+    lot = createALot(test_lot_csv_data_4);
+    EXPECT_FALSE(lot->isInSchedulingPlan());
+
+    lot = createALot(test_lot_csv_data_1);
+    EXPECT_TRUE(lot->isInSchedulingPlan());
 }

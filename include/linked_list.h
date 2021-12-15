@@ -176,12 +176,18 @@ struct list_operations_t {
  * in which, the field set_next point to _list_ele_set_next and the field
  * set_prev point to _list_ele_set_prev
  */
-#define LINKED_LIST_OPS                                                 \
-    (list_operations_t)                                                 \
+#define __LINKED_LIST_OPS                                               \
     {                                                                   \
         .set_next = _list_ele_set_next, .set_prev = _list_ele_set_prev, \
     }
 #endif
+
+#ifdef __cplusplus
+#define LINKED_LIST_OPS list_operations_t __LINKED_LIST_OPS
+#else
+#define LINKED_LIST_OPS (list_operations_t) __LINKED_LIST_OPS
+
+#endif  // __cplusplus
 
 
 

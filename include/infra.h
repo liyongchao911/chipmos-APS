@@ -81,6 +81,7 @@ void stringToUpper(char *text);
 
 struct __info_t stringToInfo(std::string s);
 
+bool isNumeric(std::string s);
 
 void random(double *genes, int size);
 
@@ -88,7 +89,8 @@ int randomRange(int start, int end, int different_num);
 
 double randomDouble();
 
-#define average(array, size)            \
+
+#define _average(array, size)           \
     ({                                  \
         double sum = 0;                 \
         __typeof__(size) SIZE = (size); \
@@ -98,4 +100,25 @@ double randomDouble();
         }                               \
         sum / SIZE;                     \
     })
+
+template <class T>
+double __average(T array, int size)
+{
+    double sum = 0;
+    for (int i = 0; i < size; ++i)
+        sum += array[i];
+    return sum / size;
+}
+
+
+#ifdef WIN32
+#define average __average
+#else
+#define average _average
 #endif
+
+#endif
+
+#define set_bit(num, i) ((num) |= (1 << (i)))
+
+#define check_bit(num, i) (((num) & (1 << (i))) ? 1 : 0)

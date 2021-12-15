@@ -1,6 +1,9 @@
+#include <gtest/gtest-param-test.h>
 #include <gtest/gtest.h>
 #include <ctime>
+#include <map>
 #include <string>
+#include <vector>
 
 #define private public
 #define protected public
@@ -17,21 +20,22 @@
 
 using namespace std;
 
-struct test_case_t {
+struct tcs_distribute_resource_t {
     int _number_of_resources;
-    map<string, int> _case;
-    map<string, int> _ans;
+    map<string, int> _case, _ans;
 };
 
-class test_machines_t_distributeAResource : public testing::Test
+class test_machines_t_distributeAResource
+    : public testing::TestWithParam<tcs_distribute_resource_t>
 {
 public:
-    vector<test_case_t> cases;
     machines_t *machines;
 
     void SetUp() override;
     void TearDown() override;
 };
+
+
 
 void test_machines_t_distributeAResource::SetUp()
 {
@@ -39,80 +43,6 @@ void test_machines_t_distributeAResource::SetUp()
     machines = new machines_t();
     if (machines == nullptr)
         exit(EXIT_FAILURE);
-    cases.push_back((struct test_case_t){
-        ._number_of_resources = 100,
-        ._case = map<string, int>({
-            {"g1", 40},
-            {"g2", 60},
-        }),
-        ._ans = map<string, int>({{"g1", 40}, {"g2", 60}})});
-
-    cases.push_back((struct test_case_t){
-        ._number_of_resources = 50,
-        ._case = map<string, int>({
-            {"g1", 40},
-            {"g2", 60},
-        }),
-        ._ans = map<string, int>({{"g1", 20}, {"g2", 30}})});
-
-    cases.push_back((struct test_case_t){
-        ._number_of_resources = 48,
-        ._case = map<string, int>({
-            {"g1", 40},
-            {"g2", 60},
-        }),
-        ._ans = map<string, int>({{"g1", 19}, {"g2", 29}})});
-
-    cases.push_back((struct test_case_t){
-        ._number_of_resources = 29,
-        ._case = map<string, int>({
-            {"g1", 43},
-            {"g2", 31},
-        }),
-        ._ans = map<string, int>({{"g1", 17}, {"g2", 12}})});
-
-    cases.push_back(
-        (struct test_case_t){._number_of_resources = 3,
-                             ._case = map<string, int>({
-                                 {"g1", 43},
-                                 {"g2", 31},
-                             }),
-                             ._ans = map<string, int>({{"g1", 2}, {"g2", 1}})});
-
-    cases.push_back(
-        (struct test_case_t){._number_of_resources = 2,
-                             ._case = map<string, int>({
-                                 {"g1", 43},
-                                 {"g2", 31},
-                             }),
-                             ._ans = map<string, int>({{"g1", 1}, {"g2", 1}})});
-
-    cases.push_back(
-        (struct test_case_t){._number_of_resources = 1,
-                             ._case = map<string, int>({
-                                 {"g1", 43},
-                                 {"g2", 31},
-                             }),
-                             ._ans = map<string, int>({{"g1", 0}, {"g2", 1}})});
-    cases.push_back(
-        (struct test_case_t){._number_of_resources = 6,
-                             ._case = map<string, int>({
-                                 {"g1", 1},
-                                 {"g2", 12},
-                             }),
-                             ._ans = map<string, int>({{"g1", 1}, {"g2", 5}})});
-
-
-
-    cases.push_back((struct test_case_t){
-        ._number_of_resources = 5,
-        ._case = map<string, int>({{"g1", 43}, {"g2", 31}, {"g3", 25}}),
-        ._ans = map<string, int>({{"g1", 3}, {"g2", 1}, {"g3", 1}})});
-
-    cases.push_back((struct test_case_t){
-        ._number_of_resources = 3,
-        ._case = map<string, int>({{"g1", 43}, {"g2", 1}, {"g3", 5}}),
-        ._ans = map<string, int>({{"g1", 1}, {"g2", 1}, {"g3", 1}})});
 }
 
 void test_machines_t_distributeAResource::TearDown()
@@ -120,15 +50,58 @@ void test_machines_t_distributeAResource::TearDown()
     delete machines;
 }
 
-TEST_F(test_machines_t_distributeAResource, test_correctness)
+TEST_P(test_machines_t_distributeAResource, test_correctness)
 {
-    for (unsigned int i = 0; i < cases.size(); ++i) {
-        map<string, int> ans = machines->_distributeAResource(
-            cases[i]._number_of_resources, cases[i]._case);
-        for (map<string, int>::iterator it = cases[i]._ans.begin();
-             it != cases[i]._ans.end(); ++it) {
-            EXPECT_NO_THROW(ans.at(it->first));
-            EXPECT_EQ(ans[it->first], cases[i]._ans[it->first]);
-        }
+    auto cs = GetParam();
+
+    map<string, int> ans =
+        machines->_distributeAResource(cs._number_of_resources, cs._case);
+
+    EXPECT_EQ(ans.size(), cs._ans.size());
+    for (auto it = ans.begin(); it != ans.end(); ++it) {
+        EXPECT_NO_THROW(cs._ans.at(it->first));
+        EXPECT_EQ(it->second, cs._ans.at(it->first));
     }
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    test_correctness,
+    test_machines_t_distributeAResource,
+    testing::Values(
+        tcs_distribute_resource_t{100,
+                                  {{"g1", 40}, {"g2", 60}},
+                                  {{"g1", 40}, {"g2", 60}}},
+
+        tcs_distribute_resource_t{50,
+                                  {{"g1", 40}, {"g2", 60}},
+                                  {{"g1", 20}, {"g2", 30}}},
+        tcs_distribute_resource_t{48,
+                                  {{"g1", 40}, {"g2", 60}},
+                                  {{"g1", 19}, {"g2", 29}}},
+        tcs_distribute_resource_t{29,
+                                  {{"g1", 43}, {"g2", 31}},
+
+                                  {{"g1", 17}, {"g2", 12}}},
+
+        tcs_distribute_resource_t{3,
+                                  {{"g1", 43}, {"g2", 31}},
+                                  {{"g1", 2}, {"g2", 1}}},
+        tcs_distribute_resource_t{2,
+                                  {{"g1", 43}, {"g2", 31}},
+                                  {{"g1", 1}, {"g2", 1}}},
+        tcs_distribute_resource_t{1,
+                                  {
+                                      {"g1", 43},
+                                      {"g2", 31},
+                                  },
+                                  {{"g1", 0}, {"g2", 1}}},
+
+        tcs_distribute_resource_t{6,
+                                  {{"g1", 1}, {"g2", 12}},
+                                  {{"g1", 1}, {"g2", 5}}},
+        tcs_distribute_resource_t{5,
+                                  {{"g1", 43}, {"g2", 31}, {"g3", 25}},
+                                  {{"g1", 3}, {"g2", 1}, {"g3", 1}}},
+        tcs_distribute_resource_t{3,
+                                  {{"g1", 43}, {"g2", 1}, {"g3", 5}},
+                                  {{"g1", 1}, {"g2", 1}, {"g3", 1}}}));

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "include/def.h"
 
 #define private public
 #define protected public

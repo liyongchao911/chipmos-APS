@@ -1,5 +1,6 @@
 #include "include/machines.h"
 #include "include/info.h"
+#include "include/infra.h"
 #include "include/job_base.h"
 #include "include/linked_list.h"
 #include "include/machine.h"
@@ -82,6 +83,8 @@ void machines_t::_init(setup_time_parameters_t parameters)
     machine_ops->reset = machineReset;
 
     threshold = 10000000;
+    _mcs_a = nullptr;
+    _mcs_r = nullptr;
 }
 
 
@@ -231,14 +234,14 @@ void machines_t::addGroupJobs(string recipe, vector<job_t *> jobs)
 
     _dispatch_groups[recipe] = new (struct __machine_group_t);
     *_dispatch_groups[recipe] =
-        (struct __machine_group_t){.machines = machines,
-                                   .unscheduled_jobs = jobs,
-                                   .scheduled_jobs = vector<job_t *>(),
-                                   .part_no = part_no,
-                                   .part_id = part_id,
-                                   .recipe = recipe,
-                                   .tools = vector<ares_t *>(),
-                                   .wires = vector<ares_t *>()};
+        __machine_group_t{.machines = machines,
+                          .unscheduled_jobs = jobs,
+                          .scheduled_jobs = vector<job_t *>(),
+                          .part_no = part_no,
+                          .part_id = part_id,
+                          .recipe = recipe,
+                          .tools = vector<ares_t *>(),
+                          .wires = vector<ares_t *>()};
 
     _loadResource(_dispatch_groups[recipe]);
 }
@@ -300,7 +303,7 @@ vector<job_t *> machines_t::_sortedJobs(std::vector<job_t *> &jobs)
 }
 
 
-void machines_t::_scheduleAGroup(struct __machine_group_t *group)
+int machines_t::_scheduleAGroup(struct __machine_group_t *group)
 {
     vector<machine_t *> machines;
     if (group->unscheduled_jobs.size() >= group->machines.size()) {
@@ -315,7 +318,7 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
     }
 
     if (machines.size() == 0)
-        return;
+        return 0;
 
     // group->machines;
     vector<job_t *> unscheduled_jobs = group->unscheduled_jobs;
@@ -327,44 +330,55 @@ void machines_t::_scheduleAGroup(struct __machine_group_t *group)
     foreach (machines, i) {
         machine_ops->reset(&machines[i]->base);
     }
-
+    int setup_times = 0;
     sort(unscheduled_jobs.begin(), unscheduled_jobs.end(), jobPtrComparison);
     foreach (unscheduled_jobs, i) {
         string lot_number(unscheduled_jobs[i]->base.job_info.data.text);
         sort(machines.begin(), machines.end(), machinePtrComparison);
         foreach (machines, j) {
             // FIXME : don't use average process time to schedule
-            string model(machines[j]->model_name.data.text);
-            if (_job_process_times[lot_number].count(model) == 0) {
-                unscheduled_jobs[i]->base.ptime =
-                    _averageProcessTime(_job_process_times[lot_number]);
-            } else {
-                unscheduled_jobs[i]->base.ptime =
-                    _job_process_times[lot_number][model];
-            }
-            staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
-            break;
-            // if(_canJobRunOnTheMachine(unscheduled_jobs[i], machines[j])){
+            // if (_job_process_times[lot_number].count(model) == 0) {
             //     unscheduled_jobs[i]->base.ptime =
-            //     _job_process_times[lot_number][model];
-            //     staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
-            //     in = true;
-            //     break;
+            //         _averageProcessTime(_job_process_times[lot_number]);
+            // } else {
+            //     unscheduled_jobs[i]->base.ptime =
+            //         _job_process_times[lot_number][model];
             // }
+            // setup_times +=
+            //     staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
+            // break;
+
+            string model(machines[j]->model_name.data.text);
+            if (_canJobRunOnTheMachine(unscheduled_jobs[i], machines[j],
+                                       false)) {
+                if (_job_process_times[lot_number].count(model) == 0) {
+                    unscheduled_jobs[i]->base.ptime =
+                        _averageProcessTime(_job_process_times[lot_number]);
+                } else {
+                    unscheduled_jobs[i]->base.ptime =
+                        _job_process_times[lot_number][model];
+                }
+                setup_times +=
+                    staticAddJob(machines[j], unscheduled_jobs[i], machine_ops);
+                break;
+            }
         }
         group->scheduled_jobs.push_back(unscheduled_jobs[i]);
     }
+
+    return setup_times;
 }
 
 
 
-void machines_t::scheduleGroups()
+int machines_t::scheduleGroups()
 {
+    int total_setup_times = 0;
     std::map<std::string, struct __machine_group_t *> ngroups;
     for (map<string, struct __machine_group_t *>::iterator it =
              _dispatch_groups.begin();
          it != _dispatch_groups.end(); it++) {
-        _scheduleAGroup(it->second);
+        total_setup_times += _scheduleAGroup(it->second);
 
         // iter(it->second->machines, j)
         // {
@@ -373,7 +387,6 @@ void machines_t::scheduleGroups()
     }
 
     // if the job exceeds the threshold, job will be rescheduled
-    //
     reconsiderJobs();
     vector<job_t *> stage2_scheduled_jobs;
     foreach (_v_machines, i) {
@@ -382,17 +395,11 @@ void machines_t::scheduleGroups()
         _collectScheduledJobs(_v_machines[i], stage2_scheduled_jobs);
     }
 
-    // iter(stage2_scheduled_jobs, i){
-    //     if(strcmp(stage2_scheduled_jobs[i]->base.job_info.data.text,
-    //     "P22NVCB24") == 0){
-    //         printf("Found P22NVCB24 ! in line 390\n");
-    //     }
-    // }
-
     // update the tools and the wires
     _setupContainersForMachines();
     _updateAllKindOfResourcesAvailableTime(_tools, _tool_machines);
     _updateAllKindOfResourcesAvailableTime(_wires, _wire_machines);
+    return total_setup_times;
 }
 
 bool machines_t::_isThereAnyUnusedResource(
@@ -504,7 +511,7 @@ void machines_t::groupJobsByToolAndWire()
             string key = part_no + "_" + part_id;
             if (_tool_wire_jobs_groups.count(key) == 0) {
                 _tool_wire_jobs_groups[key] = new (struct __job_group_t);
-                *(_tool_wire_jobs_groups[key]) = (struct __job_group_t){
+                *(_tool_wire_jobs_groups[key]) = __job_group_t{
                     .part_no = part_no,
                     .part_id = part_id,
                     .number_of_tools = _number_of_tools.count(part_no) == 0
@@ -554,14 +561,13 @@ map<string, int> machines_t::_distributeAResource(
 
     for (map<string, int>::iterator it = groups_statistic.begin();
          it != groups_statistic.end(); ++it) {
-        data.push_back((struct __distribution_entry_t){
-            .name = it->first, .ratio = it->second / sum});
+        data.push_back(__distribution_entry_t{it->first, it->second / sum});
     }
 
     sort(data.begin(), data.end(), distEntryComparison);
 
     int original_number_of_resources = number_of_resources;
-    int i = 0;
+    unsigned int i = 0;
     map<string, int> result;
     while (i < data.size() - 1 && number_of_resources > 0) {
         int _n_res = data[i].ratio * original_number_of_resources;
@@ -609,7 +615,7 @@ void machines_t::distributeTools()
 
 void machines_t::distributeWires()
 {
-    // distribute tools
+    // distribute wires
     for (map<string, std::vector<struct __job_group_t *>>::iterator it =
              _wire_jobs_groups.begin();
          it != _wire_jobs_groups.end(); ++it) {
@@ -635,25 +641,75 @@ void machines_t::distributeWires()
         }
     }
 
-    for (map<string, struct __job_group_t *>::iterator it =
-             _tool_wire_jobs_groups.begin();
-         it != _tool_wire_jobs_groups.end(); ++it) {
-        printf("[%s]-[%s] : (%d)#(%d) -> %lu\n", it->second->part_no.c_str(),
-               it->second->part_id.c_str(), it->second->number_of_tools,
-               it->second->number_of_wires, it->second->orphan_jobs.size());
-    }
+    // for (map<string, struct __job_group_t *>::iterator it =
+    //          _tool_wire_jobs_groups.begin();
+    //      it != _tool_wire_jobs_groups.end(); ++it) {
+    //     printf("[%s]-[%s] : (%d)#(%d) -> %lu\n", it->second->part_no.c_str(),
+    //            it->second->part_id.c_str(), it->second->number_of_tools,
+    //            it->second->number_of_wires, it->second->orphan_jobs.size());
+    // }
 }
 
-bool machines_t::_canJobRunOnTheMachine(job_t *job, machine_t *machine)
+bool machines_t::_isMachineLocationAvailableForJob(string lot_number,
+                                                   string location)
+{
+    vector<string> locations = _job_can_run_locations[lot_number];
+    return find(locations.begin(), locations.end(), location) !=
+           locations.end();
+}
+
+bool machines_t::_isModelAvailableForJob(string lot_number, string model)
+{
+    map<string, double> process_times = _job_process_times[lot_number];
+    return process_times.count(model) != 0;
+}
+
+bool machines_t::_isMachineDedicatedForJob(string lot_number,
+                                           string cust,
+                                           string entity_name)
+{
+    if (_automotive_lot_numbers.count(lot_number)) {
+        if (_dedicate_machines.count(cust) == 0) {
+            cust = "others"s;
+        }
+        return _dedicate_machines.at(cust).count(entity_name) != 0 &&
+               _dedicate_machines.at(cust).at(entity_name);
+    }
+    return false;
+}
+
+bool machines_t::_isMachineRestrainedForJob(job_t *job, machine_t *machine)
+{
+    bool care = false;
+    bool retval = true;
+    bool result = true;
+    if (_mcs_r && _mcs_a) {
+        retval = _mcs_r->isMachineRestrained(job, machine, &care);
+        if (care)
+            result = retval;
+
+        retval = _mcs_a->isMachineRestrained(job, machine, &care);
+        if (care)
+            result = retval;
+        return result;
+    } else  // if no any constraint
+        return true;
+}
+
+bool machines_t::_canJobRunOnTheMachine(job_t *job,
+                                        machine_t *machine,
+                                        bool strict_model)
 {
     string lot_number(job->base.job_info.data.text);
     string location(machine->location.data.text);
     string model(machine->model_name.data.text);
-    vector<string> locations = _job_can_run_locations[lot_number];
-    map<string, double> process_times = _job_process_times[lot_number];
-    return find(locations.begin(), locations.end(), location) !=
-               locations.end() &&
-           process_times.count(model) != 0;
+    string cust(job->customer.data.text);
+    string entity_name(machine->base.machine_no.data.text);
+
+    return _isMachineLocationAvailableForJob(lot_number, location) &&
+           (!strict_model || _isModelAvailableForJob(lot_number, model)) &&
+           !_isMachineDedicatedForJob(lot_number, cust, entity_name) &&
+           _isMachineRestrainedForJob(job, machine);
 }
 
 bool machines_t::_addNewResource(
@@ -685,7 +741,6 @@ void machines_t::_chooseMachinesForAGroup(
 
     candidate_machines = _sortedMachines(candidate_machines);
 
-    // FIXME : need to delete the testing variable
     map<string, vector<string>> suitable_machines;
 
     int number_of_tools = group->number_of_tools;
@@ -864,17 +919,17 @@ void machines_t::chooseMachinesForGroups()
         }
         selected_model_statistic[model_name] += 1;
     }
-    cout << "Determined Machine Statistic" << endl;
-    for (map<string, int>::iterator it = selected_model_statistic.begin();
-         it != selected_model_statistic.end(); ++it) {
-        cout << "\"" << it->first << "\" : " << it->second << endl;
-    }
+    // cout << "Determined Machine Statistic" << endl;
+    // for (map<string, int>::iterator it = selected_model_statistic.begin();
+    //      it != selected_model_statistic.end(); ++it) {
+    //     cout << "\"" << it->first << "\" : " << it->second << endl;
+    // }
 
-    cout << "Available Machine Statistic" << endl;
-    for (map<string, int>::iterator it = available_model_statistic.begin();
-         it != available_model_statistic.end(); ++it) {
-        cout << "\"" << it->first << "\" : " << it->second << endl;
-    }
+    // cout << "Available Machine Statistic" << endl;
+    // for (map<string, int>::iterator it = available_model_statistic.begin();
+    //      it != available_model_statistic.end(); ++it) {
+    //     cout << "\"" << it->first << "\" : " << it->second << endl;
+    // }
 }
 
 void machines_t::_setupContainersForMachines()
@@ -1058,9 +1113,9 @@ void machines_t::_linkMachineToAJob(job_t *job)
         string model_name(machine->model_name.data.text);
         double ptime = _job_process_times[lot_number][model_name];
         process_time_t pt =
-            (process_time_t){.machine_no = machine->base.machine_no,
-                             .machine = machine,
-                             .process_time = ptime};
+            process_time_t{.machine_no = machine->base.machine_no,
+                           .machine = machine,
+                           .process_time = ptime};
         process_times[i] = pt;
     }
     job_ops->set_process_time(&job->base, process_times,
@@ -1120,9 +1175,10 @@ bool groupComparisonByIndex(struct __machine_group_t *g1,
     return g1->index > g2->index;
 }
 
-void machines_t::distributeOrphanMachines()
+void machines_t::distributeOrphanMachines(double probability)
 {
     // Step 1 : collect the orphan machines
+    int number_dist_orphan_of_machines = 0;
     vector<machine_t *> orphan_machines;
     foreach (_v_machines, i) {
         if (find(_grouped_machines.begin(), _grouped_machines.end(),
@@ -1146,14 +1202,21 @@ void machines_t::distributeOrphanMachines()
         // foreach (groups, j) {
         //     groups[j]->index = _calculateMachineGroupIndex(groups[j]);
         // }
+        double rnd = randomDouble();
+        if (rnd > probability)
+            continue;
         sort(groups.begin(), groups.end(), groupComparisonByIndex);
         foreach (groups, j) {
             if (_distributeOrphanMachines(groups[j], orphan_machines[i])) {
+                ++number_dist_orphan_of_machines;
                 groups[j]->index = _calculateMachineGroupIndex(groups[j]);
                 break;
             }
         }
     }
+    // printf("Probability is %f\n", probability);
+    // printf("Number of distributed orphan machines : %d\n",
+    // number_dist_orphan_of_machines); exit(EXIT_FAILURE);
 }
 
 bool machines_t::_distributeOrphanMachines(struct __machine_group_t *group,

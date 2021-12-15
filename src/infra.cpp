@@ -1,5 +1,16 @@
-#include <include/infra.h>
+#include <algorithm>
+#include <cctype>
 #include <cstdlib>
+#include <string>
+#include <vector>
+
+#include "include/def.h"
+#include "include/info.h"
+#include "include/infra.h"
+
+#ifdef WIN32
+#include <intrin.h>
+#endif
 
 
 std::vector<std::string> split(char *text, char delimiter)
@@ -109,11 +120,29 @@ double randomDouble()
 struct __info_t stringToInfo(std::string s)
 {
     struct __info_t info;
-    unsigned text_size = s.length() > 32 ? 32 : s.length();
-    memset(info.data.number, 0, sizeof(unsigned int) * 8);
+    unsigned text_size = s.length() >= 63 ? 63 : s.length();
+    memset(info.data.number, 0, sizeof(info.data.text));
     info.text_size = text_size;
-    info.number_size = 32 - __builtin_clz(text_size >> 2) + 1;
-
+    info.number_size = (text_size >> 3);
+    info.number_size += (text_size ^ (info.number_size << 3)) ? 1 : 0;
     strncpy(info.data.text, s.c_str(), info.text_size);
     return info;
+}
+
+bool isNumeric(std::string s)
+{
+    int number_of_dot = 0;
+    if (s.length()) {
+        for (auto c : s) {
+            if (c == '.') {
+                ++number_of_dot;
+            } else if (!isdigit(c)) {
+                return false;
+            }
+        }
+        if (number_of_dot <= 1) {
+            return true;
+        }
+    }
+    return false;
 }

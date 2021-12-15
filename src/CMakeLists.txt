@@ -17,7 +17,12 @@ set(src_files
         machine.cpp
         route.cpp
         record_gap.cpp
+        machine_constraint.cpp
+        machine_constraint_r.cpp
+        machine_constraint_a.cpp
+        progress.c
         )
+set(CMAKE_BUILD_TYPE Debug)
 add_library(src STATIC ${src_files})
-target_compile_features(src PUBLIC cxx_std_11)
+target_compile_features(src PUBLIC cxx_std_17)
 target_include_directories(src PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
