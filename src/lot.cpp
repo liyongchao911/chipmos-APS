@@ -69,6 +69,10 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["qty"] = std::string("0");
     }
 
+    if (elements.count("oper") == 0 || elements["oper"].length() == 0) {
+        elements["oper"] = std::string("0");
+    }
+
     if (elements.count("package_id") == 0) {
         elements["package_id"] = "";
     }
@@ -426,7 +430,7 @@ void lot_t::setCanRunLocation(
                     continue;
                 }
             } else if (locations[j].compare("TB-P") == 0) {
-                if (_pin_package.find("TSOP1") != std::string::npos ||
+                if (_pin_package.find("TSOP1") != std::string::npos &&
                     _part_id[4] == 'A') {
                     continue;
                 } else {

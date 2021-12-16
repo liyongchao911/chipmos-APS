@@ -205,8 +205,8 @@ protected:
             &resource_instance_container,
         std::map<std::string, std::vector<machine_t *>> &resource_machines);
 
-    void _collectScheduledJobs(machine_t *machine,
-                               std::vector<job_t *> &scheduled_jobs);
+    int _collectScheduledJobs(machine_t *machine,
+                              std::vector<job_t *> &scheduled_jobs);
 
     void _loadResource(struct __machine_group_t *group);
 
