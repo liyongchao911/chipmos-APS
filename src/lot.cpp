@@ -77,9 +77,9 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["package_id"] = "";
     }
 
-	if (elements.count("CR") == 0 || elements["CR"].compare("0") == 0 ) {
-		elements["CR"] = std::string("10000");
-	}
+    if (elements.count("CR") == 0 || elements["CR"].compare("0") == 0) {
+        elements["CR"] = std::string("10000");
+    }
 
     return elements;
 }
@@ -137,7 +137,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     setMvin(elements["mvin"]);
     setAutomotive(elements["automotive"]);
 
-	_cr = std::stod(elements["CR"]);
+    _cr = std::stod(elements["CR"]);
     _queue_time = std::stod(elements["queue_time"]);
     _fcst_time = std::stod(elements["fcst_time"]);
     tmp_oper = stoi(elements["dest_oper"]);
@@ -422,21 +422,36 @@ void lot_t::setCanRunLocation(
                 } else {
                     _can_run_locations.push_back(locations[j]);
                 }
-            } else if (locations[j].compare("TB-5B") == 0 ||
-                       locations[j].compare("TB-5P") == 0) {
-                if (_pin_package.find("FBGA") != std::string::npos) {
-                    _can_run_locations.push_back(locations[j]);
-                } else {
+            } else if (locations[j].compare("TA-R") == 0) {
+                if (_pin_package.find("DFN") != std::string::npos ||
+                    _pin_package.find("QFN") != std::string::npos ||
+                    (_pin_package.find("FPS") != std::string::npos &&
+                     pin_package.back() == 'V') ||
+                    _part_id[4] != 'A') {
                     continue;
+                } else {
+                    _can_run_locations.push_back(locations[j]);
                 }
-            } else if (locations[j].compare("TB-P") == 0) {
-                if (_pin_package.find("TSOP1") != std::string::npos &&
+            } else if (locations[j].compare("TB-5P") == 0) {
+                if (_pin_package.find("FBGA") != std::string::npos &&
                     _part_id[4] == 'A') {
-                    continue;
-                } else {
                     _can_run_locations.push_back(locations[j]);
+                } else {
+                    continue;
                 }
-            } else {
+            } else if (locations[j].compare("TB-P") == 0)
+                || (locations[j].compare("TB-R") == 0) ||
+                    (locations[j].compare("TB-U") == 0)
+                {
+                    if ((_pin_package.find("TSOP1") != std::string::npos ||
+                         _pin_package.find("TSOP2") != std::string::npos) &&
+                        _part_id[4] == 'A') {
+                        continue;
+                    } else {
+                        _can_run_locations.push_back(locations[j]);
+                    }
+                }
+            else {
                 _can_run_locations.push_back(locations[j]);
             }
         }
@@ -497,7 +512,7 @@ job_t lot_t::job()
     } else
         j.urgent_code = '\0';
 
-	j.cr = _cr;
+    j.cr = _cr;
     j.base.qty = _qty;
     j.base.start_time = j.base.end_time = 0;
     j.base.arriv_t = _queue_time;
