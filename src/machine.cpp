@@ -174,7 +174,7 @@ void scheduling(machine_t *machine,
     double total_completion_time = 0;
     int setup_times = 0;
     int setup_times_in1440 = 0;
-	double cr_sum = 0;
+    double cr_sum = 0;
     machine->setup_times = 0;
     ares_t *tool, *wire;
     while (it) {
@@ -227,7 +227,7 @@ void scheduling(machine_t *machine,
         }
 
 
-		cr_sum += job->cr * job->base.end_time;
+        cr_sum += job->cr * job->base.end_time;
         total_completion_time += start_time;
         prev_job = job;
         it = it->next;
@@ -244,9 +244,9 @@ void scheduling(machine_t *machine,
     //         : -10;
 
     machine->quality =
-		weights.WEIGHT_SETUP_TIMES * setup_times +
-		weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time +
-		weights.WEIGHT_CR * cr_sum;
+        weights.WEIGHT_SETUP_TIMES * setup_times +
+        weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time +
+        weights.WEIGHT_CR * cr_sum;
 
     machine->setup_times = setup_times_in1440;
 }

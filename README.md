@@ -29,7 +29,7 @@ python3 main.py config.json
 ```
 * Step 4: Execute
 ```shell=
-./main config.csv
+./main [-f=/--file=][config.csv] [-p] [-r]
 ```
 
 

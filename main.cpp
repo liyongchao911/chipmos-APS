@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <thread>
+#include "include/machine_base.h"
 
 #define LOG_ERROR
 
@@ -18,6 +19,7 @@
 #include "include/lots.h"
 #include "include/machines.h"
 #include "include/population.h"
+#include "include/record_gap.h"
 
 using namespace std;
 
@@ -99,6 +101,27 @@ void run(thread_data_t *data)
     lots_t lots = createLots(arguments);
     entities_t entities = createEntities(arguments);
 
+    machine_base_operations_t *machine_ops =
+        (machine_base_operations_t *) malloc(sizeof(machine_base_operations_t) +
+                                             sizeof(setup_time_unit_t) * 7);
+
+
+    // machine_ops->add_job = machineBaseAddJob;
+    // machine_ops->sort_job = machineBaseSortJob;
+    // machine_ops->setup_time_functions[0] = {setupTimeCWN,
+    // parameters.TIME_CWN}; machine_ops->setup_time_functions[1] =
+    // {setupTimeCK, parameters.TIME_CK}; machine_ops->setup_time_functions[2] =
+    // {setupTimeEU, parameters.TIME_EU}; machine_ops->setup_time_functions[3] =
+    // {setupTimeMC, parameters.TIME_MC}; machine_ops->setup_time_functions[4] =
+    // {setupTimeSC, parameters.TIME_SC}; machine_ops->setup_time_functions[5] =
+    // {setupTimeCSC, parameters.TIME_CSC}; machine_ops->setup_time_functions[6]
+    // = {setupTimeUSC, parameters.TIME_USC};
+    // machine_ops->sizeof_setup_time_function_array =
+    //     num_of_setup_time_units - 1;  // -1 is for ICSI
+    // machine_ops->reset = machineReset;
+
+
+
     if (parser->is_set("-p")) {
         pthread_exit(NULL);
     }
@@ -120,8 +143,7 @@ void run(thread_data_t *data)
                              stoi(arguments["weight_total_completion_time"]),
                          .WEIGHT_MAX_SETUP_TIMES =
                              stoi(arguments["weight_max_setup_times"]),
-			 			 .WEIGHT_CR = 
-							 stoi(arguments["weight_cr"])},
+                         .WEIGHT_CR = stoi(arguments["weight_cr"])},
              .setup_times_parameters =
                  {
                      .TIME_CWN = stod(arguments["setup_time_cwn"]),
@@ -139,6 +161,15 @@ void run(thread_data_t *data)
                   .MINUTE_THRESHOLD = stoi(arguments["minute_threshold"])}},
 
     };
+
+
+    machine_base_operations_initializer_t ops_init(
+        {setupTimeCWN, setupTimeCK, setupTimeEU, setupTimeMC, setupTimeSC,
+         setupTimeCSC, setupTimeUSC},
+        pop.parameters.setup_times_parameters);
+    machine_base_operations_t *ops = ops_init.getOps();
+
+    Record_gap rg(ops);
 
     machines_t *machines = new machines_t(pop.parameters.setup_times_parameters,
                                           pop.parameters.weights);
@@ -163,11 +194,15 @@ void run(thread_data_t *data)
     csv_t result(directory + "/result.csv", "w");
     foreach (scheduled_jobs, i) {
         result.addData(outputJob(*scheduled_jobs[i]));
+        rg.addJob(scheduled_jobs[i]);
     }
 
     for (int i = 0; i < pop.objects.NUMBER_OF_JOBS; ++i) {
         result.addData(outputJob(*pop.objects.jobs[i]));
+        rg.addJob(pop.objects.jobs[i]);
     }
+
+    rg.record_gap_all_machines();
     result.write();
 }
 

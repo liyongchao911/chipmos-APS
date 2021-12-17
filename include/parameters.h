@@ -17,7 +17,7 @@ typedef struct weights_t {
     int WEIGHT_SETUP_TIMES;
     int WEIGHT_TOTAL_COMPLETION_TIME;
     int WEIGHT_MAX_SETUP_TIMES;
-	int WEIGHT_CR;
+    int WEIGHT_CR;
 } weights_t;
 
 typedef struct scheduling_parameters_t {

@@ -36,7 +36,7 @@ private:
 
 public:
     double const threshold;
-    Record_gap(machine_base_operations_t *, double);
+    Record_gap(machine_base_operations_t *ops, double th = 0.00000001);
     void addJob(job_t *job);
     void record_gap_all_machines();
 };

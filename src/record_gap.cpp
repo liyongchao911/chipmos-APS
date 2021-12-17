@@ -2,7 +2,7 @@
 
 #include "include/record_gap.h"
 
-Record_gap::Record_gap(machine_base_operations_t *op, double th = 0.00000001)
+Record_gap::Record_gap(machine_base_operations_t *op, double th)
     : threshold(th),
       nfp{
           __SETUP(CWN), __SETUP(CK),  __SETUP(EU),  __SETUP(MC),
