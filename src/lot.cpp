@@ -426,7 +426,7 @@ void lot_t::setCanRunLocation(
                 if (_pin_package.find("DFN") != std::string::npos ||
                     _pin_package.find("QFN") != std::string::npos ||
                     (_pin_package.find("FPS") != std::string::npos &&
-                    _pin_package.back() == 'V') ||
+                     _pin_package.back() == 'V') ||
                     _part_id[4] != 'A') {
                     continue;
                 } else {
@@ -439,19 +439,17 @@ void lot_t::setCanRunLocation(
                 } else {
                     continue;
                 }
-            } else if (locations[j].compare("TB-P") == 0 || 
-					locations[j].compare("TB-R") == 0 ||
-                    locations[j].compare("TB-U") == 0)
-                {
-                    if ((_pin_package.find("TSOP1") != std::string::npos ||
-                         _pin_package.find("TSOP2") != std::string::npos) &&
-                        _part_id[4] == 'A') {
-                        continue;
-                    } else {
-                        _can_run_locations.push_back(locations[j]);
-                    }
+            } else if (locations[j].compare("TB-P") == 0 ||
+                       (locations[j].compare("TB-R") == 0) ||
+                       (locations[j].compare("TB-U") == 0)) {
+                if ((_pin_package.find("TSOP1") != std::string::npos ||
+                     _pin_package.find("TSOP2") != std::string::npos) &&
+                    _part_id[4] == 'A') {
+                    continue;
+                } else {
+                    _can_run_locations.push_back(locations[j]);
                 }
-            else {
+            } else {
                 _can_run_locations.push_back(locations[j]);
             }
         }

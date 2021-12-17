@@ -48,7 +48,7 @@ double setupTimeCK(job_base_t *_prev, job_base_t *_next, double time)
         if (prev->part_no.data.text[5] == next->part_no.data.text[5]) {
             return 0.0;
         } else {
-            return 0;
+            return time;
         }
     }
     return 0;
@@ -59,7 +59,7 @@ double setupTimeEU(job_base_t *_prev, job_base_t *_next, double time)
     if (_next) {
         job_t *next = (job_t *) _next->ptr_derived_object;
         if (next->urgent_code)
-            return 0;  // FIXME
+            return time;
         else
             return 0;
     }
@@ -174,7 +174,7 @@ void scheduling(machine_t *machine,
     double total_completion_time = 0;
     int setup_times = 0;
     int setup_times_in1440 = 0;
-	double cr_sum = 0;
+    double cr_sum = 0;
     machine->setup_times = 0;
     ares_t *tool, *wire;
     while (it) {
@@ -227,7 +227,7 @@ void scheduling(machine_t *machine,
         }
 
 
-		cr_sum += job->cr * job->base.end_time;
+        cr_sum += job->cr * job->base.end_time;
         total_completion_time += start_time;
         prev_job = job;
         it = it->next;
@@ -244,9 +244,9 @@ void scheduling(machine_t *machine,
     //         : -10;
 
     machine->quality =
-		weights.WEIGHT_SETUP_TIMES * setup_times +
-		weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time +
-		weights.WEIGHT_CR * cr_sum;
+        weights.WEIGHT_SETUP_TIMES * setup_times +
+        weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time +
+        weights.WEIGHT_CR * cr_sum;
 
     machine->setup_times = setup_times_in1440;
 }

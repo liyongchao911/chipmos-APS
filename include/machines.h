@@ -412,4 +412,33 @@ inline void machines_t::setAutomotiveLotNumber(
     _automotive_lot_numbers = automotv_lot_numbers;
 }
 
+class machine_base_operations_initializer_t
+{
+private:
+    int _number_of_setup_time_units;
+    machine_base_operations_t *ops;
+
+public:
+    machine_base_operations_initializer_t(std::vector<setup_time_t> funcs,
+                                          setup_time_parameters_t parameters)
+    {
+        _number_of_setup_time_units =
+            sizeof(setup_time_parameters_t) / sizeof(double);
+        ops = (machine_base_operations_t *) malloc(
+            sizeof(machine_base_operations_t) +
+            sizeof(setup_time_unit_t) * _number_of_setup_time_units);
+        double *_parameters = (double *) &parameters;
+        for (unsigned int i = 0; i < funcs.size(); ++i) {
+            ops->setup_time_functions[i] = {funcs[i], _parameters[i]};
+        }
+        ops->sizeof_setup_time_function_array = _number_of_setup_time_units - 1;
+        ops->reset = machineReset;
+        ops->add_job = machineBaseAddJob;
+        ops->sort_job = machineBaseSortJob;
+    }
+
+    machine_base_operations_t *getOps() { return ops; }
+
+    ~machine_base_operations_initializer_t() { free(ops); }
+};
 #endif

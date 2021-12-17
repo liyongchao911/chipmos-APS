@@ -20,7 +20,7 @@ typedef struct job_t {
     job_info_t prod_id;
     int oper;
     float weight;
-	double cr;
+    double cr;
     bool is_scheduled;
 } job_t;
 
