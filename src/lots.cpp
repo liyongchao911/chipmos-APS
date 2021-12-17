@@ -348,7 +348,6 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
         foreach (unfinished, i) {
             try {
                 retval = routes.calculateQueueTime(unfinished[i]);
-                assert(retval != 0);
                 for (int j = 0; j < enum_size; ++j) {
                     if (check_bit(retval, j)) {
                         (this->*_traversing_functions[j])(unfinished[i],
@@ -356,34 +355,6 @@ vector<lot_t> lots_t::queueTimeAndQueue(vector<lot_t> lots,
                                                           faulty_lots, das);
                     }
                 }
-                // switch (retval) {
-                // case -1:  // error
-                //     err_msg =
-                //         "Error occures on routes.calculateQueueTime, the "
-                //         "reason is the lot can't reach W/B satation.";
-                //     unfinished[i].addLog(err_msg, ERROR_WB7);
-                //     faulty_lots.push_back(unfinished[i]);
-                //     break;
-                // case 0:  // lot is finished
-                //     unfinished[i].addLog("Lot finishes traversing the route",
-                //                          SUCCESS);
-                //     finished.push_back(unfinished[i]);
-                //     break;
-                // case 2:  // add to DA_arrived
-                //     unfinished[i].addLog(
-                //         "Lot is waiting on DA station, it is cataloged to "
-                //         "arrived",
-                //         SUCCESS);
-                //     das.addArrivedLotToDA(unfinished[i]);
-                //     break;
-                // case 1:  // add to DA_unarrived
-                //     unfinished[i].addLog(
-                //         "Lot traverses to DA station, it is cataloged to "
-                //         "unarrived",
-                //         SUCCESS);
-                //     das.addUnarrivedLotToDA(unfinished[i]);
-                //     break;
-                // }
             } catch (std::out_of_range
                          &e) {  // for da_stations_t function member,
                                 // addArrivedLotToDA, addUnarrivedLotToDA,
