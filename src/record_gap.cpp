@@ -3,15 +3,15 @@
 #include "include/record_gap.h"
 
 Record_gap::Record_gap(machine_base_operations_t *op,
-                       double th,
-                       std::string dir_name)
+                       std::string directory,
+                       double th)
     : threshold(th),
       nfp{
           __SETUP(CWN), __SETUP(CK),  __SETUP(EU),  __SETUP(MC),
           __SETUP(SC),  __SETUP(CSC), __SETUP(CSC),
       },
       ops(op),
-      csv_file(/* directory_name + */ "record_gap.csv", "w")
+      csv_file(directory + "/record_gap.csv", "w")
 {
 }
 
@@ -63,17 +63,17 @@ void Record_gap::record_gap_single_machine(std::vector<job_t *> jobs)
 
         if (setup_time >= threshold)
             csv_file.addData(std::map<std::string, std::string>({
-                {"1number", std::string((*it)->base.machine_no.data.text) +
+                {"0number", std::string((*it)->base.machine_no.data.text) +
                                 "_" + std::to_string(count)},
-                {"2entity", std::string((*it)->base.machine_no.data.text)},
-                {"3jobcode", str},
-                {"4lot_num_1",
+                {"1entity", std::string((*it)->base.machine_no.data.text)},
+                {"2jobcode", str},
+                {"3lot_num_1",
                  std::string((*std::prev(it))->base.job_info.data.text)},
-                {"5lot_num_2", std::string((*(it))->base.job_info.data.text)},
-                {"6bd_id_1", std::string((*std::prev(it))->bdid.data.text)},
-                {"7bd_id_2", std::string((*(it))->bdid.data.text)},
-                {"8start_time", std::to_string(Tw)},
-                {"9end_time", std::to_string(Tr)},
+                {"4lot_num_2", std::string((*(it))->base.job_info.data.text)},
+                {"5bd_id_1", std::string((*std::prev(it))->bdid.data.text)},
+                {"6bd_id_2", std::string((*(it))->bdid.data.text)},
+                {"7start_time", std::to_string(Tw)},
+                {"8end_time", std::to_string(Tr)},
             }));
     }
 }
