@@ -382,6 +382,12 @@ int machines_t::scheduleGroups()
         total_setup_times += _scheduleAGroup(it->second);
     }
 
+    reconsiderJobs();
+    foreach (_v_machines, i) {
+        setLastJobInMachine(_v_machines[i]);
+        _collectScheduledJobs(_v_machines[i], _scheduled_jobs);
+    }
+
     // update the tools and the wires
     _setupContainersForMachines();
     _updateAllKindOfResourcesAvailableTime(_tools, _tool_machines);
