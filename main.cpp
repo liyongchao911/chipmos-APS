@@ -169,7 +169,8 @@ void run(thread_data_t *data)
         pop.parameters.setup_times_parameters);
     machine_base_operations_t *ops = ops_init.getOps();
 
-    Record_gap rg(ops);
+    string directory = "output_" + arguments["no"];
+    Record_gap rg(ops, directory);
 
     machines_t *machines = new machines_t(pop.parameters.setup_times_parameters,
                                           pop.parameters.weights);
@@ -190,7 +191,6 @@ void run(thread_data_t *data)
     pop.parameters.scheduling_parameters.MAX_SETUP_TIMES -= stage2_setup_times;
     stage3Scheduling(machines, &lots, &pop, data->fd);
     vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
-    string directory = "output_" + arguments["no"];
     csv_t result(directory + "/result.csv", "w");
     foreach (scheduled_jobs, i) {
         result.addData(outputJob(*scheduled_jobs[i]));

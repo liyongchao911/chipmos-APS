@@ -17,30 +17,27 @@ jobs:
       run : |
         cd build
         ./test --gtest_repeat=10
+  on_windows:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: windows-latest
 
-        #   on_windows:
-        #     # The CMake configure and build commands are platform agnostic and should work equally
-        #     # well on Windows or Mac.  You can convert this to a matrix build if you need
-        #     # cross-platform coverage.
-        #     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-        #     runs-on: windows-latest
-        # 
-        #     steps:
-        #     - uses: actions/checkout@v2
-        #     - uses: ilammy/msvc-dev-cmd@v1
-        #     - name: Build
-        #       # Build your program with the given configuration
-        #       shell: powershell
-        #       run: |
-        #         mkdir build
-        #         cd build
-        #         cmake -G "NMake Makefiles" .
-        #         nmake
-        # 
-        #     - name: Test
-        #       # Execute tests defined by the CMake configuration.  
-        #       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        #       shell: powershell
-        #       working-directory: ${{github.workspace}}/build
-        #       run: |
-        #         echo executing
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      # Build your program with the given configuration
+      shell: powershell
+      run: |
+        mkdir build
+        cd build
+        cmake -G "MinGW Makefiles" ..
+        make
+    - name: Test
+      # Execute tests defined by the CMake configuration.  
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      shell: powershell
+      working-directory: ${{github.workspace}}/build
+      run: |
+        ./test
