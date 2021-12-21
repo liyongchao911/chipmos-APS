@@ -72,8 +72,8 @@ void Record_gap::record_gap_single_machine(std::vector<job_t *> jobs)
                 {"4lot_num_2", std::string((*(it))->base.job_info.data.text)},
                 {"5bd_id_1", std::string((*std::prev(it))->bdid.data.text)},
                 {"6bd_id_2", std::string((*(it))->bdid.data.text)},
-                {"7start_time", std::to_string(Tw)},
-                {"8end_time", std::to_string(Tr)},
+                {"7start_time", std::to_string(Ts)},
+                {"8end_time", std::to_string(Tw)},
             }));
     }
 }
