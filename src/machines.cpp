@@ -310,20 +310,26 @@ vector<job_t *> machines_t::_sortedJobs(std::vector<job_t *> &jobs)
 
 int machines_t::_scheduleAGroup(struct __machine_group_t *group)
 {
-	foreach(group->unscheduled_jobs, i){
-		if(group->unscheduled_jobs[i]->spr_hot){
-			foreach(group->machines, j){
-				if(_canJobRunOnTheMachine(group->unscheduled_jobs[i], group->machines[j], true)){
-					string lot_number(group->unscheduled_jobs[i]->base.job_info.data.text);
-					string model(group->machines[j]->model_name.data.text);
-					group->unscheduled_jobs[i]->base.ptime = _job_process_times[lot_number][model];
-					staticAddJob(group->machines[j], group->unscheduled_jobs[i], machine_ops);
-					group->scheduled_jobs.push_back(group->unscheduled_jobs[i]);
-					group->unscheduled_jobs.erase(group->unscheduled_jobs.begin() + i);
-				}
-			}
-		}
-	}
+    foreach (group->unscheduled_jobs, i) {
+        if (group->unscheduled_jobs[i]->spr_hot) {
+            foreach (group->machines, j) {
+                if (_canJobRunOnTheMachine(group->unscheduled_jobs[i],
+                                           group->machines[j], true)) {
+                    string lot_number(
+                        group->unscheduled_jobs[i]->base.job_info.data.text);
+                    string model(group->machines[j]->model_name.data.text);
+                    group->unscheduled_jobs[i]->base.ptime =
+                        _job_process_times[lot_number][model];
+                    staticAddJob(group->machines[j], group->unscheduled_jobs[i],
+                                 machine_ops);
+                    group->scheduled_jobs.push_back(group->unscheduled_jobs[i]);
+                    group->unscheduled_jobs.erase(
+                        group->unscheduled_jobs.begin() + i);
+                    break;
+                }
+            }
+        }
+    }
 
     vector<machine_t *> machines;
     if (group->unscheduled_jobs.size() >= group->machines.size()) {
@@ -1226,20 +1232,23 @@ void machines_t::distributeOrphanMachines(double probability)
         groups[j]->index = _calculateMachineGroupIndex(groups[j]);
     }
 
-	foreach(groups, i){
-		if(groups[i]->machines.size()){
-			foreach(groups[i]->unscheduled_jobs, j){
-				if(groups[i]->unscheduled_jobs[j]->spr_hot){
-					foreach(orphan_machines, k){
-						if( _canJobRunOnTheMachine(groups[i]->unscheduled_jobs[k], orphan_machines[k]) ){
-							groups[i]->machines.push_back(orphan_machines[k]);
-							orphan_machines.erase(orphan_machines.begin() + k);
-						}
-					}
-				}
-			}
-		}
-	}
+    foreach (groups, i) {
+        if (groups[i]->machines.size()) {
+            foreach (groups[i]->unscheduled_jobs, j) {
+                if (groups[i]->unscheduled_jobs[j]->spr_hot) {
+                    foreach (orphan_machines, k) {
+                        if (_canJobRunOnTheMachine(
+                                groups[i]->unscheduled_jobs[j],
+                                orphan_machines[k])) {
+                            groups[i]->machines.push_back(orphan_machines[k]);
+                            orphan_machines.erase(orphan_machines.begin() + k);
+							break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     foreach (orphan_machines, i) {
         string machine_name(orphan_machines[i]->base.machine_no.data.text);
