@@ -89,6 +89,7 @@ def preprocess_entry(conf:dict):
     for result in results:
         new_csv_config = copy.deepcopy(csv_config)
         new_csv_config["no"] = ''.join([str(no), "-", str(no_suffix)])
+        new_csv_config["lots"] = os.path.join("output_" + new_csv_config["no"], "lots.csv");
         no_suffix += 1
         size = len(items)
         print(result)

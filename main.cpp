@@ -3,6 +3,7 @@
 // #include <unistd.h>
 #include <cstdlib>
 #include <ctime>
+#include <exception>
 #include <map>
 #include <string>
 #include <thread>
@@ -41,7 +42,7 @@ typedef struct __thread_data_t {
 void run(thread_data_t *data);
 
 char MESSAGE[] =
-    "version 0.0.5\n"
+    "version 0.0.6\n"
     "Author : NCKU Smart Production Lab";
 
 argument_parser_t *parser = new argument_parser_t();
@@ -49,18 +50,27 @@ argument_parser_t *parser = new argument_parser_t();
 
 int main(int argc, const char **argv)
 {
-    parser->add_args({"", "setup input file", ARG_STRING}, {"-f"s, "--file"s});
-    parser->add_args({"", "only preprocess the files", ARG_NONE},
+    parser->add_args({"", "setup input file", ARG_STRING, NULL},
+                     {"-f"s, "--file"s});
+    parser->add_args({"", "only preprocess the files", ARG_NONE, NULL},
                      {"-p"s, "--preprocessing"s});
-    parser->add_args({"", "list the available arguments\n", ARG_NONE},
+    parser->add_args({"", "list the available arguments\n", ARG_NONE, NULL},
                      {"-h"s, "--help"s});
+    parser->add_args(
+        {"", "rerun and skip the file preprocessing process", ARG_NONE, NULL},
+        {"-r"s, "--rerun"s});
 
     parser->parse_argument_list(argc, argv);
+
+    if (parser->is_set("-h")) {
+        parser->print_arg_description();
+    }
 
     string file_name = parser->get_argument_value("--file");
     if (file_name.length() == 0) {
         printf("%s\n", MESSAGE);
         printf("Please give the --file argument");
+        return 0;
     }
 
     csv_t cfg(file_name, "r", true, true);
@@ -210,22 +220,27 @@ void run(thread_data_t *data)
 lots_t createLots(map<string, string> arguments)
 {
     lots_t lots;
-    // lot_t *lot;
-    // int argc = parser->argc();
-    // if (argc >= 3) {
-    //     // printf("Create lots by using pre-created lots.csv file : %s\n",
-    //     //        argv[2]);
-    //     csv_t lots_csv(argv[2], "r", true, true);
-    //     vector<lot_t *> all_lots;
-    //     for (int i = 0, nrows = lots_csv.nrows(); i < nrows; ++i) {
-    //         lot = new lot_t(lots_csv.getElements(i));
-    //         all_lots.push_back(lot);
-    //     }
-    //     lots.addLots(all_lots);
-    // } else {
-    // printf("Create lots by using configure file : %s\n", argv[1]);
-    lots.createLots(arguments);
-    // }
+    lot_t *lot;
+    if (parser->is_set("-r")) {
+        string lots_csv_file_path = arguments["lots"];
+        csv_t lots_csv(lots_csv_file_path, "r");
+        try {
+            lots_csv.read();
+        } catch (exception &e) {
+            cerr << "The pre-created lots.csv is not found, the file path is "
+                 << lots_csv_file_path << endl;
+            exit(EXIT_FAILURE);
+        }
+        vector<lot_t *> all_lots;
+        for (int i = 0, nrows = lots_csv.nrows(); i < nrows; ++i) {
+            lot = new lot_t(lots_csv.getElements(i));
+            all_lots.push_back(lot);
+        }
+        lots.addLots(all_lots);
+    } else {
+        // printf("Create lots by using configure file : %s\n", argv[1]);
+        lots.createLots(arguments);
+    }
     lots.setProcessTimeRatio(stod(arguments["process_time_ratio"]));
 
     return lots;
