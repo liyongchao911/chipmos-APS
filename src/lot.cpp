@@ -81,8 +81,8 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["CR"] = std::string("10000");
     }
 
-    if (elements.count("spr_hot") == 0) {
-        elements["spr_hot"] = "N";
+    if (elements.count("super_hot_run_code") == 0) {
+        elements["super_hot_run_code"] = "N";
     }
 
     return elements;
@@ -140,7 +140,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     setHold(elements["hold"]);
     setMvin(elements["mvin"]);
     setAutomotive(elements["automotive"]);
-    setSprHot(elements["spr_hot"]);
+    setSprHot(elements["super_hot_run_code"]);
 
     _cr = std::stod(elements["CR"]);
     _queue_time = std::stod(elements["queue_time"]);
@@ -482,7 +482,7 @@ job_t lot_t::job()
     job_base_init(&j.base);
     _list_init(&j.list);
     j.is_scheduled = false;
-	j.spr_hot = _spr_hot;
+    j.spr_hot = _spr_hot;
 
     j.base.job_info = stringToInfo(_lot_number);
 
