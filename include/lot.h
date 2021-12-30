@@ -77,6 +77,7 @@ protected:
     bool _mvin;
     bool _is_sub_lot;
     bool _is_automotive;
+	bool _spr_hot;
 
     double _cr;
     double _queue_time;  // for all queue time;
@@ -125,6 +126,9 @@ protected:
 
     void setMvin(std::string);
     void setMvin(bool);
+
+    void setSprHot(std::string);
+    void setSprHot(bool);
 
 public:
     int tmp_oper;
@@ -354,6 +358,8 @@ public:
     bool isTraversalFinish();
 
     bool isAutomotive();
+
+	bool sprHot();
 
     /**
      * route () - get the route of this lot
@@ -639,6 +645,11 @@ inline bool lot_t::isTraversalFinish()
 inline bool lot_t::isAutomotive()
 {
     return _is_automotive;
+}
+
+inline bool lot_t::sprHot()
+{
+    return _spr_hot;
 }
 
 inline int lot_t::oper()
@@ -936,5 +947,15 @@ inline void lot_t::setMvin(std::string _mvin_str)
 inline void lot_t::setMvin(bool _mvin_val)
 {
     _mvin = _mvin_val;
+}
+
+inline void lot_t::setSprHot(std::string _sprHot_str)
+{
+    _spr_hot = _sprHot_str.compare("Y") == 0;
+}
+
+inline void lot_t::setSprHot(bool _sprHot_val)
+{
+    _spr_hot = _sprHot_val;
 }
 #endif
