@@ -22,6 +22,7 @@ struct __machine_group_t {
     std::vector<machine_t *> machines;
     std::vector<job_t *> unscheduled_jobs;
     std::vector<job_t *> scheduled_jobs;
+    std::vector<job_t *> sprhot_jobs;
     std::string part_no;
     std::string part_id;
     std::string recipe;

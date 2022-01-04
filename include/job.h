@@ -23,6 +23,7 @@ typedef struct job_t {
     float weight;
     double cr;
     bool is_scheduled;
+	bool spr_hot;
 } job_t;
 
 
