@@ -173,6 +173,7 @@ void scheduling(machine_t *machine,
     bool hasICSI = false;
     double start_time = machine->base.available_time;
     double total_completion_time = 0;
+    double total_transportation_time = 0;
     int setup_times = 0;
     int setup_times_in1440 = 0;
     double cr_sum = 0;
@@ -182,6 +183,10 @@ void scheduling(machine_t *machine,
         tool = NULL;
         wire = NULL;
         job = (job_t *) it->ptr_derived_object;
+        total_transportation_time += transportation_time_table.at(std::make_pair(
+                    std::string((char *)(job->location.data.text)),
+                    std::string((char *)(prev_job->location.data.text))
+                    ));
         arrival_time = job->base.arriv_t;
         setup_time = calculateSetupTime(prev_job, job, ops);
         if (setup_time != 0.0)
@@ -247,7 +252,8 @@ void scheduling(machine_t *machine,
     machine->quality =
         weights.WEIGHT_SETUP_TIMES * setup_times +
         weights.WEIGHT_TOTAL_COMPLETION_TIME * total_completion_time +
-        weights.WEIGHT_CR * cr_sum;
+        weights.WEIGHT_CR * cr_sum +
+        weights.WEIGHT_TR * total_transportation_time;
 
     machine->setup_times = setup_times_in1440;
 }
@@ -316,7 +322,7 @@ void _insertHeadAlgorithm(machine_t *machine,
         }
         it = it->next;
     }
-    scheduling(machine, mbops, weights, transportation_time_table,scheduling_parameters);
+    scheduling(machine, mbops, weights, transportation_time_table, scheduling_parameters);
 }
 
 void insertAlgorithm(machine_t *machine,
