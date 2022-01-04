@@ -108,8 +108,8 @@ protected:
                                     std::string dir_suffix);
 
     void readLocation(std::string filename,
-            std::vector<lot_t> &lots,
-            std::vector<lot_t> &faulty_lots);
+                      std::vector<lot_t> &lots,
+                      std::vector<lot_t> &faulty_lots);
 
     /**
      * readWip () - read wip filename

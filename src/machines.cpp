@@ -31,9 +31,10 @@ machines_t::machines_t()
     _init(_param);
 }
 
-machines_t::machines_t(setup_time_parameters_t param, 
-        std::map<std::pair<std::string,std::string>,double> &transportation_time_table,
-        weights_t weights)
+machines_t::machines_t(setup_time_parameters_t param,
+                       std::map<std::pair<std::string, std::string>, double>
+                           &transportation_time_table,
+                       weights_t weights)
 {
     _init(param);
     _weights = weights;
@@ -163,7 +164,8 @@ void machines_t::prescheduleJobs()
     for (map<string, machine_t *>::iterator it = _machines.begin();
          it != _machines.end(); ++it) {
         machine_ops->sort_job(&it->second->base, list_ops);
-        scheduling(it->second, machine_ops, _weights, _transportation_time_table, _param);
+        scheduling(it->second, machine_ops, _weights,
+                   _transportation_time_table, _param);
         setJob2Scheduled(it->second);
 
         // collect the job which is on the machine

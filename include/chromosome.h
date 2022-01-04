@@ -76,7 +76,8 @@ double decoding(chromosome_base_t chromosome,
                 int NUMBER_OF_MACHINES,
                 int MAX_SETUP_TIMES,
                 weights_t weights,
-                std::map<std::pair<std::string,std::string>,double> &transportation_time_table,
+                std::map<std::pair<std::string, std::string>, double>
+                    &transportation_time_table,
                 setup_time_parameters_t scheduling_parameters);
 
 /**

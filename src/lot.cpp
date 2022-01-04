@@ -73,7 +73,8 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["oper"] = std::string("0");
     }
 
-    if (elements.count("last_WB_entity") == 0 || elements["last_WB_entity"].length() == 0) {
+    if (elements.count("last_WB_entity") == 0 ||
+        elements["last_WB_entity"].length() == 0) {
         elements["last_WB_entity"] = "";
     }
 
@@ -116,8 +117,7 @@ bool lot_t::checkDataFormat(std::map<std::string, std::string> &elements,
 }
 
 
-lot_t::lot_t(std::map<std::string, std::string> elements):
-    _last_location("")
+lot_t::lot_t(std::map<std::string, std::string> elements) : _last_location("")
 {
     _status = SUCCESS;
 

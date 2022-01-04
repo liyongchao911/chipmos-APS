@@ -83,22 +83,23 @@ void lots_t::addLots(std::vector<lot_t *> lots)
 }
 
 void lots_t::readLocation(string filename,
-        vector<lot_t> &lots,
-        vector<lot_t> &faulty_lots)
+                          vector<lot_t> &lots,
+                          vector<lot_t> &faulty_lots)
 {
-    csv_t location(filename,"r",true,true);
+    csv_t location(filename, "r", true, true);
     location.dropNullRow();
     location.trim(" ");
-    map<std::string,std::string>loc;
+    map<std::string, std::string> loc;
 
-    for(int i = 0;i < location.nrows();++i)
-        if(loc.count(location.getElements(i)["Entity"]) == 0)
-            loc.insert(pair<std::string,std::string>(
-                    location.getElements(i)["Entity"],location.getElements(i)["Location"]));
-    foreach(lots,i){
-        if("DA" == lots[i].getLastEntity())
+    for (int i = 0; i < location.nrows(); ++i)
+        if (loc.count(location.getElements(i)["Entity"]) == 0)
+            loc.insert(pair<std::string, std::string>(
+                location.getElements(i)["Entity"],
+                location.getElements(i)["Location"]));
+    foreach (lots, i) {
+        if ("DA" == lots[i].getLastEntity())
             lots[i].setLastLocation("TA-4F");
-        else if(!lots[i].getLastEntity().empty())
+        else if (!lots[i].getLastEntity().empty())
             // TODO exception last entity not found
             lots[i].setLastLocation(loc.at(lots[i].getLastEntity()));
     }
@@ -658,13 +659,12 @@ void lots_t::setUph(string uph_file_name,
 void lots_t::createLots(map<string, string> files)
 {
     vector<lot_t *> lts;
-    lts = createLots(files["wip"], files["pid_bomid"], files["lot_size"],
-                     files["fcst"], files["routelist"], files["queue_time"],
-                     files["bom_list"], files["pid_heatblock"],
-                     files["ems_heatblock"], files["gw_inventory"],
-                     files["wire_stock"], files["bdid_model_mapping"],
-                     files["uph"], files["cure_time"], files["locations"],
-                     files["no"]);
+    lts = createLots(
+        files["wip"], files["pid_bomid"], files["lot_size"], files["fcst"],
+        files["routelist"], files["queue_time"], files["bom_list"],
+        files["pid_heatblock"], files["ems_heatblock"], files["gw_inventory"],
+        files["wire_stock"], files["bdid_model_mapping"], files["uph"],
+        files["cure_time"], files["locations"], files["no"]);
 
     string direcory_name = "output_" + files["no"];
     csv_t cfg(direcory_name + "/config.csv", "w");

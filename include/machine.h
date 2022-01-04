@@ -63,7 +63,8 @@ double setupTimeUSC(job_base_t *_prev, job_base_t *_next, double time);
 void scheduling(machine_t *mahcine,
                 machine_base_operations_t *ops,
                 weights_t weights,
-                std::map<std::pair<std::string,std::string>,double> &transportation_time_table,
+                std::map<std::pair<std::string, std::string>, double>
+                    &transportation_time_table,
                 setup_time_parameters_t scheduling_parameters);
 
 int staticAddJob(machine_t *machine,
@@ -73,7 +74,8 @@ int staticAddJob(machine_t *machine,
 void insertAlgorithm(machine_t *machine,
                      machine_base_operations_t *ops,
                      weights_t weights,
-                     std::map<std::pair<std::string,std::string>,double> &transportation_time_table,
+                     std::map<std::pair<std::string, std::string>, double>
+                         &transportation_time_table,
                      setup_time_parameters_t scheduling_parameters);
 
 void setLastJobInMachine(machine_t *machine);

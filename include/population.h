@@ -23,7 +23,8 @@ struct population_t {
         weights_t weights;
         setup_time_parameters_t setup_times_parameters;
         scheduling_parameters_t scheduling_parameters;
-        std::map<std::pair<std::string,std::string>,double> transportation_time_table;
+        std::map<std::pair<std::string, std::string>, double>
+            transportation_time_table;
     } parameters;
 
     struct {

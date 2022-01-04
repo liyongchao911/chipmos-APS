@@ -291,7 +291,7 @@ public:
     void setCanRunModels(std::vector<std::string> models);
 
     std::string getLastEntity();
-    
+
     /**
      * getAmountOfTools () - return the number of available tools for this lot
      * @return  integer
