@@ -82,6 +82,28 @@ void lots_t::addLots(std::vector<lot_t *> lots)
     }
 }
 
+void lots_t::readLocation(string filename,
+        vector<lot_t> &lots,
+        vector<lot_t> &faulty_lots)
+{
+    csv_t location(filename,"r",true,true);
+    location.dropNullRow();
+    location.trim(" ");
+    map<std::string,std::string>loc;
+
+    for(int i = 0;i < location.nrows();++i)
+        if(loc.count(location.getElements(i)["Entity"]) == 0)
+            loc.insert(pair<std::string,std::string>(
+                    location.getElements(i)["Entity"],location.getElements(i)["Location"]));
+    foreach(lots,i){
+        if("DA" == lots[i].getLastEntity())
+            lots[i].setLastLocation("TA-4F");
+        else if(!lots[i].getLastEntity().empty())
+            // TODO exception last entity not found
+            lots[i].setLastLocation(loc.at(lots[i].getLastEntity()));
+    }
+}
+
 void lots_t::readWip(string filename,
                      vector<lot_t> &lots,
                      vector<lot_t> &faulty_lots)
@@ -641,7 +663,8 @@ void lots_t::createLots(map<string, string> files)
                      files["bom_list"], files["pid_heatblock"],
                      files["ems_heatblock"], files["gw_inventory"],
                      files["wire_stock"], files["bdid_model_mapping"],
-                     files["uph"], files["cure_time"], files["no"]);
+                     files["uph"], files["cure_time"], files["locations"],
+                     files["no"]);
 
     string direcory_name = "output_" + files["no"];
     csv_t cfg(direcory_name + "/config.csv", "w");
@@ -666,6 +689,7 @@ std::vector<lot_t *> lots_t::createLots(
     std::string bdid_mapping_models_filename,
     std::string uph_filename,
     std::string cure_time_filename,
+    std::string location_filename,
     std::string dir_suffix)
 {
     string err_msg;
@@ -710,7 +734,7 @@ std::vector<lot_t *> lots_t::createLots(
     setCanRunModels(bdid_mapping_models_filename, lots, faulty_lots);
     setUph(uph_filename, lots, faulty_lots);
 
-
+    readLocation(location_filename, lots, faulty_lots);
 
     string directory_name = "output_" + dir_suffix;
     vector<lot_t> in_scheduling_plan_lots;
