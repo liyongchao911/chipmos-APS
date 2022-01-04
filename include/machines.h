@@ -79,6 +79,7 @@ protected:
     job_base_operations_t *job_ops;
 
     // parameters and weights
+    std::map<std::pair<std::string,std::string>,double> _transportation_time_table;
     setup_time_parameters_t _param;
     weights_t _weights;
     int threshold;
@@ -235,7 +236,9 @@ protected:
 public:
     machines_t();
 
-    machines_t(setup_time_parameters_t param, weights_t weight);
+    machines_t(setup_time_parameters_t param, 
+            std::map<std::pair<std::string,std::string>,double> &transportation_time_table,
+            weights_t weight);
 
     machines_t(machines_t &other);
 

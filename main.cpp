@@ -194,6 +194,7 @@ void run(thread_data_t *data)
     Record_gap rg(ops, directory);
 
     machines_t *machines = new machines_t(pop.parameters.setup_times_parameters,
+                                          pop.parameters.transportation_time_table,
                                           pop.parameters.weights);
 
     machines->setThreshold(

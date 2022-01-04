@@ -150,6 +150,7 @@ ares_t *searchResource(resources_t res, info_t name)
 void scheduling(machine_t *machine,
                 machine_base_operations_t *ops,
                 weights_t weights,
+                std::map<std::pair<std::string,std::string>,double> &transportation_time_table,
                 setup_time_parameters_t scheduling_parameters)
 {
     // initialize tool and wire
@@ -275,6 +276,7 @@ void setLastJobInMachine(machine_t *machine)
 void _insertHeadAlgorithm(machine_t *machine,
                           machine_base_operations_t *mbops,
                           weights_t weights,
+                          std::map<std::pair<std::string,std::string>,double> &transportation_time_table,
                           setup_time_parameters_t scheduling_parameters)
 {
     list_ele_t *it = machine->base.root;
@@ -314,15 +316,16 @@ void _insertHeadAlgorithm(machine_t *machine,
         }
         it = it->next;
     }
-    scheduling(machine, mbops, weights, scheduling_parameters);
+    scheduling(machine, mbops, weights, transportation_time_table,scheduling_parameters);
 }
 
 void insertAlgorithm(machine_t *machine,
                      machine_base_operations_t *mbops,
                      weights_t weights,
+                     std::map<std::pair<std::string,std::string>,double> &transportation_time_table,
                      setup_time_parameters_t scheduling_parameters)
 {
-    _insertHeadAlgorithm(machine, mbops, weights, scheduling_parameters);
+    _insertHeadAlgorithm(machine, mbops, weights, transportation_time_table, scheduling_parameters);
 
     list_ele_t *it = machine->base.root;
     list_ele_t *prev, *next, *it2;
@@ -351,7 +354,7 @@ void insertAlgorithm(machine_t *machine,
                     next->prev = it2;
                     it2->next = next;
                     it2->prev = prev;
-                    scheduling(machine, mbops, weights, scheduling_parameters);
+                    scheduling(machine, mbops, weights, transportation_time_table, scheduling_parameters);
                     break;
                 }
                 it2 = it2->next;
