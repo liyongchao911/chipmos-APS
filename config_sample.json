@@ -23,6 +23,8 @@
                     "wb_location",
 		            "automotive",
                     "package_id",
+					"CR",
+					"super_hot_run_code",
                     "last_WB_entity"
                 ]
             },
