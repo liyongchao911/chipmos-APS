@@ -206,6 +206,7 @@ void geneticAlgorithm(population_t *pop, int fd)
                 decoding(chromosomes[i], jobs, machines, machine_ops, list_ops,
                          job_ops, AMOUNT_OF_JOBS, NUMBER_OF_MACHINES,
                          MAX_SETUP_TIMES, pop->parameters.weights,
+                         pop->parameters.transportation_time_table,
                          pop->parameters.setup_times_parameters);
         }
         // sort the chromosomes
@@ -245,7 +246,8 @@ void geneticAlgorithm(population_t *pop, int fd)
 
     decoding(chromosomes[0], jobs, machines, machine_ops, list_ops, job_ops,
              AMOUNT_OF_JOBS, NUMBER_OF_MACHINES, MAX_SETUP_TIMES,
-             pop->parameters.weights, pop->parameters.setup_times_parameters);
+             pop->parameters.weights, pop->parameters.transportation_time_table,
+             pop->parameters.setup_times_parameters);
 
     // update machines' avaliable time and set the last job
     for (int i = 0; i < NUMBER_OF_MACHINES; ++i) {

@@ -104,7 +104,12 @@ protected:
                                     std::string bdid_mapping_models_filename,
                                     std::string uph_filename,
                                     std::string cure_time_filename,
+                                    std::string location_filename,
                                     std::string dir_suffix);
+
+    void readLocation(std::string filename,
+                      std::vector<lot_t> &lots,
+                      std::vector<lot_t> &faulty_lots);
 
     /**
      * readWip () - read wip filename

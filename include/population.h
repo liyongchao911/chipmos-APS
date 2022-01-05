@@ -11,7 +11,6 @@
 #include "include/machine_base.h"
 #include "include/parameters.h"
 
-
 struct population_t {
     unsigned int no;
     struct {
@@ -24,6 +23,8 @@ struct population_t {
         weights_t weights;
         setup_time_parameters_t setup_times_parameters;
         scheduling_parameters_t scheduling_parameters;
+        std::map<std::pair<std::string, std::string>, double>
+            transportation_time_table;
     } parameters;
 
     struct {

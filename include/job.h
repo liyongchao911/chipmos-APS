@@ -18,6 +18,7 @@ typedef struct job_t {
     job_info_t part_id;
     job_info_t bdid;
     job_info_t prod_id;
+    job_info_t location;
     int oper;
     float weight;
     double cr;
