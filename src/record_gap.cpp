@@ -63,17 +63,17 @@ void Record_gap::record_gap_single_machine(std::vector<job_t *> jobs)
 
         if (setup_time >= threshold)
             csv_file.addData(std::map<std::string, std::string>({
-                {"0number", std::string((*it)->base.machine_no.data.text) +
-                                "_" + std::to_string(count)},
-                {"1entity", std::string((*it)->base.machine_no.data.text)},
-                {"2jobcode", str},
-                {"3lot_num_1",
+                {"number", std::string((*it)->base.machine_no.data.text) + "_" +
+                               std::to_string(count)},
+                {"entity", std::string((*it)->base.machine_no.data.text)},
+                {"jobcode", str},
+                {"lot_num_1",
                  std::string((*std::prev(it))->base.job_info.data.text)},
-                {"4lot_num_2", std::string((*(it))->base.job_info.data.text)},
-                {"5bd_id_1", std::string((*std::prev(it))->bdid.data.text)},
-                {"6bd_id_2", std::string((*(it))->bdid.data.text)},
-                {"7start_time", std::to_string(Ts)},
-                {"8end_time", std::to_string(Tw)},
+                {"lot_num_2", std::string((*(it))->base.job_info.data.text)},
+                {"bd_id_1", std::string((*std::prev(it))->bdid.data.text)},
+                {"bd_id_2", std::string((*(it))->bdid.data.text)},
+                {"start_time", std::to_string(Ts)},
+                {"end_time", std::to_string(Tw)},
             }));
     }
 }
