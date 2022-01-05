@@ -83,6 +83,7 @@ protected:
     double _queue_time;  // for all queue time;
     double _fcst_time;   // for DA fcst time
     double _outplan_time;
+    double _cure_time;
     double _weight;
 
     bool _finish_traversal;
@@ -192,7 +193,16 @@ public:
      *
      * @param time : queue time in a station
      */
-    void addQueueTime(double time);
+    void addQueueTime(double time, int prev_oper, int current_oper);
+    /**
+     * addQueueTime () - add queue time with reason
+     */
+    void addQueueTime(double time, std::string reason);
+
+    /**
+     * addCureTime () - add cure time with oper
+     */
+    void addCureTime(double time, int oper);
 
     /**
      * setTraverseFinished () - set the traversing flag to be finished
@@ -573,7 +583,14 @@ public:
      *
      */
     inline void setProcessTimeRatio(double ratio);
+
+    inline double cureTime();
 };
+
+inline double lot_t::cureTime()
+{
+    return _cure_time;
+}
 
 inline void lot_t::setProcessTimeRatio(double ratio)
 {
@@ -762,9 +779,31 @@ inline void lot_t::setFcstTime(double time)
 }
 
 
-inline void lot_t::addQueueTime(double time)
+inline void lot_t::addQueueTime(double time, int prev_oper, int current_oper)
 {
+    addLog("Add queue time + " + std::to_string(time) + " for(" +
+               std::to_string(prev_oper) + "->" + std::to_string(current_oper) +
+               ")",
+           SUCCESS);
     _queue_time += time;
+}
+
+inline void lot_t::addQueueTime(double time, std::string reason)
+{
+    addLog("Add queue time + " + std::to_string(time) +
+               " for the reason : " + reason,
+           SUCCESS);
+    _queue_time += time;
+}
+
+inline void lot_t::addCureTime(double time, int oper)
+{
+    addLog("Add cure time + " + std::to_string(time) +
+               " for cure station : " + std::to_string(oper),
+           SUCCESS);
+
+    _queue_time += time;
+    _cure_time += time;
 }
 
 

@@ -21,6 +21,7 @@ set(src_files
         machine_constraint_r.cpp
         machine_constraint_a.cpp
         arg_parser.cpp
+        system_log.cpp
 #         progress.c
         )
 set(CMAKE_BUILD_TYPE Debug)

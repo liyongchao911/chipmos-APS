@@ -1,5 +1,6 @@
 #include <include/da.h>
 #include <stdexcept>
+#include <vector>
 #include "include/lot.h"
 
 using namespace std;
@@ -132,8 +133,9 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
         if (!da.finished) {
             tmp = (double) unarrived_lots[i].qty() / da.upm;
             if (da.time > unarrived_lots[i].queueTime()) {
-                unarrived_lots[i].addQueueTime(da.time -
-                                               unarrived_lots[i].queueTime());
+                unarrived_lots[i].addQueueTime(
+                    da.time - unarrived_lots[i].queueTime(),
+                    "DA station fcst time");
                 unarrived_lots[i].setFcstTime(tmp);
                 da.time += tmp;
             } else {
@@ -163,12 +165,19 @@ std::vector<lot_t> da_stations_t::daDistributeCapacity(da_station_t &da)
 std::vector<lot_t> da_stations_t::splitSubLots(std::vector<lot_t> lots)
 {
     std::vector<lot_t> result;
-    std::vector<lot_t> temp_lots;
+    std::vector<lot_t> sub_lots;
     foreach (lots, i) {
         if (!lots[i].isSubLot()) {
-            temp_lots = lots[i].createSublots();
-            result += temp_lots;
+            sub_lots = lots[i].createSublots();
+            result += sub_lots;
             lots[i].addLog("Lot is split to several sub-lots", SUCCESS);
+            string parent_lot_number(lots[i].lotNumber());
+            _parent_lots_and_sublots[parent_lot_number] =
+                std::vector<std::string>();
+            foreach (sub_lots, j) {
+                _parent_lots_and_sublots[parent_lot_number].push_back(
+                    sub_lots[j].lotNumber());
+            }
             _parent_lots.push_back(lots[i]);
         } else {
             result.push_back(lots[i]);

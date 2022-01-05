@@ -144,6 +144,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
 
     _cr = std::stod(elements["CR"]);
     _queue_time = std::stod(elements["queue_time"]);
+    _cure_time = 0;
     _fcst_time = std::stod(elements["fcst_time"]);
     tmp_oper = stoi(elements["dest_oper"]);
     _sub_lots = std::stoi(elements["sub_lot"]);

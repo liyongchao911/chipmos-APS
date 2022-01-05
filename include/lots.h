@@ -32,6 +32,11 @@ typedef void (lots_t::*traversing_function)(lot_t &lot,
 class lots_t
 {
 protected:
+    // for sys log
+    int _total_number_of_wip;
+    int _total_number_of_unscheduled_jobs;
+    std::map<std::string, std::vector<std::string> > _parent_lots_and_sublots;
+
     std::vector<lot_t *> lots;
     std::vector<lot_t *> prescheduled_lots;
     // std::vector<lot_t> lots;
@@ -69,9 +74,6 @@ protected:
                                 std::vector<lot_t> &finished,
                                 std::vector<lot_t> &faulty_lot,
                                 da_stations_t &das);
-
-    // traversing_function _traversingFinished;
-
 
     /**
      * createLots () - create a vector of lots by reading and mapping the
@@ -304,7 +306,29 @@ public:
     inline std::set<std::string> getAutomotiveLots();
 
     inline void setProcessTimeRatio(double ratio);
+
+    inline std::map<std::string, std::vector<std::string> >
+    getParentLotAndSubLots();
+
+    std::vector<lot_t *> getAllLots();
+
+    inline int totalNumberOfWip() { return _total_number_of_wip; }
+    inline int totalNumberOfUnscheduledJobs()
+    {
+        return _total_number_of_unscheduled_jobs;
+    }
 };
+
+inline std::vector<lot_t *> lots_t::getAllLots()
+{
+    return lots;
+}
+
+inline std::map<std::string, std::vector<std::string> >
+lots_t::getParentLotAndSubLots()
+{
+    return _parent_lots_and_sublots;
+}
 
 inline std::set<std::string> lots_t::getAutomotiveLots()
 {
