@@ -77,7 +77,7 @@ protected:
     bool _mvin;
     bool _is_sub_lot;
     bool _is_automotive;
-	bool _spr_hot;
+    bool _spr_hot;
 
     double _cr;
     double _queue_time;  // for all queue time;
@@ -359,7 +359,7 @@ public:
 
     bool isAutomotive();
 
-	bool sprHot();
+    bool sprHot();
 
     /**
      * route () - get the route of this lot
@@ -796,10 +796,11 @@ inline void lot_t::setPartNo(std::string part_no)
 {
     if (_tools.count(part_no) == 0) {
         _tools[part_no] = 0;
-    } else {
-        std::cerr << _lot_number << "set part no(" << part_no << ")twice"
-                  << std::endl;
     }
+    // else {
+    //     std::cerr << _lot_number << "set part no(" << part_no << ")twice"
+    //               << std::endl;
+    // }
 }
 
 

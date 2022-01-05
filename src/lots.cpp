@@ -539,18 +539,23 @@ void lots_t::setPartNo(string filename,
     heatblock.trim(" ");
     heatblock.setHeaders(map<string, string>(
         {{"process_id", "process_id"}, {"remark", "remark"}}));
-    map<string, string> pid_remark;
+    map<string, vector<string> > pid_part_numbers;
     for (unsigned int i = 0; i < heatblock.nrows(); ++i) {
-        map<string, string> tmp = heatblock.getElements(i);
+        map<string, string> row = heatblock.getElements(i);
         // get substring of remark from first to "("
-        string str = tmp["remark"];
-        if (str[0] == 'A') {  // if remark == "Compression Mold" or "O/S
-                              // Xray檢驗___/20ea", then it shouldn't be used.
-            str = str.substr(0, str.find(" "));
-            if (str.find("(") != std::string::npos) {
-                str = str.substr(0, str.find("("));
+        string part_no = row["remark"];
+        string process_id = row["process_id"];
+        if (part_no[0] == 'A') {  // if remark == "Compression Mold" or "O/S
+            // Xray檢驗___/20ea", then it shouldn't be used.
+            part_no = part_no.substr(0, part_no.find(" "));
+            if (part_no.find("(") != std::string::npos) {
+                part_no = part_no.substr(0, part_no.find("("));
             }
-            pid_remark[tmp["process_id"]] = str.substr(0, str.find(" "));
+            if (pid_part_numbers.count(process_id) == 0) {
+                pid_part_numbers[process_id] = vector<string>();
+            }
+            pid_part_numbers[process_id].push_back(
+                part_no.substr(0, part_no.find(" ")));
         }
     }
 
@@ -560,19 +565,18 @@ void lots_t::setPartNo(string filename,
 
     foreach (lots, i) {
         try {
-            string part_no = pid_remark.at(lots[i].processId());
-            lots[i].setPartNo(part_no);
+            vector<string> part_numbers =
+                pid_part_numbers.at(lots[i].processId());
+            foreach (part_numbers, j)
+                lots[i].setPartNo(part_numbers[j]);
+
         } catch (std::out_of_range &e) {
             err_msg = "Lot Entry " + to_string(i + 2) + ": " +
                       lots[i].lotNumber() +
                       " has no mapping relationship between its process id(" +
                       lots[i].processId() + ") and its remark";
             lots[i].addLog(err_msg, ERROR_PART_NO);
-            // faulty_lots.push_back(lots[i]);
-            // continue;
         }
-
-        // result.push_back(lots[i]);
     }
 }
 
@@ -588,14 +592,12 @@ void lots_t::setAmountOfTools(string filename,
     map<string, int> pno_qty;
     for (unsigned int i = 0; i < ems.nrows(); ++i) {
         map<string, string> tmp = ems.getElements(i);
+        string part_no = tmp["part_no"];
         int qty1_int = stoi(tmp["qty1"]);
         int qty3_int = stoi(tmp["qty3"]);
-        if (qty1_int <= qty3_int) {
-            pno_qty[tmp["part_no"]] = qty1_int;
-        } else {
-            pno_qty[tmp["part_no"]] = qty3_int;
-        }
+        pno_qty[part_no] = (qty1_int <= qty3_int) ? qty1_int : qty3_int;
     }
+
     string err_msg;
     int amount_of_tools;
     foreach (lots, i) {
