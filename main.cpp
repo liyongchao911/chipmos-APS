@@ -1,15 +1,10 @@
-// #include <pthread.h>
-// #include <semaphore.h>
-// #include <unistd.h>
+#include <chrono>
 #include <cstdlib>
 #include <ctime>
 #include <exception>
 #include <map>
 #include <string>
 #include <thread>
-#include "include/machine_base.h"
-
-#define LOG_ERROR
 
 #include "include/algorithm.h"
 #include "include/arg_parser.h"
@@ -18,11 +13,14 @@
 #include "include/infra.h"
 #include "include/lot.h"
 #include "include/lots.h"
+#include "include/machine_base.h"
 #include "include/machines.h"
 #include "include/population.h"
 #include "include/record_gap.h"
+#include "include/system_log.h"
 
 using namespace std;
+using namespace std::chrono;
 
 map<string, string> outputJob(job_t job);
 map<string, string> outputJobInMachine(machine_t *machine);
@@ -76,7 +74,6 @@ int main(int argc, const char **argv)
     csv_t cfg(file_name, "r", true, true);
     // get the cfg size
     int nthreads = cfg.nrows();
-    /*pthread_t *threads = (pthread_t *) malloc(sizeof(pthread_t) * nthreads);*/
     vector<thread> threads;
 
     thread_data_t **thread_data_array =
@@ -105,34 +102,60 @@ int main(int argc, const char **argv)
 
 void run(thread_data_t *data)
 {
-    int id = data->id;
     map<string, string> arguments = data->arguments;
+    const string DIRECTORY_NAME = "output_" + arguments["no"];
+    sys_log_t *syslog = new sys_log_t(DIRECTORY_NAME + "/log.txt");
+    // record the time;
+    high_resolution_clock::time_point start_time, end_time;
+    start_time = high_resolution_clock::now();
 
     lots_t lots = createLots(arguments);
     entities_t entities = createEntities(arguments);
 
-    machine_base_operations_t *machine_ops =
-        (machine_base_operations_t *) malloc(sizeof(machine_base_operations_t) +
-                                             sizeof(setup_time_unit_t) * 7);
+    // record the sublots
+    syslog->setSublot(lots.getParentLotAndSubLots());
+    // record the number of available machine
+    syslog->setNumberOfAvailableMachines(entities.allEntities().size());
+    // record the number of unavailable machines
+    syslog->setNumberOfUnavailableMachines(entities.getFaultyEntities().size());
+    // record the cure time
+    auto recordCureTimeAndSuperHotRunAndPrescheduledMachines = [&]() {
+        vector<lot_t *> alllots = lots.getAllLots();
+        set<string> prescheduled_entities;
+        int number_of_super_hot_run = 0;
+        foreach (alllots, i) {
+            syslog->setCureTimeForSingleLot(
+                {alllots[i]->lotNumber(), alllots[i]->cureTime()});
+            if (alllots[i]->sprHot())
+                ++number_of_super_hot_run;
+        }
 
+        vector<lot_t *> prescheduled_lots = lots.prescheduledLots();
+        foreach (prescheduled_lots, i) {
+            string prescheduled_entity =
+                prescheduled_lots[i]->preScheduledEntity();
+            prescheduled_entities.insert(prescheduled_entity);
+            if (prescheduled_lots[i]->sprHot())
+                ++number_of_super_hot_run;
+        }
+        syslog->setNumberOfSuperHotRunLots(number_of_super_hot_run);
+        syslog->setPrescheduledMachines(vector<string>(
+            prescheduled_entities.begin(), prescheduled_entities.end()));
+    };
+    recordCureTimeAndSuperHotRunAndPrescheduledMachines();
+    syslog->setNumberOfTools(lots.amountOfTools());
+    syslog->setWipTotalNumber(lots.totalNumberOfWip());
+    syslog->setNumberOfUnscheduledJobs(lots.totalNumberOfUnscheduledJobs());
 
-    // machine_ops->add_job = machineBaseAddJob;
-    // machine_ops->sort_job = machineBaseSortJob;
-    // machine_ops->setup_time_functions[0] = {setupTimeCWN,
-    // parameters.TIME_CWN}; machine_ops->setup_time_functions[1] =
-    // {setupTimeCK, parameters.TIME_CK}; machine_ops->setup_time_functions[2] =
-    // {setupTimeEU, parameters.TIME_EU}; machine_ops->setup_time_functions[3] =
-    // {setupTimeMC, parameters.TIME_MC}; machine_ops->setup_time_functions[4] =
-    // {setupTimeSC, parameters.TIME_SC}; machine_ops->setup_time_functions[5] =
-    // {setupTimeCSC, parameters.TIME_CSC}; machine_ops->setup_time_functions[6]
-    // = {setupTimeUSC, parameters.TIME_USC};
-    // machine_ops->sizeof_setup_time_function_array =
-    //     num_of_setup_time_units - 1;  // -1 is for ICSI
-    // machine_ops->reset = machineReset;
-
-
-
+    auto timeElapse = [&]() {
+        end_time = high_resolution_clock::now();
+        duration<double> elapsed_time =
+            duration_cast<duration<double> >(end_time - start_time);
+        return elapsed_time.count();
+    };
     if (parser->is_set("-p")) {
+        syslog->setSysTimeElapse(timeElapse());
+        syslog->output();
         pthread_exit(NULL);
     }
 
@@ -179,8 +202,7 @@ void run(thread_data_t *data)
         pop.parameters.setup_times_parameters);
     machine_base_operations_t *ops = ops_init.getOps();
 
-    string directory = "output_" + arguments["no"];
-    Record_gap rg(ops, directory);
+    Record_gap rg(ops, DIRECTORY_NAME);
 
     machines_t *machines = new machines_t(pop.parameters.setup_times_parameters,
                                           pop.parameters.weights);
@@ -200,21 +222,35 @@ void run(thread_data_t *data)
         machines, &lots, pop.parameters.scheduling_parameters.PEAK_PERIOD);
     pop.parameters.scheduling_parameters.MAX_SETUP_TIMES -= stage2_setup_times;
     stage3Scheduling(machines, &lots, &pop, data->fd);
+
+    csv_t result(DIRECTORY_NAME + "/result.csv", "w");
+    auto outputBatchOfJobs = [&](auto jobs, int size) {
+        for (int i = 0; i < size; ++i) {
+            result.addData(outputJob(*jobs[i]));
+            rg.addJob(jobs[i]);
+        }
+    };
+
     vector<job_t *> scheduled_jobs = machines->getScheduledJobs();
-    csv_t result(directory + "/result.csv", "w");
-    foreach (scheduled_jobs, i) {
-        result.addData(outputJob(*scheduled_jobs[i]));
-        rg.addJob(scheduled_jobs[i]);
-    }
-
-    for (int i = 0; i < pop.objects.NUMBER_OF_JOBS; ++i) {
-        result.addData(outputJob(*pop.objects.jobs[i]));
-        rg.addJob(pop.objects.jobs[i]);
-    }
-
+    vector<job_t *> on_machine_jobs = machines->getOnMachineJobs();
+    outputBatchOfJobs(scheduled_jobs, scheduled_jobs.size());
+    outputBatchOfJobs(on_machine_jobs, on_machine_jobs.size());
+    outputBatchOfJobs(pop.objects.jobs, pop.objects.NUMBER_OF_JOBS);
     rg.record_gap_all_machines();
     result.write();
+
+    syslog->setNumberOfScheduledJobs(scheduled_jobs.size() +
+                                     pop.objects.NUMBER_OF_JOBS);
+
+    // for (int i = 0; i < pop.objects.NUMBER_OF_JOBS; ++i) {
+    //     result.addData(outputJob(*pop.objects.jobs[i]));
+    //     rg.addJob(pop.objects.jobs[i]);
+    // }
+
+    syslog->setSysTimeElapse(timeElapse());
+    syslog->output();
 }
+
 
 
 lots_t createLots(map<string, string> arguments)

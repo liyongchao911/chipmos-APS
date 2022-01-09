@@ -233,7 +233,8 @@ TEST_F(test_machines_t_addMachine, test_machines_prescheduleJobs_sortJob1)
     machines->prescheduleJobs();
 
     // FIXME : check the machines->_scheduled_jobs
-    EXPECT_EQ(machines->_scheduled_jobs.size(), 3);
+    EXPECT_EQ(machines->_job_on_machine.size(), 1);
+    EXPECT_EQ(machines->_scheduled_jobs.size(), 2);
     // EXPECT_EQ(machine->base.root->ptr_derived_object, job1);
     // EXPECT_EQ(machine->base.root->next->ptr_derived_object, job2);
 
