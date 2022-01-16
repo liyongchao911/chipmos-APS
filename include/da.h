@@ -4,6 +4,7 @@
 #include <include/csv.h>
 #include <include/infra.h>
 #include <include/lot.h>
+#include <string>
 #include <vector>
 
 /**
@@ -58,6 +59,7 @@ private:
 
 
     std::vector<lot_t> _parent_lots;
+    std::map<std::string, std::vector<std::string> > _parent_lots_and_sublots;
 
     /**
      * daDistributeCapacity () - distribute the production capacity of a station
@@ -100,11 +102,19 @@ public:
     std::vector<lot_t> getParentLots();
 
     void decrementProductionCapacity(lot_t &lot);
+
+    std::map<std::string, std::vector<std::string> > getParentLotAndSubLots();
 };
 
 inline std::vector<lot_t> da_stations_t::getParentLots()
 {
     return _parent_lots;
+}
+
+inline std::map<std::string, std::vector<std::string> >
+da_stations_t::getParentLotAndSubLots()
+{
+    return _parent_lots_and_sublots;
 }
 
 #endif

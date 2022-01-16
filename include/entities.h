@@ -89,6 +89,8 @@ public:
 
     std::map<std::string, std::map<std::string, bool> > getDedicateMachines();
 
+    inline std::vector<std::map<std::string, std::string> > getFaultyEntities();
+
     // inline std::vector<machine_constraint_t *> getMachineConstraints();
     machine_constraint_t *getMachineConstraintA();
     machine_constraint_t *getMachineConstraintR();
@@ -124,6 +126,12 @@ inline entity_t *entities_t::getEntityByName(std::string entity_name)
 inline std::vector<entity_t *> entities_t::allEntities()
 {
     return _ents;
+}
+
+inline std::vector<std::map<std::string, std::string> >
+entities_t::getFaultyEntities()
+{
+    return _faulty_machine;
 }
 
 

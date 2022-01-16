@@ -171,8 +171,8 @@ void machines_t::prescheduleJobs()
         // collect the job which is on the machine
         job_on_machine = new job_t();
         *job_on_machine = it->second->current_job;
-        _scheduled_jobs.push_back(job_on_machine);
-
+        // _scheduled_jobs.push_back(job_on_machine);
+        _job_on_machine.push_back(job_on_machine);
         setLastJobInMachine(
             it->second);  // if the machine is scheduled, it will be set
     }
@@ -185,8 +185,7 @@ void machines_t::prescheduleJobs()
         list = it->second->base.root;
         while (list) {
             job_t *job = (job_t *) list->ptr_derived_object;
-            // printf("prescheduled_jobs : %s\n", job->base.job_info.data.text);
-            _scheduled_jobs.push_back((job_t *) list->ptr_derived_object);
+            _scheduled_jobs.push_back(job);
             list = list->next;
         }
         machine_ops->reset(&it->second->base);
@@ -1171,10 +1170,12 @@ void machines_t::_linkMachineToAJob(job_t *job)
 void machines_t::prepareJobs(int *number, job_t ***job_array)
 {
     vector<job_t *> jobs;
+    vector<job_t *> orphan_jobs;
     foreach (_jobs_groups, i) {
         foreach (_jobs_groups[i]->jobs, j) {
             jobs.push_back(_jobs_groups[i]->jobs[j]);
         }
+        orphan_jobs += _jobs_groups[i]->orphan_jobs;
     }
     job_t **arr = (job_t **) malloc(sizeof(job_t *) * jobs.size());
     foreach (jobs, i) {

@@ -16,7 +16,7 @@ const int NUMBER_OF_DA_STATIONS = ARRAY_SIZE(DA_STATIONS, int);
 
 // const int CURE_STATIONS[] = {2140, 2150, 2250, 2330, 2405, 2425, 2428, 2472,
 // 3140, 3150, 3340, 3350, 3550, 4140, 4150};
-const int CURE_STATIONS[] = {2140, 2425, 3140, 3340, 4140};
+const int CURE_STATIONS[] = {2080, 2140, 2425, 3140, 3340, 4140};
 const int NUMBER_OF_CURE_STATIONS = ARRAY_SIZE(CURE_STATIONS, int);
 
 #define X(name, eq, val) val
@@ -126,11 +126,23 @@ void route_t::setCureTime(csv_t remark_df, csv_t cure_time_df)
 
     for (int i = 0, size = remark_df.nrows(); i < size; ++i) {
         map<string, string> elements = remark_df.getElements(i);
-        string key = elements["process_id"] + "_" + elements["detail_id"];
-        if (cure_time_map.count(elements["remark"]) == 0) {
+        string key = elements["process_id"];
+        // + "_" + elements["detail_id"];
+        string ptn_no;
+        // try to convert string to integer
+        // because the stupid data "05"
+        try {
+            int ptn_no_int = stoi(elements["remark"]);
+            ptn_no = to_string(ptn_no_int);
+        } catch (invalid_argument &e) {
+            // if failed, the ptn no is probably a string
+            ptn_no = elements["remark"];
+        }
+
+        if (cure_time_map.count(ptn_no) == 0) {
             cure_time[key] = 0;
         } else {
-            cure_time[key] = cure_time_map[elements["remark"]];
+            cure_time[key] = cure_time_map[ptn_no];
         }
     }
 }
@@ -293,14 +305,15 @@ int route_t::calculateQueueTime(lot_t &lot)
     // doesn't contain the extra W/B stations
     int oper;
     int prev = 0;
-    int qt = 0;
+    // int qt = 0;
     iter_range(_routes[routename], i, idx, _routes[routename].size())
     {
         oper = _routes[routename][i].oper;
         if (_queue_time.count(oper)) {  // check if oper is a big station?
             if (prev) {                 // prev is not null
                 if (_queue_time[prev][oper] > 0) {
-                    qt += _queue_time[prev][oper];
+                    // qt += _queue_time[prev][oper];
+                    lot.addQueueTime(_queue_time[prev][oper], prev, oper);
                     prev = oper;
                 } else {
                     std::string error_text =
@@ -321,19 +334,20 @@ int route_t::calculateQueueTime(lot_t &lot)
                 string log = "Pass the station(" + to_string(oper) +
                              "), add cure time : " + to_string(cure_time);
                 lot.addLog(log, SUCCESS);
-                qt += cure_time;
+                lot.addCureTime(cure_time, oper);
+                // qt += cure_time;
             } else if (_da_stations.count(
                            oper)) {  // oper is a D/A station,  dispatch
                 lot.tmp_mvin = false;
                 lot.tmp_oper = _routes[routename][i + 1]  // ad
                                    .oper;  // lot traverse to DA station
-                lot.addQueueTime(qt);
+                // lot.addQueueTime(qt);
                 retval |= TRAVERSE_DA_UNARRIVED;
                 return retval;
             } else if (_wb_stations.count(oper)) {  // traverse to W/B station
                 lot.tmp_mvin = false;
                 lot.tmp_oper = oper;
-                lot.addQueueTime(qt);
+                // lot.addQueueTime(qt);
                 lot.setTraverseFinished();
                 retval |= TRAVERSE_FINISHED;
                 return retval;

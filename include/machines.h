@@ -72,6 +72,7 @@ protected:
     std::map<std::string, std::vector<std::string>> _model_locations;
 
     // scheduled jobs
+    std::vector<job_t *> _job_on_machine;
     std::vector<job_t *> _scheduled_jobs;
 
     // operations
@@ -271,6 +272,8 @@ public:
 
     const std::vector<job_t *> getScheduledJobs();
 
+    const std::vector<job_t *> getOnMachineJobs();
+
     void groupJobsByToolAndWire();
 
 
@@ -308,6 +311,7 @@ public:
     void setMachineConstraintR(machine_constraint_t *mcs_r);
 };
 
+
 inline void machines_t::setMachineConstraintA(machine_constraint_t *mcs_a)
 {
     _mcs_a = mcs_a;
@@ -343,6 +347,11 @@ inline machine_base_operations_t *
 machines_t::getInitilizedMachineBaseOperations()
 {
     return machine_ops;
+}
+
+inline const std::vector<job_t *> machines_t::getOnMachineJobs()
+{
+    return _job_on_machine;
 }
 
 inline const std::vector<job_t *> machines_t::getScheduledJobs()
