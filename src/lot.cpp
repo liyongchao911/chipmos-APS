@@ -73,6 +73,11 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["oper"] = std::string("0");
     }
 
+    if (elements.count("last_WB_entity") == 0 ||
+        elements["last_WB_entity"].length() == 0) {
+        elements["last_WB_entity"] = "";
+    }
+
     if (elements.count("package_id") == 0) {
         elements["package_id"] = "";
     }
@@ -116,7 +121,7 @@ bool lot_t::checkDataFormat(std::map<std::string, std::string> &elements,
 }
 
 
-lot_t::lot_t(std::map<std::string, std::string> elements)
+lot_t::lot_t(std::map<std::string, std::string> elements) : _last_location("")
 {
     _status = SUCCESS;
 
@@ -136,6 +141,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements)
     _customer = elements["customer"];
     _wb_location = elements["wb_location"];
     _pkg_id = elements["package_id"];
+    _last_entity = elements["last_WB_entity"];
 
     setHold(elements["hold"]);
     setMvin(elements["mvin"]);
@@ -491,6 +497,7 @@ job_t lot_t::job()
     j.part_id = stringToInfo(_part_id);
     j.prod_id = stringToInfo(_prod_id);
     j.pkg_id = stringToInfo(_pkg_id);
+    j.location = stringToInfo(_last_location);
 
     j.pin_package = stringToInfo(_pin_package);
     j.customer = stringToInfo(_customer);

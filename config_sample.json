@@ -22,7 +22,10 @@
                     "sub_lot",
                     "wb_location",
 		            "automotive",
-                    "package_id"
+                    "package_id",
+					"CR",
+					"super_hot_run_code",
+                    "last_WB_entity"
                 ]
             },
             {
@@ -145,6 +148,10 @@
             {
                 "filename" : "queuetime1.csv",
                 "function" : "queue_time"
+            },
+            {
+                "filename" : "transportation_time.csv",
+                "function" : "transportation_time_table"
             }
         ],
         "parameters" : {
@@ -157,6 +164,7 @@
             "weight_max_setup_times" : [1000],
             "weight_total_completion_time" : [1],
             "weight_cr" : [20000],
+            "weight_tr" : [1],
             "setup_time_cwn" : [30],
             "setup_time_ck" : [0],
             "setup_time_eu" : [0],

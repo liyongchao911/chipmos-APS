@@ -53,6 +53,8 @@ double decoding(chromosome_base_t chromosome,
                 int NUMBER_OF_MACHINES,
                 int MAX_SETUP_TIMES,
                 weights_t weights,
+                std::map<std::pair<std::string, std::string>, double>
+                    &transportation_time_table,
                 setup_time_parameters_t scheduling_parameters)
 {
     unsigned int machine_idx;
@@ -82,9 +84,10 @@ double decoding(chromosome_base_t chromosome,
     double value = 0;
     int setup_times_in1440 = 0;
     for (int i = 0; i < NUMBER_OF_MACHINES; ++i) {
-        scheduling(machines[i], machine_ops, weights, scheduling_parameters);
+        scheduling(machines[i], machine_ops, weights, transportation_time_table,
+                   scheduling_parameters);
         insertAlgorithm(machines[i], machine_ops, weights,
-                        scheduling_parameters);
+                        transportation_time_table, scheduling_parameters);
         value += machines[i]->quality;
         setup_times_in1440 += machines[i]->setup_times;
     }

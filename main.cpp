@@ -30,6 +30,8 @@ void outputJobInMachine(map<string, machine_t *>, csv_t *csv);
 lots_t createLots(map<string, string>);
 entities_t createEntities(map<string, string>);
 
+std::map<std::pair<std::string,std::string>,double> read_transportation_time_table(std::string file_name);
+
 typedef struct __thread_data_t {
     map<string, string> arguments;
     int argc;
@@ -164,35 +166,44 @@ void run(thread_data_t *data)
 
     population_t pop = population_t{
         .parameters =
-            {.AMOUNT_OF_CHROMOSOMES = 100,
-             .AMOUNT_OF_R_CHROMOSOMES = 200,
-             .EVOLUTION_RATE = 0.8,
-             .SELECTION_RATE = 0.2,
-             .GENERATIONS = stoi(arguments["times"]),
-             .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"]),
-             .weights = {.WEIGHT_SETUP_TIMES =
-                             stoi(arguments["weight_setup_times"]),
-                         .WEIGHT_TOTAL_COMPLETION_TIME =
-                             stoi(arguments["weight_total_completion_time"]),
-                         .WEIGHT_MAX_SETUP_TIMES =
-                             stoi(arguments["weight_max_setup_times"]),
-                         .WEIGHT_CR = stoi(arguments["weight_cr"])},
-             .setup_times_parameters =
-                 {
-                     .TIME_CWN = stod(arguments["setup_time_cwn"]),
-                     .TIME_CK = stod(arguments["setup_time_ck"]),
-                     .TIME_EU = stod(arguments["setup_time_eu"]),
-                     .TIME_MC = stod(arguments["setup_time_mc"]),
-                     .TIME_SC = stod(arguments["setup_time_sc"]),
-                     .TIME_CSC = stod(arguments["setup_time_csc"]),
-                     .TIME_USC = stod(arguments["setup_time_usc"]),
-                     .TIME_ICSI = stod(arguments["setup_time_icsi"]),
-                 },
-             .scheduling_parameters =
-                 {.PEAK_PERIOD = stof(arguments["peak_period"]),
-                  .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"]),
-                  .MINUTE_THRESHOLD = stoi(arguments["minute_threshold"])}},
-
+        {
+            .AMOUNT_OF_CHROMOSOMES = 100,
+            .AMOUNT_OF_R_CHROMOSOMES = 200,
+            .EVOLUTION_RATE = 0.8,
+            .SELECTION_RATE = 0.2,
+            .GENERATIONS = stoi(arguments["times"]),
+            .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"]),
+            .weights = {
+                .WEIGHT_SETUP_TIMES =
+                    stoi(arguments["weight_setup_times"]),
+                .WEIGHT_TOTAL_COMPLETION_TIME =
+                    stoi(arguments["weight_total_completion_time"]),
+                .WEIGHT_MAX_SETUP_TIMES = 
+                    stoi(arguments["weight_max_setup_times"]),
+                .WEIGHT_CR = 
+                    stoi(arguments["weight_cr"]),
+                .WEIGHT_TR = 
+                    stoi(arguments["weight_tr"]),
+            },
+            .setup_times_parameters =
+            {
+                .TIME_CWN = stod(arguments["setup_time_cwn"]),
+                .TIME_CK = stod(arguments["setup_time_ck"]),
+                .TIME_EU = stod(arguments["setup_time_eu"]),
+                .TIME_MC = stod(arguments["setup_time_mc"]),
+                .TIME_SC = stod(arguments["setup_time_sc"]),
+                .TIME_CSC = stod(arguments["setup_time_csc"]),
+                .TIME_USC = stod(arguments["setup_time_usc"]),
+                .TIME_ICSI = stod(arguments["setup_time_icsi"]),
+            },
+            .scheduling_parameters =
+            {
+                .PEAK_PERIOD = stof(arguments["peak_period"]),
+                .MAX_SETUP_TIMES = stoi(arguments["max_setup_times"]),
+                .MINUTE_THRESHOLD = stoi(arguments["minute_threshold"])},
+            .transportation_time_table =
+                read_transportation_time_table(arguments["transportation_time_table"]),
+        },
     };
 
 
@@ -205,6 +216,7 @@ void run(thread_data_t *data)
     Record_gap rg(ops, DIRECTORY_NAME);
 
     machines_t *machines = new machines_t(pop.parameters.setup_times_parameters,
+                                          pop.parameters.transportation_time_table,
                                           pop.parameters.weights);
 
     machines->setThreshold(
@@ -339,4 +351,27 @@ void outputJobInMachine(map<string, machine_t *> machines, csv_t *csv)
         if (it->second->current_job.prod_id.text_size != 0)
             csv->addData(outputJob(it->second->current_job));
     }
+}
+
+std::map<std::pair<std::string,std::string>,double> read_transportation_time_table(std::string file_name)
+{
+    csv_t location(file_name,"r",true,false);
+    location.dropNullRow();
+    location.trim(" ");
+
+    std::map<std::pair<std::string,std::string>,double> data;
+
+    for(int i = 1, size = location.nrows();i < size;++i)
+        for(int j = 1;j < size;++j)
+            if(i <= j){
+                data.insert(pair<pair<std::string,std::string>,double>(
+                            pair<std::string,std::string>(location.getElement(j,0),location.getElement(0,i)),
+                            stof(location.getElement(j,i))
+                            ));
+                data.insert(pair<pair<std::string,std::string>,double>(
+                            pair<std::string,std::string>(location.getElement(0,i),location.getElement(j,0)),
+                            stof(location.getElement(j,i))
+                            ));
+            }
+    return data;
 }

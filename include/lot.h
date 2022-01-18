@@ -64,6 +64,8 @@ protected:
     std::string _wb_location;
     std::string _prescheduled_machine;
     std::string _prescheduled_model;
+    std::string _last_entity;
+    std::string _last_location;
 
     int _qty;
     int _oper;
@@ -245,7 +247,7 @@ public:
     /**
      * setFcstTime () - setup forecast time
      *
-     * forcast time is used to predict the queue time in D/A station
+     * forecast time is used to predict the queue time in D/A station
      *
      * @param time : a double type of variable which is in minute unit
      */
@@ -301,6 +303,8 @@ public:
      * setCanRunModels () - setup multiple models
      */
     void setCanRunModels(std::vector<std::string> models);
+
+    std::string getLastEntity();
 
     /**
      * getAmountOfTools () - return the number of available tools for this lot
@@ -521,6 +525,8 @@ public:
      */
     void setCanRunLocation(
         std::map<std::string, std::vector<std::string> > model_locations);
+
+    void setLastLocation(std::string _last_location_str);
 
     /**
      * getCanRunLocation () - get the can run locations of lot
@@ -949,6 +955,11 @@ inline std::string lot_t::preScheduledEntity()
     return _prescheduled_machine;
 }
 
+inline std::string lot_t::getLastEntity()
+{
+    return _last_entity;
+}
+
 inline bool lot_t::isPrescheduled()
 {
     return _prescheduled_order >= 0;
@@ -972,6 +983,11 @@ inline void lot_t::setAutomotive(bool _automotive_val)
 inline void lot_t::setHold(std::string _hold_str)
 {
     _hold = _hold_str.compare("Y") == 0;
+}
+
+inline void lot_t::setLastLocation(std::string _last_location_str)
+{
+    _last_location = _last_location_str;
 }
 
 inline void lot_t::setHold(bool _hold_val)
