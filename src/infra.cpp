@@ -76,7 +76,7 @@ time_t timeConverter(std::string text)
     _tm.tm_isdst = false;
     _tm.tm_year += 100;
 
-    return mktime(&_tm);
+    return text.empty() ? (time_t) 0 : mktime(&_tm);
 }
 
 time_t timeConverterWithoutDash(std::string text)

@@ -142,6 +142,11 @@ void lots_t::readWip(string filename,
         }
     }
     _total_number_of_wip = wip.nrows();
+
+    foreach (lots, i) {
+        lots[i].setDAQueueTime(_base_time);
+        lots[i].addQueueTime((double) lots[i].da_queue_time(), "DA Queue Time");
+    }
 }
 
 void lots_t::setPidBomId(string filename,
@@ -674,12 +679,11 @@ void lots_t::createLots(map<string, string> files)
         files["pid_heatblock"], files["ems_heatblock"], files["gw_inventory"],
         files["wire_stock"], files["bdid_model_mapping"], files["uph"],
         files["cure_time"], files["locations"], files["no"]);
-
+    _base_time = files["std_time"];
     string direcory_name = "output_" + files["no"];
     csv_t cfg(direcory_name + "/config.csv", "w");
     cfg.addData(files);
     cfg.write();
-
     addLots(lts);
 }
 
