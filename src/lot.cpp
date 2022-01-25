@@ -145,7 +145,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements) : _last_location("")
     _customer = elements["customer"];
     _wb_location = elements["wb_location"];
     _pkg_id = elements["package_id"];
-    _last_entity = elements["last_WB_entity"];
+    _last_entity = tmp_oper == 2070 ? "DA" : elements["last_WB_entity"];
     _wlot_last_trans = elements["wlot_last_trans"];
 
     setHold(elements["hold"]);

@@ -101,6 +101,7 @@ void lots_t::readLocation(string filename,
             loc.insert(pair<std::string, std::string>(
                 location.getElements(i)["Entity"],
                 location.getElements(i)["Location"]));
+
     foreach (lots, i) {
         if ("DA" == lots[i].getLastEntity())
             lots[i].setLastLocation("TA-4F");
@@ -108,6 +109,8 @@ void lots_t::readLocation(string filename,
             // TODO exception last entity not found
             lots[i].setLastLocation(loc.at(lots[i].getLastEntity()));
     }
+
+    return;
 }
 
 void lots_t::readWip(string filename,

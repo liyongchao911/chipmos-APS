@@ -82,7 +82,13 @@ entity_t::entity_t(map<string, string> elements,
             _outplan_time += 6 * 60;
     }
 
-    _current_lot = new lot_t(elements);
+    try {
+        _current_lot = new lot_t(elements);
+    } catch (invalid_argument &e) {
+        throw invalid_argument(
+            "throw up invalid_argument exception when creating on-machine "
+            "lot_t instance");
+    }
     _current_lot->setCanRunModel(_model_name);
     try {
         _current_lot->setUph(_model_name, stod(elements["uph"]));

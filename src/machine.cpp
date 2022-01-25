@@ -184,12 +184,15 @@ void scheduling(machine_t *machine,
         tool = NULL;
         wire = NULL;
         job = (job_t *) it->ptr_derived_object;
-        if (strlen(job->location.data.text) &&
-            strlen(prev_job->location.data.text))
+        if (strlen(job->location.data.text) != 0) {
+            // printf("Machine location :%s ->
+            // %s\n",machine->base.machine_no.data.text,
+            // machine->location.data.text); fflush(stdout);
             total_transportation_time +=
                 transportation_time_table.at(std::make_pair(
                     std::string((char *) (job->location.data.text)),
-                    std::string((char *) (prev_job->location.data.text))));
+                    std::string((char *) (machine->location.data.text))));
+        }
         arrival_time = job->base.arriv_t;
         setup_time = calculateSetupTime(prev_job, job, ops);
         if (setup_time != 0.0)

@@ -178,7 +178,7 @@ void entities_t::addMachines(csv_t _machines,
             elements["log"] = "can't find the location of this entity";
             _faulty_machine.push_back(elements);
         } catch (std::invalid_argument &e) {
-            elements["log"] = "information is loss";
+            elements["log"] = e.what();
             _faulty_machine.push_back(elements);
         }
     }

@@ -83,7 +83,7 @@ int main(int argc, const char **argv)
         (thread_data_t **) malloc(sizeof(thread_data_t *) * nthreads);
 
 
-    srand(time(NULL));
+    srand(200);
     for (unsigned int i = 0; i < cfg.nrows(); ++i) {
         thread_data_array[i] = new thread_data_t();
         *thread_data_array[i] = thread_data_t{.arguments = cfg.getElements(i),
