@@ -307,16 +307,33 @@ entities_t createEntities(map<string, string> arguments)
                                                 {"customer", "CUST"},
                                                 {"bd_id", "BOND ID"},
                                                 {"oper", "OPER"},
-                                                {"qty", "WIP"}}));
+                                                {"qty", "WIP"},
+                                                {"uph", "G.UPH"}}));
 
     csv_t location_csv(arguments["locations"], "r", true, true);
     location_csv.trim(" ");
     location_csv.setHeaders(
         map<string, string>({{"entity", "Entity"}, {"location", "Location"}}));
 
+    setup_time_parameters_t setup_time_params = {
+        .TIME_CWN = stod(arguments["setup_time_cwn"]),
+        .TIME_CK = stod(arguments["setup_time_ck"]),
+        .TIME_EU = stod(arguments["setup_time_eu"]),
+        .TIME_MC = stod(arguments["setup_time_mc"]),
+        .TIME_SC = stod(arguments["setup_time_sc"]),
+        .TIME_CSC = stod(arguments["setup_time_csc"]),
+        .TIME_USC = stod(arguments["setup_time_usc"]),
+        .TIME_ICSI = stod(arguments["setup_time_icsi"]),
+    };
 
+    machine_base_operations_initializer_t ops_init(
+        {setupTimeCWN, setupTimeCK, setupTimeEU, setupTimeMC, setupTimeSC,
+         setupTimeCSC, setupTimeUSC},
+        setup_time_params);
+
+    machine_base_operations_t *ops = ops_init.getOps();
     entities_t entities(arguments);
-    entities.addMachines(machine_csv, location_csv);
+    entities.addMachines(machine_csv, location_csv, ops);
     return entities;
 }
 
@@ -335,7 +352,7 @@ map<string, string> outputJob(job_t job)
                                 {"end_time", to_string(job.base.end_time)},
                                 {"oper", to_string(job.oper)},
                                 {"arrival_time", to_string(job.base.arriv_t)},
-                                {"process_time", to_string(job.base.ptime)}});
+                                {"process_tsime", to_string(job.base.ptime)}});
 }
 
 map<string, string> outputJobInMachine(machine_t *machine)

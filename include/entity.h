@@ -13,12 +13,28 @@
 #include "include/lot.h"
 #include "include/machine.h"
 
+enum machine_status {
+    SETUP,
+    QC,
+    WAIT_SETUP,
+    ENG,
+    STOP,
+    WAIT_REPAIR,
+    IN_REPAIR,
+    IDLE,
+    PM,
+    RUNNING,
+};
+
 class entity_t
 {
 private:
     double _recover_time;
     double _outplan_time;
     double _intime;
+    double _setup_time;
+    double _ptime;
+    enum machine_status _status;
     std::string _entity_name;
     std::string _model_name;
     std::string _location;
@@ -30,7 +46,9 @@ private:
 public:
     entity_t();
 
-    entity_t(std::map<std::string, std::string> elements, time_t base_time = 0);
+    entity_t(std::map<std::string, std::string> elements,
+             machine_base_operations_t *ops,
+             time_t base_time = 0);
 
     double getRecoverTime() const;
     double getOutplanTime() const;

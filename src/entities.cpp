@@ -107,7 +107,8 @@ void entities_t::setTime(string time)
 }
 
 
-entity_t *entities_t::addMachine(map<string, string> elements)
+entity_t *entities_t::addMachine(map<string, string> elements,
+                                 machine_base_operations_t *ops)
 {
     if (elements["recover_time"].length() == 0) {
         elements["recover_time"] = elements["in_time"];
@@ -127,7 +128,7 @@ entity_t *entities_t::addMachine(map<string, string> elements)
     elements["part_no"] = part_no;
     elements["part_id"] = part_id;
 
-    entity_t *ent = new entity_t(elements, _time);
+    entity_t *ent = new entity_t(elements, ops, _time);
     if (ent) {
         _ents.push_back(ent);
         _entities[model][location].push_back(ent);
@@ -153,7 +154,9 @@ entity_t *entities_t::addMachine(map<string, string> elements)
     return ent;
 }
 
-void entities_t::addMachines(csv_t _machines, csv_t _location)
+void entities_t::addMachines(csv_t _machines,
+                             csv_t _location,
+                             machine_base_operations_t *ops)
 {
     int mrows = _machines.nrows();
     int lrows = _location.nrows();
@@ -169,7 +172,7 @@ void entities_t::addMachines(csv_t _machines, csv_t _location)
         map<string, string> elements = _machines.getElements(i);
         try {
             elements["location"] = locations.at(elements["entity"]);
-            addMachine(elements);
+            addMachine(elements, ops);
         } catch (std::out_of_range &e) {
             // cout<<elements["entity"]<<endl;
             elements["log"] = "can't find the location of this entity";

@@ -2,6 +2,7 @@
 #define __LOT_H__
 
 #include <algorithm>
+#include <ctime>
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -45,6 +46,9 @@ enum ERROR_T { ERROR_TABLE };
 
 extern const char *ERROR_NAMES[];
 
+extern const int DA_STATIONS[];
+extern const int NUMBER_OF_DA_STATIONS;
+
 class lot_t
 {
 protected:
@@ -66,6 +70,7 @@ protected:
     std::string _prescheduled_model;
     std::string _last_entity;
     std::string _last_location;
+    std::string _wlot_last_trans;
 
     int _qty;
     int _oper;
@@ -87,6 +92,8 @@ protected:
     double _outplan_time;
     double _cure_time;
     double _weight;
+
+    time_t _da_queue_time;
 
     bool _finish_traversal;
 
@@ -304,6 +311,8 @@ public:
      */
     void setCanRunModels(std::vector<std::string> models);
 
+    void setDAQueueTime(std::string);
+
     std::string getLastEntity();
 
     /**
@@ -485,6 +494,8 @@ public:
      * @return  time, double data type, in minutes
      */
     double queueTime();
+
+    time_t da_queue_time();
 
     /**
      * data () - return all attribute of this lot
@@ -824,6 +835,11 @@ inline double lot_t::queueTime()
     return _queue_time;
 }
 
+inline time_t lot_t::da_queue_time()
+{
+    return _da_queue_time;
+}
+
 inline std::string lot_t::info()
 {
     return "{Lot Number : " + _lot_number + ", route : " + _route +
@@ -1013,5 +1029,17 @@ inline void lot_t::setSprHot(std::string _sprHot_str)
 inline void lot_t::setSprHot(bool _sprHot_val)
 {
     _spr_hot = _sprHot_val;
+}
+
+inline void lot_t::setDAQueueTime(std::string base_time)
+{
+    int i = 0;
+    for (i = 0; i < NUMBER_OF_DA_STATIONS; ++i)
+        if (DA_STATIONS[i] == oper())
+            break;
+    _da_queue_time =
+        (isSubLot() && mvin() && (i != NUMBER_OF_DA_STATIONS))
+            ? timeConverter(_wlot_last_trans) - timeConverter(base_time)
+            : 0;
 }
 #endif

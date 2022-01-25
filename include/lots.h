@@ -35,6 +35,7 @@ protected:
     // for sys log
     int _total_number_of_wip;
     int _total_number_of_unscheduled_jobs;
+    std::string _base_time;
     std::map<std::string, std::vector<std::string> > _parent_lots_and_sublots;
 
     std::vector<lot_t *> lots;

@@ -10,6 +10,7 @@
 
 #include "include/csv.h"
 #include "include/entity.h"
+#include "include/machine_base.h"
 #include "include/machine_constraint_a.h"
 #include "include/machine_constraint_r.h"
 
@@ -71,14 +72,17 @@ public:
      * elements[MODEL] = "UTC3000" and etc... This function will convert
      * elements to entity_t object.
      */
-    entity_t *addMachine(std::map<std::string, std::string> elements);
+    entity_t *addMachine(std::map<std::string, std::string> elements,
+                         machine_base_operations_t *ops);
 
     /**
      * addMachines() - add machines from dataframe
      *
      * add machines from @csv_t type dataframe.
      */
-    void addMachines(csv_t machines_csv, csv_t location_csv);
+    void addMachines(csv_t machines_csv,
+                     csv_t location_csv,
+                     machine_base_operations_t *ops);
 
 
     std::vector<entity_t *> allEntities();

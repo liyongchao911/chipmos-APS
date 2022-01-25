@@ -90,6 +90,10 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["super_hot_run_code"] = "N";
     }
 
+    if (elements.count("wlot_last_trans") == 0) {
+        elements["wlot_last_trans"] = "";
+    }
+
     return elements;
 }
 
@@ -142,6 +146,7 @@ lot_t::lot_t(std::map<std::string, std::string> elements) : _last_location("")
     _wb_location = elements["wb_location"];
     _pkg_id = elements["package_id"];
     _last_entity = tmp_oper == 2070 ? "DA" : elements["last_WB_entity"];
+    _wlot_last_trans = elements["wlot_last_trans"];
 
     setHold(elements["hold"]);
     setMvin(elements["mvin"]);
@@ -552,6 +557,9 @@ job_t lot_t::job()
         j.weight = lot_order;
         j.base.ptime = 0.0;
     }
+
+    if (_model_process_times.size() == 1)
+        j.base.ptime = _model_process_times.begin()->second;
 
     return j;
 }

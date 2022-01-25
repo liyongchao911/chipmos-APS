@@ -7,6 +7,7 @@
 #include "include/machine_base.h"
 #include "include/parameters.h"
 
+#include <assert.h>
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -324,7 +325,7 @@ vector<job_t *> machines_t::_sortedJobs(std::vector<job_t *> &jobs)
 
 int machines_t::_scheduleAGroup(struct __machine_group_t *group)
 {
-    foreach (group->sprhot_jobs, i) {
+    for (int i = 0; i < group->sprhot_jobs.size(); i++) {
         foreach (group->machines, j) {
             if (_canJobRunOnTheMachine(group->sprhot_jobs[i],
                                        group->machines[j], true)) {
@@ -336,10 +337,13 @@ int machines_t::_scheduleAGroup(struct __machine_group_t *group)
                 staticAddJob(group->machines[j], group->sprhot_jobs[i],
                              machine_ops);
                 group->scheduled_jobs.push_back(group->sprhot_jobs[i]);
+                group->sprhot_jobs.erase(group->sprhot_jobs.begin() + i);
+                i--;
                 break;
             }
         }
     }
+    assert(group->sprhot_jobs.size() == 0);
 
     vector<machine_t *> machines;
     if (group->unscheduled_jobs.size() >= group->machines.size()) {
@@ -360,12 +364,6 @@ int machines_t::_scheduleAGroup(struct __machine_group_t *group)
     vector<job_t *> unscheduled_jobs = group->unscheduled_jobs;
     group->unscheduled_jobs.clear();
 
-    // reset the machines
-    // The jobs on the machine will be removed, and the number of scheduled jobs
-    // will be set to zero
-    foreach (machines, i) {
-        machine_ops->reset(&machines[i]->base);
-    }
     int setup_times = 0;
     sort(unscheduled_jobs.begin(), unscheduled_jobs.end(), jobPtrComparison);
     bool flag = false;
@@ -405,6 +403,55 @@ int machines_t::_scheduleAGroup(struct __machine_group_t *group)
 
 int machines_t::scheduleGroups()
 {
+    // reset the machines
+    // The jobs on the machine will be removed, and the number of scheduled jobs
+    // will be set to zero
+    foreach (_v_machines, i) {
+        machine_ops->reset(&_v_machines[i]->base);
+    }
+
+    std::vector<job_t *> no_machine_sprhot;
+    for (map<string, struct __machine_group_t *>::iterator it =
+             _dispatch_groups.begin();
+         it != _dispatch_groups.end(); it++) {
+        for (int i = 0; i < it->second->sprhot_jobs.size(); i++) {
+            bool find = false;
+            foreach (it->second->machines, j) {
+                if (_canJobRunOnTheMachine(it->second->sprhot_jobs[i],
+                                           it->second->machines[j], true)) {
+                    find = true;
+                    break;
+                }
+            }
+            if (!find) {  // sprhot can't find a machine in its original group
+                no_machine_sprhot.push_back(it->second->sprhot_jobs[i]);
+                it->second->sprhot_jobs.erase(
+                    (it->second->sprhot_jobs).begin() + i);
+                i--;
+            }
+        }
+    }
+
+    for (int i = 0; i < no_machine_sprhot.size(); i++) {
+        foreach (_v_machines, j) {
+            _sortedMachines(_v_machines);
+            if (_canJobRunOnTheMachine(no_machine_sprhot[i], _v_machines[j],
+                                       true)) {
+                string lot_number(
+                    no_machine_sprhot[i]->base.job_info.data.text);
+                string model(_v_machines[j]->model_name.data.text);
+                no_machine_sprhot[i]->base.ptime =
+                    _job_process_times[lot_number][model];
+                staticAddJob(_v_machines[j], no_machine_sprhot[i], machine_ops);
+                no_machine_sprhot.erase(no_machine_sprhot.begin() + i);
+                i--;
+                break;
+            }
+        }
+    }
+
+    assert(no_machine_sprhot.size() == 0);
+
     int total_setup_times = 0;
     std::map<std::string, struct __machine_group_t *> ngroups;
     for (map<string, struct __machine_group_t *>::iterator it =
