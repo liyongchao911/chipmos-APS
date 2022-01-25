@@ -336,7 +336,7 @@ int machines_t::_scheduleAGroup(struct __machine_group_t *group)
                     _job_process_times[lot_number][model];
                 staticAddJob(group->machines[j], group->sprhot_jobs[i],
                              machine_ops);
-				group->scheduled_jobs.push_back(group->sprhot_jobs[i]);
+                group->scheduled_jobs.push_back(group->sprhot_jobs[i]);
                 group->sprhot_jobs.erase(group->sprhot_jobs.begin() + i);
                 i--;
                 break;

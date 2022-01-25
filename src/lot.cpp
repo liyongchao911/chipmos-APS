@@ -553,6 +553,9 @@ job_t lot_t::job()
         j.base.ptime = 0.0;
     }
 
+    if (_model_process_times.size() == 1)
+        j.base.ptime = _model_process_times.begin()->second;
+
     return j;
 }
 
