@@ -33,7 +33,13 @@ entity_t::entity_t(map<string, string> elements, time_t base_time)
     //         elements["qty"] = to_string(0);
     //     }
     // }
-    _current_lot = new lot_t(elements);
+    try {
+        _current_lot = new lot_t(elements);
+    } catch (invalid_argument &e) {
+        throw invalid_argument(
+            "throw up invalid_argument exception when creating on-machine "
+            "lot_t instance");
+    }
 
     if (_current_lot == nullptr) {
         perror("new current_lot error");
