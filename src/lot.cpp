@@ -1,5 +1,6 @@
 #include <cmath>
 #include <exception>
+#include <regex>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -15,6 +16,13 @@
 #define X(item, value, name) name,
 const char *ERROR_NAMES[] = {ERROR_TABLE};
 #undef X
+
+using namespace std;
+
+static regex TIME_REGEX4(
+    "\\d{4}-\\d{2}-\\d{2}\\ ([0-1][0-9]|2[0-3]):[0-5][0-9]");
+static regex TIME_REGEX2(
+    "\\d{4}-\\d{2}-\\d{2}\\ ([0-1][0-9]|2[0-3]):[0-5][0-9]");
 
 lot_t::lot_t()
 {
@@ -90,8 +98,13 @@ std::map<std::string, std::string> lot_t::rearrangeData(
         elements["super_hot_run_code"] = "N";
     }
 
-    if (elements.count("wlot_last_trans") == 0) {
+    if (elements.count("wlot_last_trans") == 0 ||
+        elements["wlot_last_trans"].length() < 3) {
         elements["wlot_last_trans"] = "";
+    } else {
+        if (regex_search(elements["wlot_last_trans"], TIME_REGEX4)) {
+            elements["wlot_last_trans"] = elements["wlot_last_trans"].substr(2);
+        }
     }
 
     return elements;

@@ -676,13 +676,13 @@ void lots_t::setUph(string uph_file_name,
 void lots_t::createLots(map<string, string> files)
 {
     vector<lot_t *> lts;
+    _base_time = files["std_time"];
     lts = createLots(
         files["wip"], files["pid_bomid"], files["lot_size"], files["fcst"],
         files["routelist"], files["queue_time"], files["bom_list"],
         files["pid_heatblock"], files["ems_heatblock"], files["gw_inventory"],
         files["wire_stock"], files["bdid_model_mapping"], files["uph"],
         files["cure_time"], files["locations"], files["no"]);
-    _base_time = files["std_time"];
     string direcory_name = "output_" + files["no"];
     csv_t cfg(direcory_name + "/config.csv", "w");
     cfg.addData(files);

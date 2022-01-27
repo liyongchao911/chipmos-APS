@@ -1039,7 +1039,8 @@ inline void lot_t::setDAQueueTime(std::string base_time)
             break;
     _da_queue_time =
         (isSubLot() && mvin() && (i != NUMBER_OF_DA_STATIONS))
-            ? timeConverter(_wlot_last_trans) - timeConverter(base_time)
+            ? (timeConverter(_wlot_last_trans) - timeConverter(base_time)) /
+                  60.0
             : 0;
 }
 #endif
