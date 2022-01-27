@@ -134,7 +134,7 @@ entity_t::entity_t(map<string, string> elements,
         if (elements["recover_time"].length() != 0) {
             _ptime = stod(elements["qty"]) / stod(elements["uph"]) * 60;
             if (string(current_job.bdid.data.text)
-                    .compare(elements["Last bd id"]) == 0) {
+                    .compare(elements["Last bd id"]) != 0) {
                 _setup_time = setupTime(&prev_job, &current_job, ops);
             } else
                 _setup_time = 84;  // mc_code
