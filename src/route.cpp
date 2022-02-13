@@ -114,7 +114,7 @@ void route_t::setCureTime(csv_t remark_df, csv_t cure_time_df)
 {
     cure_time.clear();
 
-    remark_df = remark_df.filter("master_desc", "PTN no");
+    remark_df = remark_df.filter("master_desc", "PTN no", "PTN No");
 
     map<string, int> cure_time_map;
     for (int i = 0, size = cure_time_df.nrows(); i < size; ++i) {
@@ -126,7 +126,7 @@ void route_t::setCureTime(csv_t remark_df, csv_t cure_time_df)
 
     for (int i = 0, size = remark_df.nrows(); i < size; ++i) {
         map<string, string> elements = remark_df.getElements(i);
-        string key = elements["process_id"];
+        string key = elements["process_id"] + "_" + elements["Oper"];
         // + "_" + elements["detail_id"];
         string ptn_no;
         // try to convert string to integer

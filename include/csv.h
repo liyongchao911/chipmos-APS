@@ -312,6 +312,7 @@ public:
      * value
      */
     csv_t filter(std::string head, std::string value);
+    csv_t filter(std::string head, std::string value, std::string value2);
 
     /**
      * addData() - add a row to dataframe
