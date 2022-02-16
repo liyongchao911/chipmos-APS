@@ -6,6 +6,8 @@
 #include <locale>
 #include <stdexcept>
 
+#define MAX_LEN 8192
+
 csv_t::csv_t(csv_t &csv)
 {
     this->_file = NULL;
@@ -228,10 +230,10 @@ bool csv_t::read(std::string filename,
     }
 
     size_t size = 0;
-    char line_ptr[1024];
+    char line_ptr[MAX_LEN];
     std::vector<std::string> text;
 
-    if (fgets(line_ptr, 1024, _file)) {
+    if (fgets(line_ptr, MAX_LEN, _file)) {
         size = strlen(line_ptr);
         // check byte order mark
         if (_hasBOM(line_ptr, 0x00BFBBEF,
@@ -262,7 +264,7 @@ bool csv_t::read(std::string filename,
         _data.push_back(text);
     }
 
-    while (fgets(line_ptr, 1024, _file)) {
+    while (fgets(line_ptr, MAX_LEN, _file)) {
         text = parseCsvRow(line_ptr, ',');
         _data.push_back(text);
     }
