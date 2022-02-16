@@ -449,7 +449,6 @@ std::vector<std::vector<std::string> > csv_t::getData(int r1, int r2)
     return data;
 }
 
-
 csv_t csv_t::filter(std::string head, std::string value)
 {
     csv_t newcsv;
@@ -458,6 +457,27 @@ csv_t csv_t::filter(std::string head, std::string value)
     int idx = _head[head];
     foreach (_data, i) {
         if (_data[i][idx].compare(value) == 0) {
+            data.push_back(_data[i]);
+        }
+    }
+
+    newcsv._data = data;
+    newcsv._filename = _filename;
+    newcsv._head = _head;
+    newcsv._mode = _mode;
+
+    return newcsv;
+}
+
+csv_t csv_t::filter(std::string head, std::string value, std::string value2)
+{
+    csv_t newcsv;
+
+    std::vector<std::vector<std::string> > data;
+    int idx = _head[head];
+    foreach (_data, i) {
+        if (_data[i][idx].compare(value) == 0 ||
+            _data[i][idx].compare(value2) == 0) {
             data.push_back(_data[i]);
         }
     }
