@@ -110,13 +110,6 @@ void entities_t::setTime(string time)
 entity_t *entities_t::addMachine(map<string, string> elements,
                                  machine_base_operations_t *ops)
 {
-    if (elements["recover_time"].length() == 0) {
-        elements["recover_time"] = elements["in_time"];
-        if (elements["recover_time"].length() == 0) {
-            throw std::invalid_argument("recover time is empty");
-        }
-    }
-
     string model, location;
     model = elements["model"];
     location = elements["location"];
