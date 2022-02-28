@@ -306,7 +306,7 @@ entities_t createEntities(map<string, string> arguments)
                                                 {"lot_number", "LOT#"},
                                                 {"customer", "CUST"},
                                                 {"bd_id", "BOND ID"},
-                                                {"oper", "OPER"},
+                                                {"oper", "SETTING OPER"},
                                                 {"qty", "WIP"},
                                                 {"uph", "G.UPH"}}));
 
@@ -352,7 +352,7 @@ map<string, string> outputJob(job_t job)
                                 {"end_time", to_string(job.base.end_time)},
                                 {"oper", to_string(job.oper)},
                                 {"arrival_time", to_string(job.base.arriv_t)},
-                                {"process_tsime", to_string(job.base.ptime)}});
+                                {"process_time", to_string(job.base.ptime)}});
 }
 
 map<string, string> outputJobInMachine(machine_t *machine)
