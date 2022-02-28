@@ -620,7 +620,7 @@ inline void lot_t::setProcessTimeRatio(double ratio)
 inline bool lot_t::isInSchedulingPlan()
 {
     // if (_lot_number.find("XX") != (std::string::npos)) {
-    if (_lot_number.compare(1, 2, "XX") != 0) {
+    if (_lot_number.compare(1, 2, "XX") == 0) {
         return false;
     }
     return true;
