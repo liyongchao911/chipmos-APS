@@ -65,15 +65,17 @@ entity_t::entity_t(map<string, string> elements,
     else if (elements["STATUS"].compare("RUNNING") == 0)
         _status = RUNNING;
 
-    if (elements["recover_time"].length() != 0)
-        _outplan_time = _recover_time = timeConverter(elements["recover_time"]);
-    else
-        _outplan_time = _recover_time = base_time;
-
     if (elements["in_time"].length() != 0)
         _intime = timeConverter(elements["in_time"]);
     else
         _intime = base_time;
+
+    if (elements["recover_time"].length() != 0)
+        _outplan_time = _recover_time = timeConverter(elements["recover_time"]);
+    else if (_status != QC)
+        _outplan_time = _recover_time = base_time;
+    else  // QC
+        _outplan_time = _recover_time = _intime;
 
     setBaseTime(base_time);
 
