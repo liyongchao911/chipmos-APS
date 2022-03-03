@@ -177,13 +177,13 @@ void run(thread_data_t *data)
                 .weights =
                     {
                         .WEIGHT_SETUP_TIMES =
-                            stoi(arguments["weight_setup_times"]),
+                            stof(arguments["weight_setup_times"]),
                         .WEIGHT_TOTAL_COMPLETION_TIME =
-                            stoi(arguments["weight_total_completion_time"]),
+                            stof(arguments["weight_total_completion_time"]),
                         .WEIGHT_MAX_SETUP_TIMES =
-                            stoi(arguments["weight_max_setup_times"]),
-                        .WEIGHT_CR = stoi(arguments["weight_cr"]),
-                        .WEIGHT_TR = stoi(arguments["weight_tr"]),
+                            stof(arguments["weight_max_setup_times"]),
+                        .WEIGHT_CR = stof(arguments["weight_cr"]),
+                        .WEIGHT_TR = stof(arguments["weight_tr"]),
                     },
                 .setup_times_parameters =
                     {

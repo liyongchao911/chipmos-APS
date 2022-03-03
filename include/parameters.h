@@ -14,11 +14,11 @@ typedef struct __setup_time_parameters_t {
 
 
 typedef struct weights_t {
-    int WEIGHT_SETUP_TIMES;
-    int WEIGHT_TOTAL_COMPLETION_TIME;
-    int WEIGHT_MAX_SETUP_TIMES;
-    int WEIGHT_CR;
-    int WEIGHT_TR;
+    float WEIGHT_SETUP_TIMES;
+    float WEIGHT_TOTAL_COMPLETION_TIME;
+    float WEIGHT_MAX_SETUP_TIMES;
+    float WEIGHT_CR;
+    float WEIGHT_TR;
 } weights_t;
 
 typedef struct scheduling_parameters_t {
