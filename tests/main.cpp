@@ -4,7 +4,9 @@
 int main(int argc, char **argv)
 {
     // initialize the time zone for testing
-    setenv("TZ", "UTC-8", 1);
+    char env[20];
+    strcpy(env, "TZ=UTC-8");
+    putenv(env);
     tzset();
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
