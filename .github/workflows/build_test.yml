@@ -2,42 +2,24 @@ name: build-test
 
 on: [ push, pull_request ]
 jobs:
-  on_ubuntu:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Build
-      run : |
-        cmake -S . -B build
-        cmake --build build 
-
-    - name: Test
-      run : |
-        cd build
-        ./test --gtest_repeat=10
-  on_windows:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      # Build your program with the given configuration
-      shell: powershell
-      run: |
-        mkdir build
-        cd build
-        cmake -G "MinGW Makefiles" ..
-        make
-    - name: Test
-      # Execute tests defined by the CMake configuration.  
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      shell: powershell
-      working-directory: ${{github.workspace}}/build
-      run: |
-        ./test
+    build_test:
+        strategy:
+            matrix:
+                os : ["ubuntu-latest", "macOs-latest", "windows-latest"]
+        runs-on: ${{ matrix.os }}
+        steps:
+            - uses: actions/checkout@v2
+            - name: Build Standalone On Windows
+              run: |
+                cmake -S . -B build -G "MinGW Makefiles"
+                cmake --build build --parallel
+              shell: powershell
+              if: runner.os == 'Windows'
+            - name: Build Standalone
+              run: |
+                cmake -S . -B build
+                cmake --build build --parallel
+              if: runner.os != 'Windows'
+            - name: Test
+              run: |
+                cd build && ./test       
