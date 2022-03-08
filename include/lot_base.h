@@ -2,6 +2,7 @@
 #define __LOT_H__
 
 #include <map>
+#include <string>
 #include <vector>
 #include "include/job_base.h"
 #include "include/linked_list.h"
