@@ -18,8 +18,8 @@
 #ifndef __LINKED_LIST_H__
 #define __LINKED_LIST_H__
 
-#include <include/def.h>
 #include <stddef.h>
+#include "include/def.h"
 
 
 #if defined __NVCC__ || defined __cplusplus
@@ -131,6 +131,15 @@ struct list_ele_t {
     /// this node. The user must let the function pointer point to the correct
     /// function before invoking the function.
     double (*get_value)(void *self);
+
+#ifdef __cplusplus
+    list_ele_t()
+    {
+        next = prev = nullptr;
+        ptr_derived_object = nullptr;
+        get_value = nullptr;
+    }
+#endif
 };
 
 

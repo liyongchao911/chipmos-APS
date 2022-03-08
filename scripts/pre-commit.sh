@@ -42,4 +42,21 @@ for FILE in $FILES; do
     rm -rf "${temp_dir}"
 done
 
+CMAKE=$(which cmake)
+if [ $? -ne 0 ]; then
+    echo "Please install cmake"
+    exit 1
+fi
+
+#Check if the project passes test
+temp_dir=`mktemp -d` || exit 1
+$CMAKE -S . -B $temp_dir
+$CMAKE --build $temp_dir --parallel 
+$temp_dir/test
+RETURN=$? || $RETURN
+
+rm -rf "${temp_dir}"
+
+echo "Pass all tests"
+
 exit $RETURN
