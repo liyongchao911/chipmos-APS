@@ -99,6 +99,19 @@ struct job_base_t {
     double start_time;
     double end_time;
     double ptime;
+
+#ifdef __cplusplus
+    job_base_t()
+    {
+        current_machine = ptr_derived_object = nullptr;
+        ms_gene = nullptr;
+        os_seq_gene = nullptr;
+        partition = 0.0;
+        process_time = nullptr;
+        qty = size_of_process_time = 0l;
+        arriv_t = start_time = end_time = ptime = 0.0;
+    }
+#endif
 };
 
 struct job_base_operations_t {
