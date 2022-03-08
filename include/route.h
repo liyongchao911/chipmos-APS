@@ -182,7 +182,7 @@ public:
 
 inline int route_t::getCureTime(std::string process_id, int oper)
 {
-    std::string key = process_id;
+    std::string key = process_id + "_" + std::to_string(oper);
     try {
         return cure_time.at(key);
     } catch (std::out_of_range &e) {

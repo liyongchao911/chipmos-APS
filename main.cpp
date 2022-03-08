@@ -177,13 +177,13 @@ void run(thread_data_t *data)
                 .weights =
                     {
                         .WEIGHT_SETUP_TIMES =
-                            stoi(arguments["weight_setup_times"]),
+                            stof(arguments["weight_setup_times"]),
                         .WEIGHT_TOTAL_COMPLETION_TIME =
-                            stoi(arguments["weight_total_completion_time"]),
+                            stof(arguments["weight_total_completion_time"]),
                         .WEIGHT_MAX_SETUP_TIMES =
-                            stoi(arguments["weight_max_setup_times"]),
-                        .WEIGHT_CR = stoi(arguments["weight_cr"]),
-                        .WEIGHT_TR = stoi(arguments["weight_tr"]),
+                            stof(arguments["weight_max_setup_times"]),
+                        .WEIGHT_CR = stof(arguments["weight_cr"]),
+                        .WEIGHT_TR = stof(arguments["weight_tr"]),
                     },
                 .setup_times_parameters =
                     {
@@ -306,7 +306,7 @@ entities_t createEntities(map<string, string> arguments)
                                                 {"lot_number", "LOT#"},
                                                 {"customer", "CUST"},
                                                 {"bd_id", "BOND ID"},
-                                                {"oper", "OPER"},
+                                                {"oper", "SETTING OPER"},
                                                 {"qty", "WIP"},
                                                 {"uph", "G.UPH"}}));
 
@@ -352,7 +352,7 @@ map<string, string> outputJob(job_t job)
                                 {"end_time", to_string(job.base.end_time)},
                                 {"oper", to_string(job.oper)},
                                 {"arrival_time", to_string(job.base.arriv_t)},
-                                {"process_tsime", to_string(job.base.ptime)}});
+                                {"process_time", to_string(job.base.ptime)}});
 }
 
 map<string, string> outputJobInMachine(machine_t *machine)

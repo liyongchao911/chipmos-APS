@@ -24,6 +24,7 @@ set(src_files
         system_log.cpp
         lot_base.cpp
         wip_lot.cpp
+        time_converter.cpp
 #         progress.c
         )
 set(CMAKE_BUILD_TYPE Debug)

@@ -22,7 +22,7 @@ using namespace std;
 static regex TIME_REGEX4(
     "\\d{4}-\\d{2}-\\d{2}\\ ([0-1][0-9]|2[0-3]):[0-5][0-9]");
 static regex TIME_REGEX2(
-    "\\d{4}-\\d{2}-\\d{2}\\ ([0-1][0-9]|2[0-3]):[0-5][0-9]");
+    "\\d{2}-\\d{2}-\\d{2}\\ ([0-1][0-9]|2[0-3]):[0-5][0-9]");
 
 lot_t::lot_t()
 {
@@ -159,6 +159,12 @@ lot_t::lot_t(std::map<std::string, std::string> elements) : _last_location("")
     _wb_location = elements["wb_location"];
     _pkg_id = elements["package_id"];
     _last_entity = tmp_oper == 2070 ? "DA" : elements["last_WB_entity"];
+
+    if (_last_entity.compare("DA") == 0 &&
+        elements["WB_move_in_entity"].length() != 0) {
+        _last_entity = elements["WB_move_in_entity"];
+    }
+
     _wlot_last_trans = elements["wlot_last_trans"];
 
     setHold(elements["hold"]);
