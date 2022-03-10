@@ -63,6 +63,7 @@ protected:
     std::string _pkg_id;
     // std::string _part_no;
 
+
     std::string _urgent;
     std::string _customer;
     std::string _wb_location;
@@ -97,6 +98,7 @@ protected:
 
     bool _finish_traversal;
 
+    std::vector<std::string> __tools;
     std::vector<std::string> _log;
     std::vector<std::string> _can_run_models;
     std::vector<std::string> _can_run_locations;
@@ -858,6 +860,7 @@ inline void lot_t::setPartNo(std::string part_no)
 {
     if (_tools.count(part_no) == 0) {
         _tools[part_no] = 0;
+        __tools.push_back(part_no);
     }
     // else {
     //     std::cerr << _lot_number << "set part no(" << part_no << ")twice"
