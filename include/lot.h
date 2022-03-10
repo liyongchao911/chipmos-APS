@@ -98,6 +98,7 @@ protected:
     bool _finish_traversal;
 
     std::vector<std::string> _log;
+    std::vector<std::string> _all_models;
     std::vector<std::string> _can_run_models;
     std::vector<std::string> _can_run_locations;
 
@@ -941,7 +942,7 @@ inline void lot_t::setCanRunModels(std::vector<std::string> models)
         }
     }
 
-    _can_run_models = models;
+    _all_models = models;
 }
 
 inline bool lot_t::setUph(std::string model, double uph)
