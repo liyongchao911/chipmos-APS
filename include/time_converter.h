@@ -55,7 +55,21 @@ class timeConverter
 private:
     static std::vector<time_converter_base_t *> converters;
 
+    time_t _base_time;
+
 public:
+    inline timeConverter() : _base_time(0) {}
+    inline timeConverter(std::string text) : _base_time(0)
+    {
+        _base_time = this->operator()(text);
+    }
+    inline timeConverter(time_t base_time) : _base_time(base_time) {}
+    inline time_t getBaseTime() { return _base_time; }
+    inline void setBaseTime(std::string text)
+    {
+        _base_time = 0;
+        _base_time = this->operator()(text);
+    }
     time_t operator()(std::string text);
 };
 

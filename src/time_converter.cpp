@@ -112,5 +112,6 @@ time_t timeConverter::operator()(std::string text)
         if (converters[i]->isThisType(text))
             time = converters[i]->operator()(text);
     }
-    return time;
+    return time - _base_time;
 }
+
