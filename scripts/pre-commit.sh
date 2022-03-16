@@ -37,6 +37,7 @@ for FILE in $FILES; do
         echo "Please run the command : " >&2
         echo "      clang-format -i ${FILE}" >&2
         RETURN=1
+        exit $RETURN
     fi
     
     rm -rf "${temp_dir}"
@@ -53,7 +54,7 @@ temp_dir=`mktemp -d` || exit 1
 $CMAKE -S . -B $temp_dir
 $CMAKE --build $temp_dir --parallel 
 $temp_dir/test
-RETURN=$? || $RETURN
+RETURN=$?
 
 rm -rf "${temp_dir}"
 
