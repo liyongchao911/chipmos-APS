@@ -49,6 +49,21 @@ public:
     virtual time_t operator()(std::string text);
 };
 
+class time_converter_only_date_with_slash_t : public time_converter_base_t
+{
+public:
+    time_converter_only_date_with_slash_t();
+    virtual time_t operator()(std::string text);
+};
+
+class time_converter_only_date_with_dash_t : public time_converter_base_t
+{
+public:
+    time_converter_only_date_with_dash_t();
+    virtual time_t operator()(std::string text);
+};
+
+
 
 class timeConverter
 {

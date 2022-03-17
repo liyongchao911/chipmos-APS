@@ -72,6 +72,8 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(
         string_to_time_test_case{"21-12-31 20:45", 1640954700, "22-03-03 03:16",
                                  -5293860},
+        string_to_time_test_case{"21-12-31 20:45", 1640954700, "22-03-03 03:16",
+                                 -5293860},
         string_to_time_test_case{"22-03-03 03:16", 1646248560, "21-12-31 20:45",
                                  5293860},
         string_to_time_test_case{"21-12-31 20:45", 1640954700,
@@ -110,8 +112,37 @@ INSTANTIATE_TEST_SUITE_P(
         string_to_time_test_case{"2021/5/01 20:45", 1619873100, "", 1619873100},
         string_to_time_test_case{"2021/05/01 20:45", 1619873100, "",
                                  1619873100},
+
+        string_to_time_test_case{"22-03-03 03:03", 1646247780, "", 1646247780},
+        string_to_time_test_case{"22-03-03 3:03", 1646247780, "", 1646247780},
+        string_to_time_test_case{"22-03-03 03:3", 1646247780, "", 1646247780},
+        string_to_time_test_case{"22-03-03 3:3", 1646247780, "", 1646247780},
+        string_to_time_test_case{"22-03-03 3:3:3", 1646247783, "", 1646247783},
+
+        string_to_time_test_case{"2022/03/03 03:03", 1646247780, "",
+                                 1646247780},
+        string_to_time_test_case{"2022/03/03 3:03", 1646247780, "", 1646247780},
+        string_to_time_test_case{"2022/03/03 03:3", 1646247780, "", 1646247780},
+        string_to_time_test_case{"2022/03/03 3:3", 1646247780, "", 1646247780},
+        string_to_time_test_case{"2022/03/03 3:3:3", 1646247783, "",
+                                 1646247783},
+        string_to_time_test_case{"2022/3/14 1:59:26", 1647194366, "",
+                                 1647194366},
+        string_to_time_test_case{"2022/3/14 15:9:26", 1647241766, "",
+                                 1647241766},
+
+        string_to_time_test_case{"2022/05/01", 1651334400, "", 1651334400},
+        string_to_time_test_case{"2022/5/01", 1651334400, "", 1651334400},
+        string_to_time_test_case{"2022/05/1", 1651334400, "", 1651334400},
+        string_to_time_test_case{"2022/5/1", 1651334400, "", 1651334400},
+
+        string_to_time_test_case{"22-05-01", 1651334400, "", 1651334400},
+        string_to_time_test_case{"22-5-01", 1651334400, "", 1651334400},
+        string_to_time_test_case{"22-05-1", 1651334400, "", 1651334400},
+        string_to_time_test_case{"22-5-1", 1651334400, "", 1651334400},
+
+
+        string_to_time_test_case{"22-005-01", 0, "", 0},
         string_to_time_test_case{"", 0, "", 0},
-        string_to_time_test_case{"2021/05/01", 0, "", 0},
-        string_to_time_test_case{"21-05-01", 0, "", 0},
         string_to_time_test_case{"2021\\05\\01 20:45", 0, "", 0},
         string_to_time_test_case{"2021-05-1", 0, "", 0}));
