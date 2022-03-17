@@ -59,7 +59,7 @@ $CMAKE --build $temp_dir --parallel
 cd $temp_dir && ./test
 RETURN=$?
 
-#rm -rf "${temp_dir}"
+rm -rf "${temp_dir}"
 
 if [ $RETURN -ne 0 ]; then
     echo "Please pass all tests before committing change"
