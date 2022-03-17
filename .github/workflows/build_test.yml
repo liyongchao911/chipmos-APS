@@ -20,6 +20,9 @@ jobs:
                 cmake -S . -B build
                 cmake --build build --parallel
               if: runner.os != 'Windows'
+            - name: Clone Test Data
+              run: |
+                git clone https://github.com/yuchun1214/chipmos_test_data.git ./build/
             - name: Test
               run: |
-                cd build && ./test       
+                cd build && ./test    
