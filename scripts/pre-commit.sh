@@ -37,6 +37,7 @@ for FILE in $FILES; do
         echo "Please run the command : " >&2
         echo "      clang-format -i ${FILE}" >&2
         RETURN=1
+        exit $RETURN
     fi
     
     rm -rf "${temp_dir}"
@@ -48,15 +49,22 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+GIT=$(which git)
+
 #Check if the project passes test
 temp_dir=`mktemp -d` || exit 1
+$GIT clone https://github.com/yuchun1214/chipmos_test_data.git $temp_dir
 $CMAKE -S . -B $temp_dir
 $CMAKE --build $temp_dir --parallel 
-$temp_dir/test
-RETURN=$? || $RETURN
+cd $temp_dir && ./test
+RETURN=$?
 
 rm -rf "${temp_dir}"
 
+if [ $RETURN -ne 0 ]; then
+    echo "Please pass all tests before committing change"
+    exit $RETURN
+fi
 echo "Pass all tests"
 
 exit $RETURN

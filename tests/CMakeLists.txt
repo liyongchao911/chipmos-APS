@@ -43,6 +43,7 @@ set(TEST_SRC
         test_machine_constraint/test_machine_constraint_a.cpp
         test_infrastructure/test_string_to_info.cpp
         test_infrastructure/test_time_converter.cpp
+        test_route/test_setup_stations_before_wb.cpp
 )
 
 add_executable(

@@ -9,6 +9,9 @@ jobs:
         runs-on: ${{ matrix.os }}
         steps:
             - uses: actions/checkout@v2
+            - name: Clone Test Data
+              run: |
+                git clone https://github.com/yuchun1214/chipmos_test_data.git ./build/
             - name: Build Standalone On Windows
               run: |
                 cmake -S . -B build -G "MinGW Makefiles"
@@ -22,4 +25,4 @@ jobs:
               if: runner.os != 'Windows'
             - name: Test
               run: |
-                cd build && ./test       
+                cd build && ./test    
