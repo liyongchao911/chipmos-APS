@@ -44,6 +44,9 @@ set(TEST_SRC
         test_infrastructure/test_string_to_info.cpp
         test_infrastructure/test_time_converter.cpp
         test_route/test_setup_stations_before_wb.cpp
+        test_route/test_oper_index.cpp
+        test_route/test_route.cpp
+        test_route/test_is_in_stations.cpp
 )
 
 add_executable(
