@@ -253,6 +253,13 @@ public:
     std::vector<std::string> getRow(int row);
 
     /**
+     * getHeader() - return header of csv file
+     *
+     * @return a vector of string in the same order presented in the csv file
+     */
+    std::vector<std::string> getHeader();
+
+    /**
      * getElement() - get single string in the csv_t file
      *
      * this function is used to get single string of the csv_t file by specifing
