@@ -4,4 +4,5 @@ namespace test_route
 {
 route_t * ::test_route::test_route_base_t::route = nullptr;
 csv_t * ::test_route::test_route_base_t::__routelist = nullptr;
+csv_t * ::test_route::test_route_base_t::__queeu_time = nullptr;
 }  // namespace test_route

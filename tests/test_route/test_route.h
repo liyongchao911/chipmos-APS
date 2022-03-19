@@ -15,6 +15,7 @@ class test_route_base_t : public testing::Test
 {
 protected:
     static csv_t *__routelist;
+    static csv_t *__queeu_time;
 
 public:
     static route_t *route;
@@ -35,6 +36,11 @@ public:
             route = new route_t();
             route->setRoute(*__routelist);
         }
+
+        if (__queeu_time == nullptr) {
+            __queeu_time =
+                new csv_t("test_data/queuetime.csv", "r", true, true);
+        }
     }
 
     static void TearDownTestSuite()
@@ -42,6 +48,11 @@ public:
         if (__routelist != nullptr) {
             delete __routelist;
             __routelist = nullptr;
+        }
+
+        if (__queeu_time != nullptr) {
+            delete __queeu_time;
+            __queeu_time = nullptr;
         }
 
         if (route != nullptr) {

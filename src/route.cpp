@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
 #include "include/infra.h"
 #include "include/lot.h"
 
@@ -98,15 +99,59 @@ void route_t::setQueueTime(csv_t queue_time_df)
     std::map<std::string, std::string> elements;
     std::map<int, double> queue_time;
     int station;
+
+    std::vector<std::string> invalid_characters;
+    bool error_flag = false;
+    int _first, _second;
+
+    std::vector<std::string> headers = queue_time_df.getHeader();
+    for (int i = 1; i < headers.size(); i++) {
+        if (!isNumeric(headers[i])) {
+            error_flag = false;
+            invalid_characters.push_back(headers[i]);
+        }
+    }
+
     for (unsigned int i = 0; i < nrows; ++i) {
         elements = queue_time_df.getElements(i);
-        station = std::stoi(elements["station"]);
-        elements.erase(elements.find("station"));
-        for (std::map<std::string, std::string>::iterator it = elements.begin();
-             it != elements.end(); it++) {
-            queue_time[std::stoi(it->first)] = std::stod(it->second) * 60;
+        try {
+            station = std::stoi(elements.at("station"));
+        } catch (std::out_of_range &e) {
+            throw std::out_of_range(
+                "queue_time file doesn't contain header station");
+        } catch (std::invalid_argument &e) {
+            invalid_characters.push_back(elements.at("station"));
+            station = -1;
+            error_flag = true;
         }
-        _queue_time[station] = queue_time;
+        elements.erase(elements.find("station"));
+        for (int j = 1; j < headers.size(); ++j) {
+            try {
+                _first = std::stoi(headers[j]);
+            } catch (std::invalid_argument &e) {
+                _first = -1;
+                error_flag = true;
+                // invalid_characters.push_back(it->first);
+            }
+
+            try {
+                _second = std::stod(elements.at(headers.at(j)));
+            } catch (std::invalid_argument &e) {
+                _second = -1;
+                error_flag = true;
+                invalid_characters.push_back(elements.at(headers.at(j)));
+            }
+            queue_time[_first] = !(error_flag) *_second * 60;
+        }
+        if (!error_flag)
+            _queue_time[station] = queue_time;
+    }
+
+    if (error_flag) {
+        throw std::invalid_argument(
+            "queue_time file has invalid data format, queue time shoud be a "
+            "number, but the file contains : " +
+            join(invalid_characters, ","));
     }
 }
 
