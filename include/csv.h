@@ -22,7 +22,7 @@
 
 /**
  * @class csv_t
- * @breif csv_t type is used to read/write csv_t file.
+ * @brief csv_t type is used to read/write csv_t file.
  *
  * csv_t object is used to deel with csv_t file I/O. There are several csv_t
  * file have byte order remark. csv_t object is able to handle UTF-8 and UTF-16
@@ -73,15 +73,41 @@ protected:
      */
     std::vector<std::string> parseCsvRow(char *text, char delimiter);
 
+    /**
+     * formCsvElement () - convert a string to csv format
+     *
+     * This function takes in a string argument, then converts the string
+     * argument to the same string with csv format.
+     *
+     * If comma (,) exists as an seperator, or we need to escape the
+     * double quotation (") symbol, the function escapes the double quotation
+     * symbol (if exist), then quote the text before returning.
+     *
+     * @return : text with csv format
+     *
+     * @param text : text to convert to csv format
+     */
     std::string formCsvElement(std::string text);
 
 public:
+    /**
+     * csv_t - Constructor of csv_t object for reading/writing file
+     */
     csv_t();
 
+    /**
+     * csv_t - Copy Constructor of csv_t object to assign a csv_t object to
+     * another.
+     *
+     * @param csv : A csv type object to be assigned / copied.
+     */
     csv_t(csv_t &csv);
 
     /**
      * csv_t - Constructor of csv_t object for reading/writing file
+
+     * @param filename : file to read / write
+     * @param mode : access modes of file (Check man fopen for more detail)
      */
     csv_t(std::string filename, std::string mode);
 
@@ -97,12 +123,12 @@ public:
      * memory. If @b r1 isn't -1 but @b r2 is, rows from r1 to the end are read
      * into memory.
      *
-     * @var filename : the csv_t file name
-     * @var mode : the mode of opening file
-     * @var read : read data immediately or not
-     * @var head : specify if data has header
-     * @var r1 : range from r1 if specify
-     * @var r2 : range to r2 if specify
+     * @param filename : the csv_t file name
+     * @param mode : the mode of opening file
+     * @param read : read data immediately or not
+     * @param head : specify if data has header
+     * @param r1 : range from r1 if specify
+     * @param r2 : range to r2 if specify
      */
     csv_t(std::string filename,
           std::string mode,
@@ -111,19 +137,28 @@ public:
           int r1 = -1,
           int r2 = -1);
 
+    /**
+     * trim - search _data for character that match characters specified in text
+     * then removes it.
+     *
+     * normally used to trim whitespaces in _data by calling the function with
+     * argument as shown : trim(" \t\f\v\n\r")
+     *
+     * @param text : string containing all characters to be trimmed
+     */
     void trim(std::string text);
 
     /**
      * setMode () - set the file mode
      *
-     * @var mode : file mode
+     * @param mode : file mode
      */
     void setMode(std::string mode);
 
     /**
      * setFileName() - set the csv_t file path
      *
-     * @var filename : csv_t file path
+     * @param filename : csv_t file path
      */
     void setFileName(std::string filename);
 
@@ -135,9 +170,10 @@ public:
      * header, i.e. new_header --map--> old_header. Parameter @b replace specify
      * if the function add new header or replace old header by new header.
      *
-     * @var maps : a container store the relationship between new header and old
+     * @param maps : a container store the relationship between new header and
+     * old header.
+     * @param replace : if the function add new header or replace the old
      * header.
-     * @var replace : if the function add new header or replace the old header.
      */
     void setHeaders(std::map<std::string, std::string> maps,
                     bool replace = false);
@@ -145,7 +181,7 @@ public:
     /**
      * setHeaders() - directly set header
      *
-     * @var head : new header
+     * @param head : new header
      */
     void setHeaders(std::map<std::string, uint16_t> head);
 
@@ -156,10 +192,10 @@ public:
      * new_header. @b replace is used to specify if the function perform
      * addition or replacment.
      *
-     * @var old_header : specify which of index of this column name is going to
-     * be mapped by new_header
-     * @var new_header : new header name
-     * @var replace : specify if function function perform addition or
+     * @param old_header : specify which of index of this column name is going
+     * to be mapped by new_header
+     * @param new_header : new header name
+     * @param replace : specify if function function perform addition or
      * replacement.
      */
     void setHeader(std::string old_header,
@@ -198,11 +234,11 @@ public:
      *
      * @return true if read file successfully
      *
-     * @var filename : csv_t file path
-     * @var mode : file opening mode
-     * @var head : specify if this csv_t file has header
-     * @var r1 : lower bound
-     * @var r2 : upper bound
+     * @param filename : csv_t file path
+     * @param mode : file opening mode
+     * @param head : specify if this csv_t file has header
+     * @param r1 : lower bound
+     * @param r2 : upper bound
      */
     bool read(std::string filename = "",
               std::string mode = "",
@@ -222,9 +258,9 @@ public:
      *
      * @return true if read file successfully
      *
-     * @var head : specify if this csv_t file has header
-     * @var r1 : lower bound
-     * @var r2 : upper bound
+     * @param head : specify if this csv_t file has header
+     * @param r1 : lower bound
+     * @param r2 : upper bound
      */
     // bool read(bool head = true, int r1 = -1, int r2 = -1);
 
@@ -308,7 +344,7 @@ public:
     /**
      * getColumn() - get column by specifing header
      *
-     * @var header : spcified which column to return
+     * @param header : spcified which column to return
      * @return 1-D string array
      */
     std::vector<std::string> getColumn(std::string header);
@@ -317,6 +353,7 @@ public:
     /**
      * filter() - get a new csv_t object by specifing that column's name ==
      * value
+     *
      */
     csv_t filter(std::string head, std::string value);
     csv_t filter(std::string head, std::string value, std::string value2);
