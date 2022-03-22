@@ -161,11 +161,31 @@ void route_t::setCureTime(csv_t remark_df, csv_t cure_time_df)
 
     remark_df = remark_df.filter("master_desc", "PTN no", "PTN No");
 
+    vector<string> invalid_characters;
+    bool err_flag = false;
+
     map<string, int> cure_time_map;
+    int raising_time = 0, step_time = 0;
+
     for (int i = 0, size = cure_time_df.nrows(); i < size; ++i) {
         map<string, string> elements = cure_time_df.getElements(i);
-        cure_time_map[elements["PTN"]] =
-            stoi(elements["raising_time"]) + stoi(elements["1st_step_time"]);
+        if (!isNumeric(elements["raising_time"])) {
+            invalid_characters.push_back(elements["raising_time"]);
+            err_flag = true;
+            raising_time = 0;
+        } else {
+            raising_time = stoi(elements["raising_time"]);
+        }
+
+        if (!isNumeric(elements["1st_step_time"])) {
+            invalid_characters.push_back(elements["1st_step_time"]);
+            err_flag = true;
+            step_time = 0;
+        } else {
+            step_time = stoi(elements["1st_step_time"]);
+        }
+
+        cure_time_map[elements["PTN"]] = raising_time + step_time;
     }
 
 
@@ -189,6 +209,12 @@ void route_t::setCureTime(csv_t remark_df, csv_t cure_time_df)
         } else {
             cure_time[key] = cure_time_map[ptn_no];
         }
+    }
+
+    if (err_flag) {
+        throw invalid_argument(
+            "The cure time file contains invalid characters such as " +
+            join(invalid_characters, ","));
     }
 }
 
