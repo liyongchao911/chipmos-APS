@@ -109,6 +109,9 @@ INSTANTIATE_TEST_SUITE_P(
                     error_queue_time_csv_file_test_case_t{
                         4, "ab30,asdf,we,kj30,te,abcd,ef,-j"},
                     error_queue_time_csv_file_test_case_t{
-                        5, "ab30,asdf,we,kj30,te,abcd,ef,-j,ab,cd,"}));
+                        5, "ab30,asdf,we,kj30,te,abcd,ef,-j,ab,cd,"},
+                    error_queue_time_csv_file_test_case_t{
+                        6, "ab30,asdf,we,kj30,te,abcd,ef,-j,ab,cd,,0.25o"}
+                        ));
 
 }  // namespace route_queue_time
