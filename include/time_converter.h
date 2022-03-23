@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 
+/**
+ * @brief Abstract base class of some Regular Expression of date/time format
+ */
 class time_converter_base_t
 {
 private:
@@ -21,6 +24,9 @@ public:
     virtual time_t operator()(std::string text) = 0;
 };
 
+/**
+ * @brief Regular Expression with format : "YY-MM-DD HH:MM"
+ */
 class time_converter_with_dash_without_second_t : public time_converter_base_t
 {
 public:
@@ -28,6 +34,9 @@ public:
     virtual time_t operator()(std::string text);
 };
 
+/**
+ * @brief Regular Expression with format : "YY-MM-DD HH:MM:SS"
+ */
 class time_converter_with_dash_with_second_t : public time_converter_base_t
 {
 public:
@@ -35,6 +44,9 @@ public:
     virtual time_t operator()(std::string text);
 };
 
+/**
+ * @brief Regular Expression with format : "YY/MM/DD HH:MM"
+ */
 class time_converter_with_slash_without_second_t : public time_converter_base_t
 {
 public:
@@ -42,6 +54,9 @@ public:
     virtual time_t operator()(std::string text);
 };
 
+/**
+ * @brief Regular Expression with format : "YY/MM/DD HH:MM:SS"
+ */
 class time_converter_with_slash_with_second_t : public time_converter_base_t
 {
 public:
@@ -49,6 +64,9 @@ public:
     virtual time_t operator()(std::string text);
 };
 
+/**
+ * @brief Regular Expression with format : "YY/MM/DD"
+ */
 class time_converter_only_date_with_slash_t : public time_converter_base_t
 {
 public:
@@ -56,6 +74,9 @@ public:
     virtual time_t operator()(std::string text);
 };
 
+/**
+ * @brief Regular Expression with format : "YY-MM-DD"
+ */
 class time_converter_only_date_with_dash_t : public time_converter_base_t
 {
 public:
@@ -64,6 +85,10 @@ public:
 };
 
 
+/**
+ * @brief timeConverter that converts date/time to time_t format, in
+ * respect of base_time
+ */
 
 class timeConverter
 {
@@ -73,18 +98,45 @@ private:
     time_t _base_time;
 
 public:
+    /**
+     * initialize timeConverter with base time 0
+     * @brief Default constructor
+     * @see timeConverter(std::string text)
+     * @see timeConverter(time_t base_time)
+     */
     inline timeConverter() : _base_time(0) {}
+    /**
+     * Construct a timeConverter object with string as base_time
+     * @brief Constructor
+     * @param text : string type as base_time
+     */
     inline timeConverter(std::string text) : _base_time(0)
     {
         _base_time = this->operator()(text);
     }
+    /**
+     * Construct a timeConverter object with integer as base_time
+     * @brief Constructor
+     * @param text : integer type as base_time
+     */
     inline timeConverter(time_t base_time) : _base_time(base_time) {}
+    /**
+     * @brief getter of base time
+     */
     inline time_t getBaseTime() { return _base_time; }
+    /**
+     * @brief setter of base time
+     */
     inline void setBaseTime(std::string text)
     {
         _base_time = 0;
         _base_time = this->operator()(text);
     }
+    /**
+     * @brief Overloads parenthesis operator
+     * @param text : date/time string that matches Regular Expression
+     * @return time_t value relative to base_time
+     */
     time_t operator()(std::string text);
 };
 
