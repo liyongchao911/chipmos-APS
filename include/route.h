@@ -134,6 +134,8 @@ public:
      */
     void setQueueTime(csv_t queue_time_df);
 
+    double getQueueTime(int prev_oper, int next_oper);
+
     void setCureTime(csv_t remark, csv_t cure_time);
 
     int getCureTime(std::string process_id, int oper);
@@ -190,6 +192,15 @@ inline int route_t::getCureTime(std::string process_id, int oper)
         printf("Warning : unable time to find cure time, return 0");
 #endif
         return 0;
+    }
+}
+
+inline double route_t::getQueueTime(int prev_oper, int next_oper)
+{
+    if (_queue_time.count(prev_oper) && _queue_time.count(next_oper)) {
+        return _queue_time[prev_oper][next_oper];
+    } else {
+        return -1;
     }
 }
 

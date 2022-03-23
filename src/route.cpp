@@ -376,15 +376,14 @@ int route_t::calculateQueueTime(lot_t &lot)
     // doesn't contain the extra W/B stations
     int oper;
     int prev = 0;
-    // int qt = 0;
     iter_range(_routes[routename], i, idx, _routes[routename].size())
     {
         oper = _routes[routename][i].oper;
         if (_queue_time.count(oper)) {  // check if oper is a big station?
             if (prev) {                 // prev is not null
-                if (_queue_time[prev][oper] > 0) {
+                if (getQueueTime(prev, oper) > 0) {
                     // qt += _queue_time[prev][oper];
-                    lot.addQueueTime(_queue_time[prev][oper], prev, oper);
+                    lot.addQueueTime(getQueueTime(prev, oper), prev, oper);
                     prev = oper;
                 } else {
                     std::string error_text =
@@ -406,19 +405,16 @@ int route_t::calculateQueueTime(lot_t &lot)
                              "), add cure time : " + to_string(cure_time);
                 lot.addLog(log, SUCCESS);
                 lot.addCureTime(cure_time, oper);
-                // qt += cure_time;
             } else if (_da_stations.count(
                            oper)) {  // oper is a D/A station,  dispatch
                 lot.tmp_mvin = false;
                 lot.tmp_oper = _routes[routename][i + 1]  // ad
                                    .oper;  // lot traverse to DA station
-                // lot.addQueueTime(qt);
                 retval |= TRAVERSE_DA_UNARRIVED;
                 return retval;
             } else if (_wb_stations.count(oper)) {  // traverse to W/B station
                 lot.tmp_mvin = false;
                 lot.tmp_oper = oper;
-                // lot.addQueueTime(qt);
                 lot.setTraverseFinished();
                 retval |= TRAVERSE_FINISHED;
                 return retval;

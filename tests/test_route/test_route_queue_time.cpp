@@ -12,6 +12,12 @@ namespace route_queue_time
 struct route_queue_time_test_case_t {
     int test_oper1, test_oper2;
     double queue_time;
+    friend ostream &operator<<(ostream &os,
+                               const struct route_queue_time_test_case_t &cs)
+    {
+        return os << "(" << cs.test_oper1 << "," << cs.test_oper2 << ")->"
+                  << cs.queue_time;
+    }
 };
 
 class test_route_queue_time_t
@@ -23,14 +29,14 @@ class test_route_queue_time_t
 TEST_P(test_route_queue_time_t, get_queue_time)
 {
     auto cs = GetParam();
-    EXPECT_NEAR(route->_queue_time[cs.test_oper1][cs.test_oper2], cs.queue_time,
-                0.0001);
+    EXPECT_NEAR(route->getQueueTime(cs.test_oper1, cs.test_oper2),
+                cs.queue_time, 0.0001);
 }
 
 INSTANTIATE_TEST_SUITE_P(queue_time_array,
                          test_route_queue_time_t,
                          testing::Values(route_queue_time_test_case_t{
-                             2020, 2020, 0}));
+                             2070, 2080, 120}));
 
 struct error_queue_time_csv_file_test_case_t {
     int file_index;
