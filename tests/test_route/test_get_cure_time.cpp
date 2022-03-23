@@ -63,7 +63,7 @@ INSTANTIATE_TEST_SUITE_P(
                     cure_time_test_case_t{"345XT066", 5340, 90},
                     cure_time_test_case_t{"156KP004ENG", 4140, 40},
 
-                    cure_time_test_case_t{"0008W999", 2050, 0},
+                    cure_time_test_case_t{"153XT081", 2203, 0},
                     cure_time_test_case_t{"000IA066", 2425, 0},
                     cure_time_test_case_t{"0086A123", 2070, 0},
                     cure_time_test_case_t{"0225S001", 2405, 0},
