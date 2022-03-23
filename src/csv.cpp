@@ -520,3 +520,13 @@ void csv_t::dropNullRow()
         }
     }
 }
+
+std::vector<std::string> csv_t::getHeader()
+{
+    std::vector<std::string> head(_head.size(), "");
+    for (auto it = _head.begin(); it != _head.end(); ++it) {
+        head[it->second] = it->first;
+    }
+
+    return head;
+}
