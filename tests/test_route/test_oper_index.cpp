@@ -81,7 +81,7 @@ INSTANTIATE_TEST_SUITE_P(
                     route_index_test_case_t{"MBGA263", 2130, -1},
                     route_index_test_case_t{"BGA199", 2040, -1},
                     route_index_test_case_t{"BGA319", 2030, -1},
-                    route_index_test_case_t{"BGA369", 2050, -1},
+                    route_index_test_case_t{"BGA369", 2050, -1}
                     ));
 
 }  // namespace route_index
