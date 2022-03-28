@@ -25,7 +25,7 @@ void time_converter_base_t::initialized_tm(struct tm *_tm)
 time_converter_with_dash_without_second_t::
     time_converter_with_dash_without_second_t()
     : time_converter_base_t(
-          R"(\d{2}-([1-9]|0[1-9]|1[0-2])-([1-9]|[0-3][1-9]) ([0-9]|[0-1][0-9]|2[0-3]):([0-9]|[0-5][0-9]))")
+          R"(\d{2}-([1-9]|0[1-9]|1[0-2])-([1-9]|[0-2][1-9]|3[0-1]) ([0-9]|[0-1][0-9]|2[0-3]):([0-9]|[0-5][0-9]))")
 {
 }
 
@@ -44,7 +44,7 @@ time_t time_converter_with_dash_without_second_t::operator()(string text)
 
 time_converter_with_dash_with_second_t::time_converter_with_dash_with_second_t()
     : time_converter_base_t(
-          R"(\d{2}-([1-9]|0[1-9]|1[0-2])-([1-9]|[0-3][1-9]) ([0-9]|[0-1][0-9]|2[0-3]):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]))")
+          R"(\d{2}-([1-9]|0[1-9]|1[0-2])-([1-9]|[0-2][1-9]|3[0-1]) ([0-9]|[0-1][0-9]|2[0-3]):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]))")
 {
 }
 
@@ -63,7 +63,7 @@ time_t time_converter_with_dash_with_second_t::operator()(string text)
 time_converter_with_slash_without_second_t::
     time_converter_with_slash_without_second_t()
     : time_converter_base_t(
-          R"(\d{4}/([1-9]|0[1-9]|1[0-2])/([1-9]|[0-3][1-9]) ([0-9]|[0-1][0-9]|2[0-3]):([0-9]|[0-5][0-9]))")
+          R"(\d{4}/([1-9]|0[1-9]|1[0-2])/([1-9]|[0-2][1-9]|3[0-1]) ([0-9]|[0-1][0-9]|2[0-3]):([0-9]|[0-5][0-9]))")
 {
 }
 
@@ -83,7 +83,7 @@ time_t time_converter_with_slash_without_second_t::operator()(string text)
 time_converter_with_slash_with_second_t::
     time_converter_with_slash_with_second_t()
     : time_converter_base_t(
-          R"(\d{4}/([1-9]|0[1-9]|1[0-2])/([1-9]|[0-3][1-9]) ([0-9]|[0-1][0-9]|2[0-3]):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]))")
+          R"(\d{4}/([1-9]|0[1-9]|1[0-2])/([1-9]|[0-2][1-9]|3[0-1]) ([0-9]|[0-1][0-9]|2[0-3]):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9]))")
 {
 }
 
@@ -100,7 +100,8 @@ time_t time_converter_with_slash_with_second_t::operator()(string text)
 }
 
 time_converter_only_date_with_slash_t::time_converter_only_date_with_slash_t()
-    : time_converter_base_t(R"(\d{4}/([1-9]|0[1-9]|1[0-2])/([1-9]|[0-3][1-9]))")
+    : time_converter_base_t(
+          R"(\d{4}/([1-9]|0[1-9]|1[0-2])/([1-9]|[0-2][1-9]|3[0-1]))")
 {
 }
 
@@ -119,7 +120,8 @@ time_t time_converter_only_date_with_slash_t::operator()(string text)
 }
 
 time_converter_only_date_with_dash_t::time_converter_only_date_with_dash_t()
-    : time_converter_base_t(R"(\d{2}-([1-9]|0[1-9]|1[0-2])-([1-9]|[0-3][1-9]))")
+    : time_converter_base_t(
+          R"(\d{2}-([1-9]|0[1-9]|1[0-2])-([1-9]|[0-2][1-9]|3[0-1]))")
 {
 }
 
