@@ -59,8 +59,29 @@ INSTANTIATE_TEST_SUITE_P(
                     route_index_test_case_t{"MBGA222", 3130, 8},
                     route_index_test_case_t{"MBGA222", 4330, 17},
                     route_index_test_case_t{"MBGA222", 3350, 19},
-                    route_index_test_case_t{"MBGA222", 3600, 27}
-
+                    route_index_test_case_t{"MBGA222", 3600, 27},
+                    route_index_test_case_t{"MQFNS042", 2070, 0},
+                    route_index_test_case_t{"MQFNS042", 2209, 4},
+                    route_index_test_case_t{"MQFNS042", 3150, 8},
+                    route_index_test_case_t{"MBGA452", 3130, 2},
+                    route_index_test_case_t{"MBGA452", 2205, 7},
+                    route_index_test_case_t{"MBGA452", 3140, 10},
+                    route_index_test_case_t{"MBGA970", 2080, 2},
+                    route_index_test_case_t{"MBGA970", 2200, 5},
+                    route_index_test_case_t{"MBGA970", 3150, 11},
+                    route_index_test_case_t{"MBGA970", 4130, 15},
+                    route_index_test_case_t{"QFNS205", 2040, 0},
+                    route_index_test_case_t{"QFNS205", 2090, 6},
+                    route_index_test_case_t{"QFNS482", 2060, 2},
+                    route_index_test_case_t{"QFNS482", 2200, 7},
+                    route_index_test_case_t{"BGA404", 2061, 2},
+                    route_index_test_case_t{"BGA404", 2090, 6},
+                    route_index_test_case_t{"MBGA553", 2080, 1},
+                    route_index_test_case_t{"MBGA553", 2205, 5},
+                    route_index_test_case_t{"MBGA263", 2130, -1},
+                    route_index_test_case_t{"BGA199", 2040, -1},
+                    route_index_test_case_t{"BGA319", 2030, -1},
+                    route_index_test_case_t{"BGA369", 2050, -1}
                     ));
 
 }  // namespace route_index
