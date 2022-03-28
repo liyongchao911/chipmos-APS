@@ -102,7 +102,8 @@ void route_t::setQueueTime(csv_t queue_time_df)
 
     std::vector<std::string> invalid_characters;
     bool error_flag = false;
-    int _first, _second;
+    int _first;
+    double _second;
 
     std::vector<std::string> headers = queue_time_df.getHeader();
     for (int i = 1; i < headers.size(); i++) {
