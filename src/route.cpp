@@ -267,6 +267,10 @@ std::vector<station_t> route_t::setupBeforeStation(std::string routename,
         _routes[routename] = stations;
     }
 
+    for (int i = 0; i < stations.size(); ++i) {
+        _oper_index[routename][stations[i].oper] = i;
+    }
+
     return stations;
 }
 
@@ -290,12 +294,12 @@ bool route_t::isLotInStations(lot_t lot)
 
 int route_t::findStationIdx(std::string routename, int oper)
 {
+    // if(_oper_index.count(routename) && _oper_index[routename].count(oper))
+    //     return _oper_index[routename][oper];
+    // return -1;
     int idx = -1;
-    foreach (_routes[routename], i) {
-        if (_routes[routename][i].oper == oper) {
-            idx = i;
-        }
-    }
+    _oper_index.count(routename) && _oper_index.at(routename).count(oper) &&
+        (idx = _oper_index.at(routename).at(oper));
 
     return idx;
 }
