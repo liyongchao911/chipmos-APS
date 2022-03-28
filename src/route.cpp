@@ -142,7 +142,8 @@ void route_t::setQueueTime(csv_t queue_time_df)
                 error_flag = true;
                 invalid_characters.push_back(elements.at(headers.at(j)));
             }
-            queue_time[_first] = !(error_flag) *_second * 60;
+            queue_time[_first] = !(error_flag) * (_second * 60 * (_second > 0) +
+                                                  (_second < 0) * (-1));
         }
         if (!error_flag)
             _queue_time[station] = queue_time;

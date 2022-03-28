@@ -39,7 +39,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(route_queue_time_test_case_t{2070, 2080, 120},
                     route_queue_time_test_case_t{2090, 2200, 15},
                     route_queue_time_test_case_t{2059, 2070, 600},
-                    route_queue_time_test_case_t{5530, 5530, -60},
+                    route_queue_time_test_case_t{5530, 5530, -1},
                     route_queue_time_test_case_t{2080, 2130, 120},
                     route_queue_time_test_case_t{2064, 3200, 30},
                     route_queue_time_test_case_t{6330, 3550, 180}));
