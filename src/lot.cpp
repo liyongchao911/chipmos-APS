@@ -123,7 +123,7 @@ bool lot_t::checkDataFormat(std::map<std::string, std::string> &elements,
     for (auto key : numeric_keys) {
         if (elements.count(key) == 0) {
             continue;
-        } else if (!isNumeric(elements[key])) {
+        } else if (!isNumeric()(elements[key])) {
             wrong_keys.push_back(key);
             elements[key] = std::string("0");  // give the default value
         }
