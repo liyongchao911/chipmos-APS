@@ -73,15 +73,19 @@ void route_t::setRoute(csv_t all_routes)
 void route_t::setRoute(std::string routename, csv_t dataframe)
 {
     std::vector<std::vector<std::string> > data = dataframe.getData();
-    std::vector<station_t> stations;
+    std::vector<station_t *> stations;
     std::map<std::string, std::string> elements;
     unsigned int size = dataframe.nrows();
+    station_t *station;
     for (unsigned int i = 0; i < size; ++i) {
         elements = dataframe.getElements(i);
-        stations.push_back(station_t{.route_name = elements["route"],
-                                     .station_name = elements["desc"],
-                                     .oper = stoi(elements["oper"]),
-                                     .seq = stoi(elements["seq"])});
+        station = new station_t();
+        *station = station_t{.route_name = elements["route"],
+                             .station_name = elements["desc"],
+                             .oper = stoi(elements["oper"]),
+                             .seq = stoi(elements["seq"])};
+        stations.push_back(station);
+        __all_stations.push_back(station);
     }
 
     _routes[routename] = stations;
@@ -220,17 +224,17 @@ void route_t::setCureTime(csv_t remark_df, csv_t cure_time_df)
     }
 }
 
-std::vector<station_t> route_t::setupBeforeStation(std::string routename,
-                                                   bool remove,
-                                                   int nstations,
-                                                   int nopts,
-                                                   ...)
+void route_t::setupBeforeStation(std::string routename,
+                                 bool remove,
+                                 int nstations,
+                                 int nopts,
+                                 ...)
 {
     std::set<int> opers;
     std::set<int> station_opers;
     std::set<unsigned int> indexes;
 
-    std::vector<station_t> stations;
+    std::vector<station_t *> stations;
 
     va_list variables;
     va_start(variables, nopts);
@@ -242,14 +246,14 @@ std::vector<station_t> route_t::setupBeforeStation(std::string routename,
 
     int idx;
     for (unsigned int i = 0; i < _routes[routename].size(); ++i) {
-        if (opers.count(_routes[routename][i].oper) !=
+        if (opers.count(_routes[routename][i]->oper) !=
             0) {  // _routes[routename][i].oper is WB or DA
             idx = i - nstations;
             if (idx < 0) {
                 idx = 0;
             }
             for (unsigned int j = idx; j <= i; ++j) {
-                station_opers.insert(_routes[routename][j].oper);
+                station_opers.insert(_routes[routename][j]->oper);
                 indexes.insert(j);
                 // stations.push_back(_routes[routename][j]);
             }
@@ -268,10 +272,8 @@ std::vector<station_t> route_t::setupBeforeStation(std::string routename,
     }
 
     for (int i = 0; i < stations.size(); ++i) {
-        _oper_index[routename][stations[i].oper] = i;
+        _oper_index[routename][stations[i]->oper] = i;
     }
-
-    return stations;
 }
 
 bool route_t::isLotInStations(lot_t lot)
@@ -284,7 +286,7 @@ bool route_t::isLotInStations(lot_t lot)
         if (idx > 0 && (unsigned int) (idx + 1) <
                            _routes[lot.route()]
                                .size()) {  // check if idx is route is resonable
-            oper = _routes[lot.route()][++idx].oper;
+            oper = _routes[lot.route()][++idx]->oper;
             return _beforeWB[lot.route()].count(oper);
         } else
             return false;
@@ -367,7 +369,7 @@ int route_t::calculateQueueTime(lot_t &lot)
             lot.tmp_mvin = false;
             retval |= TRAVERSE_DA_MVIN;
         } else {  // lot is in D/A and hasn't moved in or which still is sublot
-            lot.tmp_oper = _routes[routename][++idx].oper;  // advance
+            lot.tmp_oper = _routes[routename][++idx]->oper;  // advance
             return TRAVERSE_DA_ARRIVED;  // advance and dispatch
         }
     }
@@ -384,7 +386,7 @@ int route_t::calculateQueueTime(lot_t &lot)
     int prev = 0;
     iter_range(_routes[routename], i, idx, _routes[routename].size())
     {
-        oper = _routes[routename][i].oper;
+        oper = _routes[routename][i]->oper;
         if (_queue_time.count(oper)) {  // check if oper is a big station?
             if (prev) {                 // prev is not null
                 if (getQueueTime(prev, oper) > 0) {
@@ -415,7 +417,7 @@ int route_t::calculateQueueTime(lot_t &lot)
                            oper)) {  // oper is a D/A station,  dispatch
                 lot.tmp_mvin = false;
                 lot.tmp_oper = _routes[routename][i + 1]  // ad
-                                   .oper;  // lot traverse to DA station
+                                   ->oper;  // lot traverse to DA station
                 retval |= TRAVERSE_DA_UNARRIVED;
                 return retval;
             } else if (_wb_stations.count(oper)) {  // traverse to W/B station
@@ -429,4 +431,11 @@ int route_t::calculateQueueTime(lot_t &lot)
     }
 
     return TRAVERSE_ERROR;
+}
+
+route_t::~route_t()
+{
+    for (int i = 0; i < __all_stations.size(); ++i) {
+        delete __all_stations[i];
+    }
 }
