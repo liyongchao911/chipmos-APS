@@ -111,7 +111,7 @@ void route_t::setQueueTime(csv_t queue_time_df)
 
     std::vector<std::string> headers = queue_time_df.getHeader();
     for (int i = 1; i < headers.size(); i++) {
-        if (!isNumeric(headers[i])) {
+        if (!isNumeric()(headers[i])) {
             error_flag = false;
             invalid_characters.push_back(headers[i]);
         }
@@ -120,31 +120,33 @@ void route_t::setQueueTime(csv_t queue_time_df)
     for (unsigned int i = 0; i < nrows; ++i) {
         elements = queue_time_df.getElements(i);
         try {
-            station = std::stoi(elements.at("station"));
+            if (!isNumeric()(elements.at("station"))) {
+                invalid_characters.push_back(elements.at("station"));
+                station = -1;
+                error_flag = true;
+            } else {
+                station = std::stoi(elements.at("station"));
+            }
         } catch (std::out_of_range &e) {
             throw std::out_of_range(
                 "queue_time file doesn't contain header station");
-        } catch (std::invalid_argument &e) {
-            invalid_characters.push_back(elements.at("station"));
-            station = -1;
-            error_flag = true;
         }
         elements.erase(elements.find("station"));
         for (int j = 1; j < headers.size(); ++j) {
-            try {
-                _first = std::stoi(headers[j]);
-            } catch (std::invalid_argument &e) {
+            if (!isNumeric()(headers[j])) {
                 _first = -1;
                 error_flag = true;
-                // invalid_characters.push_back(it->first);
+                // invalid_characters.push_back(headers[j]);
+            } else {
+                _first = std::stoi(headers[j]);
             }
 
-            try {
-                _second = std::stod(elements.at(headers.at(j)));
-            } catch (std::invalid_argument &e) {
+            if (!isNumeric()(elements.at(headers.at(j)))) {
                 _second = -1;
                 error_flag = true;
                 invalid_characters.push_back(elements.at(headers.at(j)));
+            } else {
+                _second = std::stod(elements.at(headers.at(j)));
             }
             queue_time[_first] = !(error_flag) * (_second * 60 * (_second > 0) +
                                                   (_second < 0) * (-1));
@@ -175,7 +177,7 @@ void route_t::setCureTime(csv_t remark_df, csv_t cure_time_df)
 
     for (int i = 0, size = cure_time_df.nrows(); i < size; ++i) {
         map<string, string> elements = cure_time_df.getElements(i);
-        if (!isNumeric(elements["raising_time"])) {
+        if (!isNumeric()(elements["raising_time"])) {
             invalid_characters.push_back(elements["raising_time"]);
             err_flag = true;
             raising_time = 0;
@@ -183,7 +185,7 @@ void route_t::setCureTime(csv_t remark_df, csv_t cure_time_df)
             raising_time = stoi(elements["raising_time"]);
         }
 
-        if (!isNumeric(elements["1st_step_time"])) {
+        if (!isNumeric()(elements["1st_step_time"])) {
             invalid_characters.push_back(elements["1st_step_time"]);
             err_flag = true;
             step_time = 0;

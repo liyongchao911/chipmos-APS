@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -81,7 +82,15 @@ void stringToUpper(char *text);
 
 struct __info_t stringToInfo(std::string s);
 
-bool isNumeric(std::string s);
+
+class isNumeric
+{
+private:
+    static std::regex _regex;
+
+public:
+    bool operator()(std::string text);
+};
 
 void random(double *genes, int size);
 
