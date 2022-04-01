@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -129,20 +130,36 @@ struct __info_t stringToInfo(std::string s)
     return info;
 }
 
-bool isNumeric(std::string s)
+
+
+// bool isNumeric(std::string s)
+// {
+//     int number_of_dot = 0;
+//     if (s.length()) {
+//         if (s.at(0) != '-') {
+//             if (!isdigit(s.at(0)))
+//                 return false;
+//         }
+//         auto begin = s.cbegin();
+//         auto end = s.cend();
+//         ++begin;
+//         for (auto c = begin, end = s.cend(); c != end; ++c) {
+//             if (*c == '.') {
+//                 ++number_of_dot;
+//             } else if (!isdigit(*c)) {
+//                 return false;
+//             }
+//         }
+//         if (number_of_dot <= 1) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+
+std::regex isNumeric::_regex(R"([-]?(([0-9]+[.]?[0-9]*)|([0-9]*[.]?[0-9]+)))");
+
+bool isNumeric::operator()(std::string text)
 {
-    int number_of_dot = 0;
-    if (s.length()) {
-        for (auto c : s) {
-            if (c == '.') {
-                ++number_of_dot;
-            } else if (!isdigit(c)) {
-                return false;
-            }
-        }
-        if (number_of_dot <= 1) {
-            return true;
-        }
-    }
-    return false;
+    return regex_match(text, _regex);
 }

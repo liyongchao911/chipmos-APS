@@ -19,8 +19,6 @@ using namespace std;
 
 namespace route_index
 {
-
-
 struct route_index_test_case_t {
     string test_route_name;
     int test_oper;
@@ -78,10 +76,9 @@ INSTANTIATE_TEST_SUITE_P(
                     route_index_test_case_t{"BGA404", 2090, 6},
                     route_index_test_case_t{"MBGA553", 2080, 1},
                     route_index_test_case_t{"MBGA553", 2205, 5},
-                    route_index_test_case_t{"MBGA263", 2130, -1},
-                    route_index_test_case_t{"BGA199", 2040, -1},
+                    route_index_test_case_t{"MBGA263", 2130, 0},
+                    route_index_test_case_t{"BGA199", 2040, 0},
                     route_index_test_case_t{"BGA319", 2030, -1},
-                    route_index_test_case_t{"BGA369", 2050, -1}
-                    ));
+                    route_index_test_case_t{"BGA369", 2050, -1}));
 
 }  // namespace route_index
