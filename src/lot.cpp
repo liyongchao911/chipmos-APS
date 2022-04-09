@@ -360,10 +360,10 @@ std::map<std::string, std::string> lot_t::data()
 
 
     std::vector<std::string> &models = _all_models;
-    for (std::map<std::string, double>::iterator it = _uphs.begin();
-         it != _uphs.end(); ++it) {
-        models.push_back(it->first);
-    }
+    // for (std::map<std::string, double>::iterator it = _uphs.begin();
+    //      it != _uphs.end(); ++it) {
+    //     models.push_back(it->first);
+    // }
 
     std::vector<std::string> process_times;
     for (std::map<std::string, double>::iterator it =
