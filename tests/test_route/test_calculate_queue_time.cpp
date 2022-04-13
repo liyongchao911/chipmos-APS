@@ -42,6 +42,7 @@ public:
         lot.tmp_oper = lot._oper = cs.oper;
         lot._route = cs.route_name;
         lot._queue_time = 0;
+        lot._finish_traversal = false;
         return lot;
     }
 };
