@@ -849,6 +849,17 @@ void machines_t::_chooseMachinesForAGroup(
 
     vector<string> can_run_machines;
 
+    auto update_resources = [&](bool selected, machine_t *machine) {
+        if (selected) {
+            if (_addNewResource(machine, part_id, _machines_wires)) {
+                --number_of_wires;
+            }
+            if (_addNewResource(machine, part_no, _machines_tools)) {
+                --number_of_tools;
+            }
+        }
+    };
+
     // go through the machines
     // until running out of tools or wires
     int i = 0;
@@ -871,119 +882,29 @@ void machines_t::_chooseMachinesForAGroup(
                 nbad_jobs.push_back(bad_jobs[j]);
             }
         }
-
-        if (selected) {
-            if (_addNewResource(candidate_machines[i], part_id,
-                                _machines_wires)) {
-                --number_of_tools;
-            }
-            if (_addNewResource(candidate_machines[i], part_no,
-                                _machines_tools)) {
-                --number_of_wires;
-            }
-            minimum_available_machine_set.insert(candidate_machines[i]);
-        }
+        update_resources(selected, candidate_machines[i]);
         bad_jobs = nbad_jobs;  // update bad_jobs
+        if (bad_jobs.size() == 0) {
+            ++i;
+            break;
+        }
     }
-    // vector<machine_t*>
-    // minimum_available_machine(minimum_available_machine_set.begin(),
-    // minimum_available_machine_set.end()); for(i = 0; i <
-    // minimum_available_machine.size(); ++i){
-    //
-    // }
 
+    for (; i < candidate_machines.size() && number_of_tools > 0 &&
+           number_of_wires > 0;
+         ++i) {
+        bool selected = false;
+        string machine_no(candidate_machines[i]->base.machine_no.data.text);
+        for (int j = 0; j < good_jobs.size(); ++j) {
+            if (_canJobRunOnTheMachine(good_jobs[j], candidate_machines[i])) {
+                string lot_number(bad_jobs[j]->base.job_info.data.text);
+                _job_can_run_machines[lot_number].push_back(machine_no);
+                selected = true;
+            }
+        }
+        update_resources(selected, candidate_machines[i]);
+    }
 
-
-    // for(i = 0; i < candidate_machines.size() && number_of_wires > 0 &&
-    // number_of_tools > 0; ++i){
-    //     bool selected = false;
-    //     string machine_no(candidate_machines[i]->base.machine_no.data.text);
-    //     if(minimum_available_machine_set.count(candidate_machines[i]) == 0){
-    //         for(int j = 0; j < good_jobs.size(); ++j){
-    //             if(_canJobRunOnTheMachine(good_jobs[j],
-    //             candidate_machines[i])){
-    //                 selected = true;
-    //                 string lot_number(good_jobs[j]->base.job_info.data.text);
-    //                 _job_can_run_machines[lot_number].push_back(machine_no);
-    //             }
-
-    //         }
-    //     }
-
-    //     if(selected){
-    //         can_run_machines.push_back(machine_no);
-    //         if(_addNewResource(candidate_machines[i], part_no,
-    //         _machines_tools)){
-    //             --number_of_tools;
-    //         }
-    //         if(_addNewResource(candidate_machines[i], part_id,
-    //         _machines_wires)){
-    //             --number_of_wires;
-    //         }
-    //     }
-    // }
-
-
-
-    // after doing so, I got the minimum available machines
-    // int i = 0;
-    // for (i = 0; i < candidate_machines.size() && number_of_tools > 0 &&
-    //             number_of_wires > 0;
-    //      ++i) {
-    //     vector<job_t *> nbad_jobs;
-    //     vector<job_t *> ngood_jobs;
-    //     foreach (bad_jobs, j) {
-    //         string lot_number(bad_jobs[j]->base.job_info.data.text);
-    //         if (_canJobRunOnTheMachine(bad_jobs[j], candidate_machines[i])) {
-    //             _job_can_run_machines[lot_number].push_back(
-    //                 string(candidate_machines[i]->base.machine_no.data.text));
-
-    //             suitable_machines[lot_number].push_back(
-    //                 string(candidate_machines[i]->base.machine_no.data.text));
-
-    //             ngood_jobs.push_back(bad_jobs[j]);
-    //         } else {
-    //             nbad_jobs.push_back(bad_jobs[j]);
-    //         }
-    //     }
-
-    //     string model_name(candidate_machines[i]->base.machine_no.data.text);
-    //     bool used = false;  // a flag to describe if the machine is choose
-    //     below
-    //     // if ngood_jobs has jobs means that the machine is a good machine
-    //     if (ngood_jobs.size() || bad_jobs.size() == 0) {
-    //         foreach (good_jobs, j) {
-    //             string lot_number(good_jobs[j]->base.job_info.data.text);
-    //             if (_canJobRunOnTheMachine(good_jobs[j],
-    //                                        candidate_machines[i])) {
-    //                 _job_can_run_machines[lot_number].push_back(string(
-    //                     candidate_machines[i]->base.machine_no.data.text));
-
-    //                 suitable_machines[lot_number].push_back(string(
-    //                     candidate_machines[i]->base.machine_no.data.text));
-    //                 used = true;
-    //             }
-    //         }
-    //         good_jobs += ngood_jobs;  // update the good_jobs container
-
-    //         // update the tool and wire carried by the machines
-    //         // update tool
-    //         if (used || ngood_jobs.size()) {  // if the machine is chosen in
-    //                                           // first round or second round
-    //             if (_addNewResource(candidate_machines[i], part_no,
-    //                                 _machines_tools)) {
-    //                 number_of_tools -= 1;
-    //                 // printf("%s\n",
-    //                 // candidate_machines[i]->base.machine_no.data.text);
-    //             }
-    //             if (_addNewResource(candidate_machines[i], part_id,
-    //                                 _machines_wires)) {
-    //                 number_of_wires -= 1;
-    //             }
-    //         }
-    //     }
-    //     bad_jobs = nbad_jobs;
-    // }
     group->number_of_tools = number_of_tools;
     group->number_of_wires = number_of_wires;
     group->orphan_jobs += bad_jobs;
