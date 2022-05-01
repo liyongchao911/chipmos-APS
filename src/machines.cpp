@@ -156,6 +156,7 @@ void machines_t::addPrescheduledJob(job_t *job)
     job->list.ptr_derived_object = job;
     string machine_no(job->base.machine_no.data.text);
     machine_ops->add_job(&_machines.at(machine_no)->base, &job->list);
+    job->base.current_machine = _machines.at(machine_no);
 }
 
 void machines_t::prescheduleJobs()
