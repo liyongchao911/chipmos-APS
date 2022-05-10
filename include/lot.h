@@ -949,15 +949,6 @@ inline void lot_t::setCanRunModel(std::string model)
 inline void lot_t::setCanRunModels(std::vector<std::string> models)
 {
     // use models to decide the part_no
-    double rnd;
-    if (_tools.size() > 1) {
-        rnd = randomDouble();
-        if (rnd <= 0.34) {
-            _setToolType("A0801");
-        } else {
-            _setToolType("A0803");
-        }
-    }
     // int a0801 = 0, a0803 = 0;
     // foreach (models, i) {
     //     if (models[i].compare("UTC1000") == 0 ||
