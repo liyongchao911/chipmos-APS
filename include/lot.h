@@ -864,16 +864,18 @@ inline void lot_t::setPartId(std::string partid)
 
 inline void lot_t::setPartNo(std::string part_no)
 {
-    if (_tools.count(part_no) == 0) {
-        _tools[part_no] = 0;
-        __tools.push_back(part_no);
+    if (part_no.length()) {
+        if (_tools.count(part_no) == 0) {
+            _tools[part_no] = 0;
+            __tools.push_back(part_no);
+        }
+        _part_no = part_no;
     }
-    _part_no = part_no;
 }
 
 inline void lot_t::_setToolType(std::string part_no_type)
 {
-    std::string part_no;
+    std::string part_no("");
     for (auto it = _tools.begin(); it != _tools.end(); ++it) {
         if (it->second != 0 &&
             it->first.find(part_no_type) != std::string::npos) {
