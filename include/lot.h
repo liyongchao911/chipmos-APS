@@ -967,7 +967,7 @@ inline void lot_t::setCanRunModels(std::vector<std::string> models)
     // } else if (a0803 > a0801) {
     //     _setToolType("A0803");
     // }
-
+    _setToolType("A0801");
     foreach (models, i) {
         if (isModelValid(models[i])) {
             _uphs[models[i]] = 0;
